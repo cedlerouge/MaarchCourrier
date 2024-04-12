@@ -1514,24 +1514,23 @@ class FastParapheurController
             unlink($summarySheetFilePath);
         }
 
-        $documents = FastParapheurController::prepareUploadsAndAppendicesDocument(
+        $documentsToSign = FastParapheurController::prepareDocumentsToSign(
             $args['steps'],
             $sentMainDocument,
             $sentAttachments,
-            $appendices,
-            "Test Comment"
+            $appendices
         );
 
-        if (empty($documents)) {
+        if (empty($documentsToSign)) {
             return ['error' => 'resource has nothing to sign', 'code' => 400];
         }
 
         $returnIds = ['sended' => ['letterbox_coll' => [], 'attachments_coll' => []]];
 
-        foreach ($documents as $doc) {
+        foreach ($documentsToSign as $docToSign) {
             $result = FastParapheurController::onDemandUploadFilesToFast([
                 'config'    => $args['config'],
-                'document'  => $doc,
+                'document'  => $docToSign,
                 'circuit'   => $circuit,
             ]);
             if (!empty($result['error'])) {
@@ -1561,19 +1560,49 @@ class FastParapheurController
                 }
             }
 
-            $returnIds['sended'][$doc['id']['collId']][$doc['id']['resId']] = (string)$result['response'];
+            $returnIds['sended'][$docToSign['id']['collId']][$docToSign['id']['resId']] = (string)$result['response'];
         }
 
         return $returnIds;
     }
 
-    public static function prepareUploadsAndAppendicesDocument(
+    /**
+     * Prepare an array of signable documents for {@see FastParapheurController::onDemandUploadFilesToFast}
+     *
+     * @param array $workflowSteps
+     * @param array $mainResource
+     * @param array $attchments
+     * @param array $appendices
+     * @param string $comment
+     *
+     * @return array of signable document item :
+     *  - id:
+     *      - collId: Document type, letterbox_coll or attachments_coll
+     *      - resId: Document id
+     *  - doc:
+     *       - path: Document path
+     *       - filename: Document file path
+     * - appendices: List of non signable documents that are integrated
+     * - comment: Annotation from user
+     *
+     * @throws Exception
+     */
+    public static function prepareDocumentsToSign(
         array $workflowSteps,
         array $mainResource,
         array $attchments,
-        array $appendices,
+        array $appendices = [],
         string $comment = ""
     ): array {
+        ValidatorModel::notEmpty($mainResource, ['resId', 'subject', 'filePath', 'signable', 'integrations']);
+        ValidatorModel::intType($mainResource, ['resId']);
+        ValidatorModel::stringType($mainResource, ['subject', 'filePath', 'integrations']);
+        ValidatorModel::boolType($mainResource, ['signable']);
+        ValidatorModel::notEmpty($attchments, ['resId', 'title', 'filePath']);
+        ValidatorModel::intType($attchments, ['resId']);
+        ValidatorModel::stringType($attchments, ['subject', 'filePath', 'integrations']);
+        ValidatorModel::boolType($attchments, ['signable']);
+
         $doc = [];
         $appendices[] = [
             'isFile'   => true,
@@ -1606,7 +1635,6 @@ class FastParapheurController
         }
 
         // Send main document if in signature book
-        // The first appendix is always the main document
         $mainResource['integrations'] = json_decode($mainResource['integrations'], true);
 
         if (
@@ -1614,6 +1642,7 @@ class FastParapheurController
             !empty($mainResource['filePath']) &&
             !empty($mainResource['signable'])
         ) {
+            // The last appendix is always the main document
             unset($appendices[count($appendices) - 1]);
 
             $doc[] = [
