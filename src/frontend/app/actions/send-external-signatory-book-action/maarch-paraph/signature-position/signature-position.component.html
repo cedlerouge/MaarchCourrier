@@ -36,10 +36,6 @@
                     </div>
                 </a>
             </nav>
-            <app-maarch-message *ngIf="!loading && !checkExternalUser()"
-                [mode]="'info'" 
-                [content]="'lang.cannotManageSignature' | translate">
-            </app-maarch-message>
             <div class="signatureContainer">
                 <div id="myBounds" #myBounds style="position: absolute;"
                     [style.width.px]="workingAreaWidth" [style.height.px]="workingAreaHeight">
