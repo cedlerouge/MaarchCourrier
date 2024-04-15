@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
+import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { SignatureBookService } from "../signature-book.service";
 import { ActionsService } from "@appRoot/actions/actions.service";
 import { TranslateService } from "@ngx-translate/core";
@@ -11,7 +11,7 @@ import { Router } from "@angular/router";
     styleUrls: ['signature-book-header.component.scss'],
 })
 
-export class SignatureBookHeaderComponent implements OnInit {
+export class SignatureBookHeaderComponent {
 
     @Input() canGoToPrevious: boolean = false;
     @Input() canGoToNext: boolean  =false;
@@ -32,11 +32,7 @@ export class SignatureBookHeaderComponent implements OnInit {
         private router: Router
     ) { }
 
-    ngOnInit(): void {
-        console.debug('INIT');
-    }
-
-    goToResource(event: string = 'next' || 'previous') {
+    goToResource(event: string = 'next' || 'previous'): void {
         this.actionService.goToResource(this.signatureBookService.resourcesListIds, this.userId, this.groupId, this.basketId).subscribe(((resourcesToProcess: number[]) => {
             const allResourcesUnlock: number[] = resourcesToProcess;
             const index: number = this.signatureBookService.resourcesListIds.indexOf(parseInt(this.resId.toString(), 10));

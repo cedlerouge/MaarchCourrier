@@ -60,13 +60,6 @@
     gap: 20px;
     color: var(--maarch-color-primary);
     width: 100%;
-    // .prev-button ::ng-deep .mat-button-wrapper,
-    // .next-button ::ng-deep .mat-button-wrapper {
-    //     display: flex;
-    //     align-items: center;
-    //     gap: 10px;
-    //     color: var(--maarch-color-primary);
-    // }
 
     .prev-button, .next-button {
         width: 30%;
@@ -84,21 +77,6 @@
     .mat-button-disabled {
         cursor: not-allowed;
     }
-
-    // .next-button {
-    //     span {
-    //         margin-right: 18px;
-    //     }
-
-    //     .mat-icon {
-    //         color: white;
-    //         background-color: var(--maarch-color-primary);
-    //         border-radius: 22px;
-    //         font-size: 13px;
-    //         padding: 5px;
-    //         margin-right: 5px;
-    //     }
-    // }
 }
 
 
