@@ -1,0 +1,126 @@
+.signatorybook-header {
+    font-size: 30px;
+    background: var(--maarch-color-primary);
+    padding: 10px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 10px;
+
+    &-left {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        margin-right: -15%;
+
+        &-stream, &-label {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+
+            .mat-icon-button {
+                font-size: 35px;
+                margin-left: 15px;
+            }
+        }
+    }
+    &-center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        margin-left: 20%;
+        width: 100%;
+    }
+    &-right {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex: none;
+
+        .mat-icon-button {
+            background-color: white;
+
+            outline: none; /* Added for keyboard focus indication */
+
+            &:focus, &:hover {
+                /* Enhanced focus style for better visibility */
+                background-color: rgba(250, 250, 218, 0.993) !important;
+            }
+        }
+    }
+}
+
+.prev-next-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    color: var(--maarch-color-primary);
+    width: 100%;
+    // .prev-button ::ng-deep .mat-button-wrapper,
+    // .next-button ::ng-deep .mat-button-wrapper {
+    //     display: flex;
+    //     align-items: center;
+    //     gap: 10px;
+    //     color: var(--maarch-color-primary);
+    // }
+
+    .prev-button, .next-button {
+        width: 30%;
+        background-color: white;
+        border-radius: 25px;
+        font-weight: bold;
+        outline: none; /* Added for keyboard focus indication */
+
+        &:focus {
+            /* Enhanced focus style for better visibility */
+            background-color: rgba(250, 250, 218, 0.993) !important;
+        }
+    }
+
+    .mat-button-disabled {
+        cursor: not-allowed;
+    }
+
+    // .next-button {
+    //     span {
+    //         margin-right: 18px;
+    //     }
+
+    //     .mat-icon {
+    //         color: white;
+    //         background-color: var(--maarch-color-primary);
+    //         border-radius: 22px;
+    //         font-size: 13px;
+    //         padding: 5px;
+    //         margin-right: 5px;
+    //     }
+    // }
+}
+
+
+.maarchLogo {
+    height: 60px;
+    width: auto;
+    padding: 10px;
+}
+
+.basket-label {
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    text-overflow: ellipsis;
+    font-size: 20px;
+}
+
+.maarch-logo {
+    height: 100%;
+    width: 27%;
+}
+
+.prev-button:not(:disabled):hover, .next-button:not(:disabled):hover {
+    background-color: rgba(250, 250, 218, 0.993) !important;
+}
