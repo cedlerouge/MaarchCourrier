@@ -1800,6 +1800,8 @@ class FastParapheurController
                         'id'   => $step['externalId']
                     ];
                 }
+
+                $steps[$step['sequence']]['signaturePositions'] = $step['signaturePositions'];
             }
 
             $optionOTP = FastParapheurController::isOtpActive();
