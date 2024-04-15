@@ -22,17 +22,17 @@
     <div class="signatorybook-header-center">
         <div class="prev-next-container">
             <button mat-button class="prev-button" tabindex="3"
-                [title]="'lang.previousRes' | translate"
+                [title]="'lang.prevParaph' | translate"
                 [disabled]="!canGoToPrevious"
                 (click)="$event.stopPropagation(); goToResource('previous')">
                 <mat-icon class="fa fa-angle-left" style="height: auto" aria-hidden="true"></mat-icon>
-                <span style="margin-left: 18px;">Parapheur précédent</span>
+                <span style="margin-left: 18px;">{{ 'lang.prevParaph' | translate }}</span>
             </button>
             <button mat-button class="next-button" tabindex="4"
-                [title]="'lang.nextRes' | translate"
+                [title]="'lang.nextParaph' | translate"
                 [disabled]="!canGoToNext"
                 (click)="$event.stopPropagation(); goToResource('next')">
-                <span style="margin-right: 18px;">Parapheur suivant</span>
+                <span style="margin-right: 18px;">{{ 'lang.nextParaph' | translate }}</span>
                 <mat-icon class="fa fa-angle-right" style="height: auto;" aria-hidden="true"></mat-icon>
             </button>
         </div>
@@ -41,7 +41,7 @@
         <div style="font-size: initial; margin-right: 8px;">
             <button mat-icon-button tabindex="5"
                 [title]="'lang.backBasket' | translate"
-                (click)="backToBasket()" style="background-color: white;">
+                (click)="backToBasket()">
                 <mat-icon class="fa fa-times" color="primary" aria-hidden="true"></mat-icon>
             </button>
         </div>

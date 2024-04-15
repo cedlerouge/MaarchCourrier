@@ -2849,5 +2849,7 @@
     "noAnnex": "Aucune pièce jointe en annexe",
     "visaAvisWorkflow": "Circuit de visa / avis",
     "allowMultipleAvisAssignment": "Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle",
-    "toggleResListDrawer": "Ouvrir/Fermer le panneau latéral"
+    "toggleResListDrawer": "Ouvrir/Fermer le panneau latéral",
+    "nextParaph": "Parapheur suivant",
+    "prevParaph": "Parapheur précédent"
 }
