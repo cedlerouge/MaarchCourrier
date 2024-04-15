@@ -1466,11 +1466,14 @@ class FastParapheurController
                             'maxLength' => 251
                         ]) . '.' . pathinfo($filePath, PATHINFO_EXTENSION)
                 ];
+
+                // remove non signable attachment from list
                 unset($attachments[$key]);
             }
         }
         #endregion
 
+        #region Prepare signable attachment list
         foreach ($attachments as $attachment) {
             if ($attachment['format'] != 'pdf') {
                 $convertedAttachment = ConvertPdfController::getConvertedPdfById([
@@ -1485,17 +1488,14 @@ class FastParapheurController
                 $attachment['filename'] = $convertedAttachment['filename'];
                 $attachment['format'] = 'pdf';
             }
-            $externalState = json_decode($attachment['external_state'] ?? '{}', true);
             $sentAttachments[] = [
+                'resId'         => $attachment['res_id']
                 'title'         => $attachment['title'],
-                'signable'      => $attachmentTypeSignable[$attachment['attachment_type']] &&
-                    $attachment['format'] == 'pdf',
                 'filePath'      => $docservers[$attachment['docserver_id']] . $attachment['path'] .
                     $attachment['filename'],
-                'resId'         => $attachment['res_id'],
-                'externalState' => $externalState
             ];
         }
+        #endregion
 
         if (empty($otpInfoXML['content'] ?? null)) {
             $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['user_id']]);
@@ -1590,7 +1590,7 @@ class FastParapheurController
     public static function prepareDocumentsToSign(
         array $workflowSteps,
         array $mainResource,
-        array $attchments,
+        array $attchments = [],
         array $appendices = [],
         string $comment = ""
     ): array {
@@ -1598,10 +1598,6 @@ class FastParapheurController
         ValidatorModel::intType($mainResource, ['resId']);
         ValidatorModel::stringType($mainResource, ['subject', 'filePath', 'integrations']);
         ValidatorModel::boolType($mainResource, ['signable']);
-        ValidatorModel::notEmpty($attchments, ['resId', 'title', 'filePath']);
-        ValidatorModel::intType($attchments, ['resId']);
-        ValidatorModel::stringType($attchments, ['subject', 'filePath', 'integrations']);
-        ValidatorModel::boolType($attchments, ['signable']);
 
         $doc = [];
         $appendices[] = [
@@ -1614,6 +1610,13 @@ class FastParapheurController
         ];
 
         foreach ($attchments as $attchment) {
+            if (
+                !isset($attchment['resId']) || 
+                !isset($attchment['title']) || 
+                !isset($attchment['filePath'])
+            ) {
+                continue;
+            }
             if (!is_file($attchment['filePath'])) {
                 continue;
             }
