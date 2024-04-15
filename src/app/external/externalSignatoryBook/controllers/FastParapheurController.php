@@ -1489,10 +1489,10 @@ class FastParapheurController
                 $attachment['format'] = 'pdf';
             }
             $sentAttachments[] = [
-                'resId'         => $attachment['res_id']
+                'resId'         => $attachment['res_id'],
                 'title'         => $attachment['title'],
                 'filePath'      => $docservers[$attachment['docserver_id']] . $attachment['path'] .
-                    $attachment['filename'],
+                    $attachment['filename']
             ];
         }
         #endregion
@@ -1611,8 +1611,8 @@ class FastParapheurController
 
         foreach ($attchments as $attchment) {
             if (
-                !isset($attchment['resId']) || 
-                !isset($attchment['title']) || 
+                !isset($attchment['resId']) ||
+                !isset($attchment['title']) ||
                 !isset($attchment['filePath'])
             ) {
                 continue;
