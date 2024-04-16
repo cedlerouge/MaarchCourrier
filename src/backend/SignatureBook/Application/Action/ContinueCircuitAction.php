@@ -38,11 +38,10 @@ class ContinueCircuitAction
      */
     public function execute(int $resId, array $data, array $note): bool
     {
-        $data['documentId'] = intval($data['documentId'] ?? 0);
-
         if (!$this->isNewSignatureBookEnabled) {
             return true;
         }
+
         $signatureBook = $this->signatureServiceConfigLoader->getSignatureServiceConfig();
         if ($signatureBook === null) {
             throw new SignatureBookNoConfigFoundProblem();
@@ -53,6 +52,7 @@ class ContinueCircuitAction
         }
 
         $requiredData = [
+            'resId',
             'documentId',
             'hashSignature',
             'certificate',
@@ -60,40 +60,53 @@ class ContinueCircuitAction
             'signatureFieldName',
             'cookieSession'
         ];
-        $missingData = [];
 
-        $resourceToSign = [
-            'resId' => $resId
-        ];
+        if ($data['documents']) {
+            foreach ($data['documents'] as $document) {
+                $missingData = [];
 
+                foreach ($requiredData as $requiredDatum) {
+                    if (empty($document[$requiredDatum])) {
+                        $missingData[] = $requiredDatum;
+                    }
+                }
 
-        foreach ($requiredData as $requiredDatum) {
-            if (empty($data[$requiredDatum])) {
-                $missingData[] = $requiredDatum;
+                if (!empty($missingData)) {
+                    throw new DataToBeSentToTheParapheurAreEmptyProblem($missingData);
+                }
+
+                $document['documentId'] = intval($document['documentId'] ?? 0);
+
+                // Métadonnées nécessaires supplémentaires : resId + isAttachment (identifiant du document à signer +
+                // booléen permettant de définir s'il s'agit d'une PJ ou non)
+                $resourceToSign = [
+                    'resId' => $document['resId']
+                ];
+
+                if ($document['isAttachment']) {
+                    $resourceToSign['resIdMaster'] = $resId;
+                }
+
+                $applySuccess = $this->signatureService
+                    ->setConfig($signatureBook)
+                    ->applySignature(
+                        $document['documentId'],
+                        $document['hashSignature'],
+                        $document['signatures'] ?? [],
+                        $document['certificate'],
+                        $document['signatureContentLength'],
+                        $document['signatureFieldName'],
+                        $document['tmpUniqueId'] ?? null,
+                        $accessToken,
+                        $document['cookieSession'],
+                        $resourceToSign
+                    );
+                if (is_array($applySuccess)) {
+                    throw new SignatureNotAppliedProblem($applySuccess['errors']);
+                }
             }
-        }
-
-        if (!empty($missingData)) {
-            throw new DataToBeSentToTheParapheurAreEmptyProblem($missingData);
-        }
-
-
-        $applySuccess = $this->signatureService
-            ->setConfig($signatureBook)
-            ->applySignature(
-                $data['documentId'],
-                $data['hashSignature'],
-                $data['signatures'] ?? [],
-                $data['certificate'],
-                $data['signatureContentLength'],
-                $data['signatureFieldName'],
-                $data['tmpUniqueId'] ?? null,
-                $accessToken,
-                $data['cookieSession'],
-                $resourceToSign
-            );
-        if (is_array($applySuccess)) {
-            throw new SignatureNotAppliedProblem($applySuccess['errors']);
+        } else {
+            echo "Pas de clé documents";exit();
         }
 
         return true;
