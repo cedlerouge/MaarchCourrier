@@ -1497,28 +1497,19 @@ class FastParapheurController
         }
         #endregion
 
-        if (empty($otpInfoXML['content'] ?? null)) {
-            $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['user_id']]);
-            $summarySheetFilePath = FastParapheurController::getSummarySheetFile([
-                'docResId' => $args['resIdMaster'],
-                'login'    => $user['user_id']
-            ]);
-            $appendices[] = [
-                'isFile'   => true,
-                'content'  => file_get_contents($summarySheetFilePath),
-                'filename' => TextFormatModel::formatFilename([
-                    'filename'  => 'Fiche-De-Liaison.' . pathinfo($summarySheetFilePath, PATHINFO_EXTENSION),
-                    'maxLength' => 50
-                ])
-            ];
-            unlink($summarySheetFilePath);
-        }
+        $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['user_id']]);
+        $summarySheetFilePath = FastParapheurController::getSummarySheetFile([
+            'docResId' => $args['resIdMaster'],
+            'login'    => $user['user_id']
+        ]);
 
         $documentsToSign = FastParapheurController::prepareDocumentsToSign(
             $args['steps'],
             $sentMainDocument,
+            $summarySheetFilePath,
             $sentAttachments,
-            $appendices
+            $appendices,
+            isset($otpInfoXML['content'])
         );
 
         if (empty($documentsToSign)) {
@@ -1571,8 +1562,10 @@ class FastParapheurController
      *
      * @param array $workflowSteps
      * @param array $mainResource
+     * @param string $summarySheetFilePath
      * @param array $attachments
      * @param array $appendices
+     * @param bool $isOtpActive
      * @param string $comment
      *
      * @return array of signable document item :
@@ -1590,24 +1583,41 @@ class FastParapheurController
     public static function prepareDocumentsToSign(
         array $workflowSteps,
         array $mainResource,
+        string $summarySheetFilePath,
         array $attachments = [],
         array $appendices = [],
+        bool $isOtpActive = false,
         string $comment = ""
     ): array {
-        ValidatorModel::notEmpty($mainResource, ['resId', 'subject', 'filePath', 'signable', 'integrations']);
+        ValidatorModel::notEmpty($mainResource, ['resId', 'subject', 'filePath', 'integrations']);
         ValidatorModel::intType($mainResource, ['resId']);
         ValidatorModel::stringType($mainResource, ['subject', 'filePath', 'integrations']);
         ValidatorModel::boolType($mainResource, ['signable']);
 
         $doc = [];
-        $appendices[] = [
-            'isFile'   => true,
-            'content'  => file_get_contents($mainResource['filePath']),
-            'filename' => TextFormatModel::formatFilename([
-                    'filename'  => $mainResource['subject'],
-                    'maxLength' => 251
-                ]) . '.' . pathinfo($mainResource['filePath'], PATHINFO_EXTENSION)
-        ];
+
+        if (!$isOtpActive) {
+            if (!empty($summarySheetFilePath)) {
+                $appendices[] = [
+                    'isFile'   => true,
+                    'content'  => file_get_contents($summarySheetFilePath),
+                    'filename' => TextFormatModel::formatFilename([
+                        'filename'  => 'Fiche-De-Liaison.' . pathinfo($summarySheetFilePath, PATHINFO_EXTENSION),
+                        'maxLength' => 50
+                    ])
+                ];
+                unlink($summarySheetFilePath);
+            }
+
+            $appendices[] = [
+                'isFile'   => true,
+                'content'  => file_get_contents($mainResource['filePath']),
+                'filename' => TextFormatModel::formatFilename([
+                        'filename'  => $mainResource['subject'],
+                        'maxLength' => 251
+                    ]) . '.' . pathinfo($mainResource['filePath'], PATHINFO_EXTENSION)
+            ];
+        }
 
         foreach ($attachments as $attachment) {
             if (
