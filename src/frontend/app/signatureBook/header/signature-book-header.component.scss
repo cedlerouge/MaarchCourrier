@@ -62,10 +62,10 @@
     width: 100%;
 
     .prev-button, .next-button {
-        width: 30%;
         background-color: white;
         border-radius: 25px;
-        font-weight: bold;
+        font-size: 20px;
+        max-width: 100%;
         outline: none; /* Added for keyboard focus indication */
 
         &:focus {
