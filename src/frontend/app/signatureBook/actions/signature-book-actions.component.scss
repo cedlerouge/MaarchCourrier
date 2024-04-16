@@ -145,12 +145,13 @@
 
 .more-actions {
     display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
-    font-size: 25px;
+    font-size: 18px;
     border: 1px solid white;
     background-color: white;
+    width: 32px;
+    height: 36px;
     z-index: 1;
 
     &:hover, &:focus {
@@ -159,16 +160,16 @@
 
     &-valid {
         position: fixed;
-        right: 103px;
-        bottom: 149px;
+        right: 111px;
+        bottom: 146px;
         color: var(--maarch-color-success);
 
     }
 
     &-reject {
         position: relative;
-        left: -8px;
-        bottom: 37px;
+        left: -19px;
+        bottom: 38px;
         color: var(--maarch-color-danger);
     }
 }
