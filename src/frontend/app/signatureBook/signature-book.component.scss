@@ -140,7 +140,7 @@
     font-weight: bold;
 }
 
-.drawer-res-list {
+.drawer-res-list, .drawer-stamps-list {
     ::ng-deep .mat-drawer-inner-container {
         overflow: hidden !important;
     }
