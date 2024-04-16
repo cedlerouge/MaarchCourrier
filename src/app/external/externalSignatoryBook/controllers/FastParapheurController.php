@@ -1380,7 +1380,7 @@ class FastParapheurController
         if ($resource['format'] != 'pdf' && !empty($resource['docserver_id'])) {
             $convertedDocument = ConvertPdfController::getConvertedPdfById([
                 'collId' => 'letterbox_coll',
-                'resId' => $args['resIdMaster']
+                'resId'  => $args['resIdMaster']
             ]);
             if (!empty($convertedDocument['errors'])) {
                 return ['error' => 'unable to convert main document'];
@@ -1441,18 +1441,18 @@ class FastParapheurController
             if (!$attachmentTypeSignable[$value['attachment_type']]) {
                 $annexeAttachmentPath = DocserverModel::getByDocserverId([
                     'docserverId' => $value['docserver_id'],
-                    'select' => ['path_template', 'docserver_type_id']
+                    'select'      => ['path_template', 'docserver_type_id']
                 ]);
                 $filePath = $annexeAttachmentPath['path_template'] .
                     str_replace('#', DIRECTORY_SEPARATOR, $value['path']) . $value['filename'];
 
                 $docserverType = DocserverTypeModel::getById([
-                    'id' => $annexeAttachmentPath['docserver_type_id'],
+                    'id'     => $annexeAttachmentPath['docserver_type_id'],
                     'select' => ['fingerprint_mode']
                 ]);
                 $fingerprint = StoreController::getFingerPrint([
                     'filePath' => $filePath,
-                    'mode' => $docserverType['fingerprint_mode']
+                    'mode'     => $docserverType['fingerprint_mode']
                 ]);
                 if ($value['fingerprint'] != $fingerprint) {
                     return ['error' => 'Fingerprints do not match'];
@@ -1478,7 +1478,7 @@ class FastParapheurController
             if ($attachment['format'] != 'pdf') {
                 $convertedAttachment = ConvertPdfController::getConvertedPdfById([
                     'collId' => 'attachments_coll',
-                    'resId' => $attachment['res_id']
+                    'resId'  => $attachment['res_id']
                 ]);
                 if (!empty($convertedAttachment['errors'])) {
                     continue;
@@ -1489,9 +1489,9 @@ class FastParapheurController
                 $attachment['format'] = 'pdf';
             }
             $sentAttachments[] = [
-                'resId'         => $attachment['res_id'],
-                'title'         => $attachment['title'],
-                'filePath'      => $docservers[$attachment['docserver_id']] . $attachment['path'] .
+                'resId'    => $attachment['res_id'],
+                'title'    => $attachment['title'],
+                'filePath' => $docservers[$attachment['docserver_id']] . $attachment['path'] .
                     $attachment['filename']
             ];
         }
@@ -1571,7 +1571,7 @@ class FastParapheurController
      *
      * @param array $workflowSteps
      * @param array $mainResource
-     * @param array $attchments
+     * @param array $attachments
      * @param array $appendices
      * @param string $comment
      *
@@ -1590,7 +1590,7 @@ class FastParapheurController
     public static function prepareDocumentsToSign(
         array $workflowSteps,
         array $mainResource,
-        array $attchments = [],
+        array $attachments = [],
         array $appendices = [],
         string $comment = ""
     ): array {
@@ -1609,31 +1609,31 @@ class FastParapheurController
                 ]) . '.' . pathinfo($mainResource['filePath'], PATHINFO_EXTENSION)
         ];
 
-        foreach ($attchments as $attchment) {
+        foreach ($attachments as $attachment) {
             if (
-                !isset($attchment['resId']) ||
-                !isset($attchment['title']) ||
-                !isset($attchment['filePath'])
+                !isset($attachment['resId']) ||
+                !isset($attachment['title']) ||
+                !isset($attachment['filePath'])
             ) {
                 continue;
             }
-            if (!is_file($attchment['filePath'])) {
+            if (!is_file($attachment['filePath'])) {
                 continue;
             }
             $doc[] = [
-                'id' => [
+                'id'         => [
                     'collId' => 'attachments_coll',
-                    'resId'  => $attchment['resId']
+                    'resId'  => $attachment['resId']
                 ],
-                'doc' => [
-                    'path'     => $attchment['filePath'],
+                'doc'        => [
+                    'path'     => $attachment['filePath'],
                     'filename' => TextFormatModel::formatFilename([
-                            'filename'  => $attchment['title'],
+                            'filename'  => $attachment['title'],
                             'maxLength' => 251
-                        ]) . '.' . pathinfo($attchment['filePath'], PATHINFO_EXTENSION)
+                        ]) . '.' . pathinfo($attachment['filePath'], PATHINFO_EXTENSION)
                 ],
                 'appendices' => $appendices,
-                'comment' => $comment
+                'comment'    => $comment
             ];
         }
 
@@ -1649,11 +1649,11 @@ class FastParapheurController
             unset($appendices[count($appendices) - 1]);
 
             $doc[] = [
-                'id'      => [
+                'id'         => [
                     'collId' => 'letterbox_coll',
                     'resId'  => $mainResource['resId']
                 ],
-                'doc'     => [
+                'doc'        => [
                     'path'     => $mainResource['filePath'],
                     'filename' => TextFormatModel::formatFilename([
                             'filename'  => $mainResource['subject'],
@@ -1661,7 +1661,7 @@ class FastParapheurController
                         ]) . '.' . pathinfo($mainResource['filePath'], PATHINFO_EXTENSION)
                 ],
                 'appendices' => $appendices,
-                'comment' => $comment
+                'comment'    => $comment
             ];
 
             $externalState = json_decode($resource['external_state'] ?? '{}', true);
