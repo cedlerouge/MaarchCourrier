@@ -43,6 +43,10 @@
     background-position: center;
     border: solid 1px gray;
     border-radius: 12px;
+
+    &:focus, &:hover {
+        border: solid 2px #4f4f4f;
+    }
 }
 
 .sign-button-container {
@@ -55,8 +59,18 @@
 .open-sign-list-button {
     color: black;
     font-size: 19px;
-    height: 100%;
+    height: 50%;
+    width: 30%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 60px;
+    margin-left: 6px;
     min-width: auto;
+
+    &:hover, &:focus {
+        background-color: #d0d0d0;
+    }
 }
 
 .action-button {
@@ -110,8 +124,9 @@
         border: solid 2px var(--maarch-color-danger);
         border-radius: 40px;
         background-color: var(--maarch-color-danger);
+        border: 1px solid white;
         position: fixed;
-        right: 5.5%;
+        right: 6.5%;
         bottom: 1%;
     }
 
@@ -119,43 +134,56 @@
         color: white;
         border: solid 2px var(--maarch-color-success);
         background-color: var(--maarch-color-success);
+        border: 1px solid white;
         border-radius: 40px;
         position: fixed;
-        right: 5.5%;
-        bottom: 10%;
+        right: 6.5%;
+        bottom: 11%;
         margin-bottom: 5px;
     }
 }
 
 .more-actions {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-end;
     align-items: center;
-    font-size: 24px;
-    margin-left: 30px;
+    font-size: 25px;
+    border: 1px solid white;
     background-color: white;
-    color: black;
-    position: relative;
-    left: 15px;
-    border-radius: 24px;
-    height: 53px;
+    z-index: 1;
+
+    &:hover, &:focus {
+        background-color: #dfdfdffc !important;
+    }
+
+    &-valid {
+        position: fixed;
+        right: 103px;
+        bottom: 149px;
+        color: var(--maarch-color-success);
+
+    }
+
+    &-reject {
+        position: relative;
+        left: -8px;
+        bottom: 37px;
+        color: var(--maarch-color-danger);
+    }
 }
 
-.more-actions,
 .action-button-button-label span {
    display: none;
 }
 
-.action-button:focus .more-actions,
 .action-button:focus .action-button-button-label span,
-.action-button:hover .more-actions,
 .action-button:hover .action-button-button-label span {
     display: flex;
     animation: fadeIn 0.5s ease forwards;
 }
 
-.book-footer-actions:hover .action-button:not(:hover) .action-button-button-label span,
-.book-footer-actions:hover .action-button:not(:hover) .more-actions {
+.book-footer-actions:hover .action-button:not(:hover) .action-button-button-label span {
     display: none;
 }
 
