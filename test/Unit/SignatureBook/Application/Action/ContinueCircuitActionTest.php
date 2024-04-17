@@ -25,7 +25,6 @@ use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\SignatureServiceJsonConf
 use PHPUnit\Framework\TestCase;
 use MaarchCourrier\SignatureBook\Application\Action\ContinueCircuitAction;
 
-
 class ContinueCircuitActionTest extends TestCase
 {
     private ContinueCircuitAction $continueCircuitAction;
@@ -36,19 +35,37 @@ class ContinueCircuitActionTest extends TestCase
 
     private MaarchParapheurSignatureServiceMock $signatureServiceMock;
 
-    private array $data = [
-        "documentId" => 4,
-        "certificate" => 'certifciate',
-        "signatures" => [
+    private array $dataMainDocument = [
+        "resid"                  => 100,
+        "documentId"             => 4,
+        "certificate"            => 'certifciate',
+        "signatures"             => [
             'signatures1' => 'signature'
         ],
-        "hashSignature" => "a41584bdd99fbfeabc7b45f6fa89a4fa075b3070d44b869af35cea87a1584caa568f696d0c9dabad2481dfb
+        "hashSignature"          => "a41584bdd99fbfeabc7b45f6fa89a4fa075b3070d44b869af35cea87a1584caa568f696d0c9dabad2481dfb
             bc016fd3562fa009d1b3f3cb31e76adfe5cd5b6026a30d5c1bf78e0d85250bd3709ac45a48276242abf3840f55f00ccbade965c202b
             e107c2df02622974c795bb07537de9a8df6cf0c9497c08f261e89ee4617bec",
         "signatureContentLength" => 30000,
-        "signatureFieldName" => "Signature",
-        "tmpUniqueId" => 4,
-        'cookieSession' => "PHPSESSID=n9dskdn94ndz23nn"
+        "signatureFieldName"     => "Signature",
+        "tmpUniqueId"            => 4,
+        'cookieSession'          => "PHPSESSID=n9dskdn94ndz23nn"
+    ];
+
+    private array $dataAttachment = [
+        "resid"                  => 1,
+        "isAttachment"           => true,
+        "documentId"             => 5,
+        "certificate"            => 'certifciate',
+        "signatures"             => [
+            'signatures1' => 'signature'
+        ],
+        "hashSignature"          => "a41584bdd99fbfeabc7b45f6fa89a4fa075b3070d44b869af35cea87a1584caa568f696d0c9dabad2481dfb
+            bc016fd3562fa009d1b3f3cb31e76adfe5cd5b6026a30d5c1bf78e0d85250bd3709ac45a48276242abf3840f55f00ccbade965c202b
+            e107c2df02622974c795bb07537de9a8df6cf0c9497c08f261e89ee4617bec",
+        "signatureContentLength" => 30000,
+        "signatureFieldName"     => "Signature",
+        "tmpUniqueId"            => 4,
+        'cookieSession'          => "PHPSESSID=n9dskdn94ndz23nn"
     ];
 
     protected function setUp(): void
@@ -69,7 +86,7 @@ class ContinueCircuitActionTest extends TestCase
      */
     public function testTheNewInternalParapheurIsEnabled(): void
     {
-        $result = $this->continueCircuitAction->execute(1, $this->data, []);
+        $result = $this->continueCircuitAction->execute(1, ["documents" => $this->dataMainDocument], []);
         self::assertTrue($result);
     }
 
@@ -78,41 +95,41 @@ class ContinueCircuitActionTest extends TestCase
     {
         $this->configLoaderMock->signatureServiceConfigLoader = null;
         $this->expectException(SignatureBookNoConfigFoundProblem::class);
-        $this->continueCircuitAction->execute(1, $this->data, []);
+        $this->continueCircuitAction->execute(1, ["documents" => $this->dataMainDocument], []);
     }
 
     public function testCannotSignIfNoTokenIsFound(): void
     {
         $this->currentUserRepositoryMock->token = '';
         $this->expectException(CurrentTokenIsNotFoundProblem::class);
-        $this->continueCircuitAction->execute(1, $this->data, []);
+        $this->continueCircuitAction->execute(1, ["documents" => $this->dataMainDocument], []);
     }
 
     public function testCannotSignIfDuringTheApplicationOfTheSignatureAnErrorOccurred(): void
     {
         $this->signatureServiceMock->applySignature = ['errors' => 'An error has occurred'];
         $this->expectException(SignatureNotAppliedProblem::class);
-        $this->continueCircuitAction->execute(1, $this->data, []);
+        $this->continueCircuitAction->execute(1, ["documents" => $this->dataMainDocument], []);
     }
 
     public function testCannotSignIfMandatoryDataIsEmpty(): void
     {
-        $data = [
-            "documentId" => 4,
-            "certificate" => 'certifciate',
-            "signatures" => [],
-            "hashSignature" => "",
+        $dataMainDocument = [
+            "documentId"             => 4,
+            "certificate"            => 'certifciate',
+            "signatures"             => [],
+            "hashSignature"          => "",
             "signatureContentLength" => 0,
-            "signatureFieldName" => "",
-            "tmpUniqueId" => 4,
-            'cookieSession' => "n9dskdn94ndz23nn"
+            "signatureFieldName"     => "",
+            "tmpUniqueId"            => 4,
+            'cookieSession'          => "n9dskdn94ndz23nn"
         ];
         $this->expectException(DataToBeSentToTheParapheurAreEmptyProblem::class);
         $this->expectExceptionObject(
             new DataToBeSentToTheParapheurAreEmptyProblem(
-                ['hashSignature, signatureContentLength, signatureFieldName']
+                ['resId', 'hashSignature, signatureContentLength, signatureFieldName']
             )
         );
-        $this->continueCircuitAction->execute(1, $data, []);
+        $this->continueCircuitAction->execute(1, ["documents" => $dataMainDocument], []);
     }
 }
