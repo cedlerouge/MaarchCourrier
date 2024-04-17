@@ -10,7 +10,7 @@
                 (click)="$event.stopPropagation(); processAction(rightActions[0])"
                 >
                 <div class="action-button-button-label" [title]="rightActions[0]?.label">
-                    <mat-icon color="default" class="fa fa-thumbs-up" aria-hidden="true"></mat-icon>
+                    <mat-icon class="fa fa-thumbs-up" aria-hidden="true"></mat-icon>
                     <span>
                         {{ rightActions[0]?.label | shorten: 45: '...' }}
                     </span>
@@ -38,7 +38,7 @@
                 mat-stroked-button class="action-button action-button-reject"
                 (click)="processAction(leftActions[0])">
                 <div class="action-button-button-label" [title]="leftActions[0]?.label">
-                    <mat-icon color="default" class="fa fa-thumbs-down" aria-hidden="true"></mat-icon>
+                    <mat-icon class="fa fa-thumbs-down" aria-hidden="true"></mat-icon>
                     <span>
                         {{ leftActions[0]?.label | shorten: 45: '...' }}
                     </span>
