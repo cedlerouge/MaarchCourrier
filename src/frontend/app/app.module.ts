@@ -165,6 +165,7 @@ import { ShippingModalComponent } from './sentResource/shippingModal/shipping-mo
 import { CoreDialogComponent } from './core-dialog/core-dialog.component';
 import { DndModule } from 'ngx-drag-drop';
 import { ResourcesListComponent } from './signatureBook/resourcesList/resources-list.component';
+import { SignatureBookHeaderComponent } from './signatureBook/header/signature-book-header.component';
 
 registerLocaleData(localeFr, 'fr-FR');
 @Injectable()
@@ -320,7 +321,8 @@ export class MyHammerConfig extends HammerGestureConfig {
         ShippingModalComponent,
         IndexingModelValuesSelectorComponent,
         CoreDialogComponent,
-        ResourcesListComponent
+        ResourcesListComponent,
+        SignatureBookHeaderComponent
     ],
     exports: [
         SharedModule
