@@ -99,7 +99,7 @@ export class MaarchSbContentComponent implements OnDestroy {
 
                 this.actionsService.emitActionWithData({
                     id: 'documentToCreate',
-                    data: { resId, title, encodedDocument: data },
+                    data: { resId, title, signatures: data.signatures  },
                 });
             })
         ).subscribe();

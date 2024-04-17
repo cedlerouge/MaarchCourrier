@@ -25,10 +25,11 @@ export class SignatureBookActionsComponent implements OnInit {
 
     subscription: Subscription;
 
-    documentDatas: { resId: number; title: string; encodedDocument: Blob } = {
+    documentDatas: { resId: number; title: string; encodedDocument: Blob; signatures: any[]; } = {
         resId: null,
         title: '',
         encodedDocument: null,
+        signatures: []
     };
 
     loading: boolean = true;
@@ -51,10 +52,12 @@ export class SignatureBookActionsComponent implements OnInit {
             .pipe(
                 tap((res: MessageActionInterface) => {
                     if (res.id === 'documentToCreate') {
-                        this.documentDatas = res.data;
-                        this.functions.blobToBase64(this.documentDatas.encodedDocument).then((value: any) => {
-                            this.documentDatas.encodedDocument = value.split(',')[1];
-                        });
+                        this.documentDatas = { ...this.documentDatas, ...res.data };
+                        if (res.data.encodedDocument) {
+                            this.functions.blobToBase64(res.data.encodedDocument).then((value: any) => {
+                                this.documentDatas.encodedDocument = value.split(',')[1];
+                            });
+                        }
                     }
                 })
             )
