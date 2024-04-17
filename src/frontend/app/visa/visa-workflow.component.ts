@@ -98,7 +98,6 @@ export class VisaWorkflowComponent implements OnInit {
 
     ngOnInit(): void {
         if (!this.functions.empty(this.visaWorkflowFromAction)) {
-            console.debug('init this.visaWorkflowFromAction', this.visaWorkflowFromAction);//'swa consol
             this.visaWorkflow.items = this.visaWorkflowFromAction;
         }
         this.checkWorkflowSignatoryRole();
