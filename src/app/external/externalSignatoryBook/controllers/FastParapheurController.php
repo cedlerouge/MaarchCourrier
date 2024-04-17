@@ -1268,7 +1268,7 @@ class FastParapheurController
     {
         ValidatorModel::notEmpty($args, ['resIdMaster', 'steps', 'config', 'workflowType']);
         ValidatorModel::intType($args, ['resIdMaster']);
-        ValidatorModel::arrayType($args, ['steps', 'config']);
+        ValidatorModel::arrayType($args, ['steps', 'config', 'stampsSteps']);
         ValidatorModel::stringType($args, ['workflowType']);
 
         $subscriberId = $args['config']['subscriberId'] ?? null;
@@ -1505,6 +1505,7 @@ class FastParapheurController
 
         $documentsToSign = FastParapheurController::prepareDocumentsToSign(
             $args['steps'],
+            $args['stampsSteps'],
             $sentMainDocument,
             $summarySheetFilePath,
             $sentAttachments,
@@ -1561,6 +1562,7 @@ class FastParapheurController
      * Prepare an array of signable documents for {@see FastParapheurController::onDemandUploadFilesToFast}
      *
      * @param array $workflowSteps
+     * @param array $stampsSteps
      * @param array $mainResource
      * @param string $summarySheetFilePath
      * @param array $attachments
@@ -1582,6 +1584,7 @@ class FastParapheurController
      */
     public static function prepareDocumentsToSign(
         array $workflowSteps,
+        array $stampsSteps,
         array $mainResource,
         string $summarySheetFilePath,
         array $attachments = [],
@@ -1643,6 +1646,12 @@ class FastParapheurController
                         ]) . '.' . pathinfo($attachment['filePath'], PATHINFO_EXTENSION)
                 ],
                 'appendices' => $appendices,
+                'pictograms' => FastParapheurController::generateXmlPictogramme(
+                    FastParapheurController::convertCoordinatesToMillimeter(
+                        $attachments['path'],
+                        $stampsSteps[$attachments['resId']] ?? []
+                    )
+                ),
                 'comment'    => $comment
             ];
         }
@@ -1671,6 +1680,12 @@ class FastParapheurController
                         ]) . '.' . pathinfo($mainResource['filePath'], PATHINFO_EXTENSION)
                 ],
                 'appendices' => $appendices,
+                'pictograms' => FastParapheurController::generateXmlPictogramme(
+                    FastParapheurController::convertCoordinatesToMillimeter(
+                        $mainResource['path'],
+                        $stampsSteps[$args['resIdMaster']] ?? []
+                    )
+                ),
                 'comment'    => $comment
             ];
 
@@ -1699,6 +1714,25 @@ class FastParapheurController
         ValidatorModel::notEmpty($args, ['config', 'document', 'circuit']);
         ValidatorModel::arrayType($args, ['config', 'document', 'circuit']);
 
+        $multipartBody = [
+            'comment' => $args['document']['comment'],
+            'doc'     => [
+                'isFile'   => true,
+                'filename' => $args['document']['doc']['filename'],
+                'content'  => file_get_contents($args['document']['doc']['path'])
+            ],
+            'annexes' => ['subvalues' => $args['document']['appendices']],
+            'circuit' => json_encode($args['circuit'])
+        ];
+
+        if (!empty($args['document']['pictograms'] ?? null)) {
+            $multipartBody['pictograms'] = [
+                'isFile'   => true,
+                'filename' => 'pictograms.xml',
+                'content'  => $args['document']['pictograms']
+            ];
+        }
+
         $curlReturn = CurlModel::exec([
             'method'        => 'POST',
             'url'           => $args['config']['url'] . '/documents/ondemand/' . $args['config']['subscriberId'] .
@@ -1708,16 +1742,7 @@ class FastParapheurController
                 CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
                 CURLOPT_SSLCERTTYPE   => $args['config']['certType']
             ],
-            'multipartBody' => [
-                'comment' => $args['document']['comment'],
-                'doc'     => [
-                    'isFile'   => true,
-                    'filename' => $args['document']['doc']['filename'],
-                    'content'  => file_get_contents($args['document']['doc']['path'])
-                ],
-                'annexes' => ['subvalues' => $args['document']['appendices']],
-                'circuit' => json_encode($args['circuit'])
-            ]
+            'multipartBody' => $multipartBody
         ]);
 
         if ($curlReturn['code'] != 200) {
@@ -1768,53 +1793,19 @@ class FastParapheurController
         $config = $args['config'];
 
         if (!empty($config['data']['integratedWorkflow']) && $config['data']['integratedWorkflow'] == 'true') {
-            $steps = [];
-            // TODO rework steps mechanic, will not work for signaturePositions !
-            if (empty($args['steps'])) {
-                return ['error' => 'steps is empty'];
-            }
-            $resId = $args['steps'][0]['resId'] ?? null;
-            if ($resId === null) {
-                return ['error' => 'no resId found in steps'];
+
+            $steps = FastParapheurController::prepareSteps($args['steps']);
+            if (isset($steps['error'])) {
+                return $steps;
             }
 
-            $areWeUsingOTP = false;
-            foreach ($args['steps'] as $step) {
-                if ($step['resId'] !== $resId) {
-                    continue;
-                }
-                if (!empty($step['externalInformations'])) {
-                    $steps[$step['sequence']] = [
-                        'mode'      => $step['signatureMode'],
-                        'type'      => 'externalOTP',
-                        'phone'     => $step['externalInformations']['phone'] ?? null,
-                        'email'     => $step['externalInformations']['email'] ?? null,
-                        'firstname' => $step['externalInformations']['firstname'] ?? null,
-                        'lastname'  => $step['externalInformations']['lastname'] ?? null
-                    ];
-                    $areWeUsingOTP = true;
-                } else {
-                    $steps[$step['sequence']] = [
-                        'mode' => $step['signatureMode'],
-                        'type' => 'fastParapheurUserEmail',
-                        'id'   => $step['externalId']
-                    ];
-                }
-
-                $steps[$step['sequence']]['signaturePositions'] = $step['signaturePositions'];
-            }
-
-            $optionOTP = FastParapheurController::isOtpActive();
-            if (!empty($optionOTP['errors'])) {
-                return $optionOTP['errors'];
-            } elseif (!$optionOTP['OTP'] && $areWeUsingOTP) {
-                return ['error' => _EXTERNAL_USER_FOUND_BUT_OPTION_OTP_DISABLE];
-            }
+            $stampsSteps = FastParapheurController::prepareStampsSteps($args['steps']);
 
             return FastParapheurController::uploadWithSteps([
                 'config'       => $config['data'],
                 'resIdMaster'  => $args['resIdMaster'],
                 'steps'        => $steps,
+                'stampsSteps'  => $stampsSteps,
                 'workflowType' => $args['workflowType']
             ]);
         } else {
@@ -1874,12 +1865,154 @@ class FastParapheurController
         }
     }
 
+    public static function prepareSteps(array $steps): array
+    {
+        $mappedSteps = [];
+        // TODO rework steps mechanic, will not work for signaturePositions !
+        if (empty($steps)) {
+            return ['error' => 'steps is empty'];
+        }
+        $resId = $steps[0]['resId'] ?? null;
+        if ($resId === null) {
+            return ['error' => 'no resId found in steps'];
+        }
+
+        $areWeUsingOTP = false;
+        foreach ($steps as $step) {
+            if ($step['resId'] !== $resId) {
+                continue;
+            }
+            if (!empty($step['externalInformations'])) {
+                $mappedSteps[$step['sequence']] = [
+                    'mode'      => $step['signatureMode'],
+                    'type'      => 'externalOTP',
+                    'phone'     => $step['externalInformations']['phone'] ?? null,
+                    'email'     => $step['externalInformations']['email'] ?? null,
+                    'firstname' => $step['externalInformations']['firstname'] ?? null,
+                    'lastname'  => $step['externalInformations']['lastname'] ?? null
+                ];
+                $areWeUsingOTP = true;
+            } else {
+                $mappedSteps[$step['sequence']] = [
+                    'mode' => $step['signatureMode'],
+                    'type' => 'fastParapheurUserEmail',
+                    'id'   => $step['externalId']
+                ];
+            }
+        }
+
+        $optionOTP = FastParapheurController::isOtpActive();
+        if (!empty($optionOTP['errors'])) {
+            return $optionOTP['errors'];
+        } elseif (!$optionOTP['OTP'] && $areWeUsingOTP) {
+            return ['error' => _EXTERNAL_USER_FOUND_BUT_OPTION_OTP_DISABLE];
+        }
+        return $mappedSteps;
+    }
+
+    /**
+     * Prepare stamp steps based on the provided steps data.
+     *
+     * @param array $steps An array containing steps data.
+     *                     Each element should represent a step with signature positions information.
+     * @return array The prepared stamps positions array.
+     */
+    public static function prepareStampsSteps(array $steps): array
+    {
+        $stampsPositions = [];
+
+        foreach ($steps as $step) {
+            if (
+                isset($step['signaturePositions'][0]['page']) &&
+                isset($step['signaturePositions'][0]['positionX']) &&
+                isset($step['signaturePositions'][0]['positionY'])
+            ) {
+                $type = 'pictogramme-visa';
+                $role = 'VALIDEUR';
+                $validActionByRole = "Validé par: \${{$role}}";
+                $roleDate = 'DATE_VISA';
+
+                if ($step['action'] === 'sign') {
+                    $type = 'pictogramme-signature';
+                    $role = 'SIGNATAIRE';
+                    $validActionByRole = "Signé par: \${{$role}}";
+                    $roleDate = 'DATE_SIGNATURE';
+                }
+                $stampsPositions[$step['resId']][$type][$step['sequence']] = [
+                    'index'     => $step['sequence'],   // the step to which the pictogram will be associated
+                    'border'    => 'true',
+                    'opacite'   => 'false',
+                    'font-size' => '6',
+                    // Position allows you to define the position of the pictogram in the document. Sizes are in mm.
+                    // The 0.0 point corresponds to the bottom left corner of the document.
+                    'position'  => [
+                        'height' => '40',
+                        'width'  => '60',
+                        'page'   => $step['signaturePositions'][0]['page'], // $ corresponds the last page
+                        // coordinates of the pictogram frame corresponding to the bottom left corner
+                        'x'      => $step['signaturePositions'][0]['positionX'],
+                        'y'      => $step['signaturePositions'][0]['positionY']
+                    ],
+                    // The center box is reserved for the signature image. Possible values are ABONNE, CIRCUIT,
+                    // VALIDEUR and SIGNATAIRE.
+                    'center'    => [
+                        ['name' => 'IMAGE', 'value' => $role]
+                    ],
+                    // top, bottom, right and left correspond to the boxes around the image.
+                    'bottom'    => [
+                        ['name' => 'CHAMP_LIBRE', 'value' => $validActionByRole],
+                        ['name' => $roleDate]
+                    ]
+                ];
+            }
+        }
+
+        return $stampsPositions;
+    }
+
+
+    /**
+     * Convert percentage-based coordinates to millimeters within a PDF file.
+     *
+     * @param string $filePath The path to the PDF file.
+     * @param array $stampPositionsArray An array containing stamp positions data.
+     *                                   Each element should be an array of stamp positions.
+     *                                   Each stamp position should be an array containing position data.
+     *
+     * @return array The updated stamp positions array with coordinates converted to millimeters.
+     * @throws Exception From FPDI library if it can't load pdf file or can't find the page.
+     */
+    public static function convertCoordinatesToMillimeter(string $filePath, array $stampPositionsArray): array {
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once $libPath;
+        }
+
+        foreach ($stampPositionsArray as &$stampPosition) {
+            foreach ($stampPosition as &$position) {
+                $pdf = new Fpdi('P', 'pt');
+                $pdf->setSourceFile($filePath);
+                $pageId = $pdf->importPage($position['position']['page']);
+                $dimensions = $pdf->getTemplateSize($pageId);
+
+                // Convert coordinates to millimeters
+                $position['position']['x'] = $dimensions['width'] * $position['position']['x'] / 100;
+                $position['position']['y'] = $dimensions['height'] - ($dimensions['height'] * $position['position']['y'] / 100);
+            }
+        }
+
+        return $stampPositionsArray;
+    }
+
     /**
      * Recommandations minimales Fast à respecter
      * Espacement minimum de 30 minutes pour le même document
+     *
      * @param   $args :
      *  - documentId : 'externalid' of res_letterbox
      *  - config : FastParapheur configuration
+     *
+     * @throws Exception
      */
     public static function getDocumentHistory(array $args): array
     {
@@ -2537,5 +2670,59 @@ class FastParapheurController
             return ['OTP' => true];
         }
         return ['OTP' => false];
+    }
+
+    /**
+     * Generate a xml configuration from an array
+     *
+     * @param array $pictogrammes
+     *
+     * @return ?string
+     */
+    public static function generateXmlPictogramme(array $pictogrammes = []): ?string
+    {
+        if (empty($pictogrammes)) {
+            return null;
+        }
+
+        $xml = new SimpleXMLElement(
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><pictogrammes></pictogrammes>'
+        );
+
+        foreach ($pictogrammes as $type => $pictograms) {
+            $typeElement = $xml->addChild($type);
+
+            foreach ($pictograms as $config) {
+                $pictogramme = $typeElement->addChild('pictogramme');
+                $pictogramme->addAttribute('index', $config['index']);
+                $pictogramme->addAttribute('border', $config['border']);
+                $pictogramme->addAttribute('opacite', $config['opacite']);
+                $pictogramme->addAttribute('font-size', $config['font-size']);
+
+                if (isset($config['position'])) {
+                    $position = $pictogramme->addChild('position');
+                    foreach ($config['position'] as $attr => $value) {
+                        $position->addAttribute($attr, $value);
+                    }
+                }
+
+                foreach (['left', 'center', 'bottom'] as $position) {
+                    if (isset($config[$position])) {
+                        $posElement = $pictogramme->addChild($position);
+                        foreach ($config[$position] as $metadata) {
+                            $meta = $posElement->addChild('metadata', $metadata['value'] ?? '');
+                            $meta->addAttribute('name', $metadata['name']);
+                        }
+                    }
+                }
+            }
+        }
+
+        $xmlResult = $xml->asXML();
+
+        if ($xmlResult === false) {
+            return null;
+        }
+        return $xmlResult;
     }
 }
