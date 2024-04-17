@@ -77,8 +77,6 @@ class ContinueCircuitAction
 
                 $document['documentId'] = intval($document['documentId'] ?? 0);
 
-                // Métadonnées nécessaires supplémentaires : resId + isAttachment (identifiant du document à signer +
-                // booléen permettant de définir s'il s'agit d'une PJ ou non)
                 $resourceToSign = [
                     'resId' => $document['resId']
                 ];
@@ -105,8 +103,6 @@ class ContinueCircuitAction
                     throw new SignatureNotAppliedProblem($applySuccess['errors']);
                 }
             }
-        } else {
-            echo "Pas de clé documents";exit();
         }
 
         return true;
