@@ -1378,9 +1378,10 @@ class FastParapheurController
         $resource['external_id'] = json_decode($resource['external_id'], true);
 
         if ($resource['format'] != 'pdf' && !empty($resource['docserver_id'])) {
-            $convertedDocument = ConvertPdfController::getConvertedPdfById(
-                ['collId' => 'letterbox_coll', 'resId' => $args['resIdMaster']]
-            );
+            $convertedDocument = ConvertPdfController::getConvertedPdfById([
+                'collId' => 'letterbox_coll',
+                'resId'  => $args['resIdMaster']
+            ]);
             if (!empty($convertedDocument['errors'])) {
                 return ['error' => 'unable to convert main document'];
             }
@@ -1396,22 +1397,21 @@ class FastParapheurController
         $attachmentTypeSignable = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
         $attachmentTypeSignable = array_column($attachmentTypeSignable, 'signable', 'type_id');
 
-        $mainDocumentSigned = AdrModel::getConvertedDocumentById([
-            'select' => [1],
-            'resId'  => $args['resIdMaster'],
-            'collId' => 'letterbox_coll',
-            'type'   => 'SIGN'
-        ]);
-
         if (!empty($docservers[$resource['docserver_id']])) {
-            $resource['integrations'] = json_decode($resource['integrations'], true);
-            if (!empty($resource['integrations']['inSignatureBook'])) {
-                $sentMainDocument = [
-                    'comment'  => $resource['subject'],
-                    'signable' => empty($mainDocumentSigned),
-                    'path'     => $docservers[$resource['docserver_id']] . $resource['path'] . $resource['filename']
-                ];
-            }
+            $mainDocumentSigned = AdrModel::getConvertedDocumentById([
+                'select' => [1],
+                'resId'  => $args['resIdMaster'],
+                'collId' => 'letterbox_coll',
+                'type'   => 'SIGN'
+            ]);
+
+            $sentMainDocument = [
+                'resId'         => $resource['res_id'],
+                'subject'       => $resource['subject'],
+                'signable'      => empty($mainDocumentSigned),
+                'integrations'  => $resource['integrations'],
+                'filePath'      => $docservers[$resource['docserver_id']] . $resource['path'] . $resource['filename']
+            ];
         }
 
         $attachments = AttachmentModel::get([
@@ -1434,11 +1434,52 @@ class FastParapheurController
             ],
             'data'   => [$args['resIdMaster'], AttachmentTypeController::UNLISTED_ATTACHMENT_TYPES]
         ]);
+
+        #region Prepare the appendices foreach document to be signed
+        $appendices = [];
+        foreach ($attachments as $key => $value) {
+            if (!$attachmentTypeSignable[$value['attachment_type']]) {
+                $annexeAttachmentPath = DocserverModel::getByDocserverId([
+                    'docserverId' => $value['docserver_id'],
+                    'select'      => ['path_template', 'docserver_type_id']
+                ]);
+                $filePath = $annexeAttachmentPath['path_template'] .
+                    str_replace('#', DIRECTORY_SEPARATOR, $value['path']) . $value['filename'];
+
+                $docserverType = DocserverTypeModel::getById([
+                    'id'     => $annexeAttachmentPath['docserver_type_id'],
+                    'select' => ['fingerprint_mode']
+                ]);
+                $fingerprint = StoreController::getFingerPrint([
+                    'filePath' => $filePath,
+                    'mode'     => $docserverType['fingerprint_mode']
+                ]);
+                if ($value['fingerprint'] != $fingerprint) {
+                    return ['error' => 'Fingerprints do not match'];
+                }
+
+                $appendices[] = [
+                    'isFile'   => true,
+                    'content'  => file_get_contents($filePath),
+                    'filename' => TextFormatModel::formatFilename([
+                            'filename'  => $value['title'],
+                            'maxLength' => 251
+                        ]) . '.' . pathinfo($filePath, PATHINFO_EXTENSION)
+                ];
+
+                // remove non signable attachment from list
+                unset($attachments[$key]);
+            }
+        }
+        #endregion
+
+        #region Prepare signable attachment list
         foreach ($attachments as $attachment) {
             if ($attachment['format'] != 'pdf') {
-                $convertedAttachment = ConvertPdfController::getConvertedPdfById(
-                    ['collId' => 'attachments_coll', 'resId' => $attachment['res_id']]
-                );
+                $convertedAttachment = ConvertPdfController::getConvertedPdfById([
+                    'collId' => 'attachments_coll',
+                    'resId'  => $attachment['res_id']
+                ]);
                 if (!empty($convertedAttachment['errors'])) {
                     continue;
                 }
@@ -1447,128 +1488,41 @@ class FastParapheurController
                 $attachment['filename'] = $convertedAttachment['filename'];
                 $attachment['format'] = 'pdf';
             }
-            $externalState = json_decode($attachment['external_state'] ?? '{}', true);
             $sentAttachments[] = [
-                'comment'       => $attachment['title'],
-                'signable'      => $attachmentTypeSignable[$attachment['attachment_type']] &&
-                    $attachment['format'] == 'pdf',
-                'path'          => $docservers[$attachment['docserver_id']] . $attachment['path'] .
-                    $attachment['filename'],
-                'resId'         => $attachment['res_id'],
-                'externalState' => $externalState
+                'resId'    => $attachment['res_id'],
+                'title'    => $attachment['title'],
+                'filePath' => $docservers[$attachment['docserver_id']] . $attachment['path'] .
+                    $attachment['filename']
             ];
         }
+        #endregion
 
-        $uploads = [];
-        $appendices = [];
-        if (!empty($sentMainDocument) && is_file($sentMainDocument['path'])) {
-            if ($sentMainDocument['signable']) {
-                $uploads[] = [
-                    'id'      => [
-                        'collId' => 'letterbox_coll',
-                        'resId'  => $args['resIdMaster']
-                    ],
-                    'doc'     => [
-                        'path'     => $sentMainDocument['path'],
-                        'filename' => TextFormatModel::formatFilename([
-                                'filename'  => $sentMainDocument['comment'],
-                                'maxLength' => 251
-                            ]) . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION)
-                    ],
-                    'comment' => $sentMainDocument['comment']
-                ];
+        $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['user_id']]);
+        $summarySheetFilePath = FastParapheurController::getSummarySheetFile([
+            'docResId' => $args['resIdMaster'],
+            'login'    => $user['user_id']
+        ]);
 
-                $externalState = json_decode($resource['external_state'] ?? '{}', true);
-                $externalState['signatureBookWorkflow']['workflow'] = $args['steps'];
-                ResModel::update([
-                    'where'   => ['res_id = ?'],
-                    'data'    => [$args['resIdMaster']],
-                    'postSet' => [
-                        'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' .
-                            json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
-                    ]
-                ]);
-            } else {
-                $appendices[] = [
-                    'isFile'   => true,
-                    'content'  => file_get_contents($sentMainDocument['path']),
-                    'filename' => TextFormatModel::formatFilename([
-                            'filename'  => $sentMainDocument['comment'],
-                            'maxLength' => 251
-                        ]) . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION)
-                ];
-            }
-        }
-        foreach ($sentAttachments as $sentAttachment) {
-            if (!is_file($sentAttachment['path'])) {
-                continue;
-            }
-            if ($sentAttachment['signable']) {
-                $uploads[] = [
-                    'id'      => [
-                        'collId' => 'attachments_coll',
-                        'resId'  => $sentAttachment['resId']
-                    ],
-                    'doc'     => [
-                        'path'     => $sentAttachment['path'],
-                        'filename' => TextFormatModel::formatFilename([
-                                'filename'  => $sentAttachment['comment'],
-                                'maxLength' => 251
-                            ]) . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION)
-                    ],
-                    'comment' => $sentAttachment['comment']
-                ];
-                $externalState = $sentAttachment['externalState'];
-                $externalState['signatureBookWorkflow']['workflow'] = $args['steps'];
-                AttachmentModel::update([
-                    'where'   => ['res_id = ?'],
-                    'data'    => [$sentAttachment['resId']],
-                    'postSet' => [
-                        'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' .
-                            json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
-                    ]
-                ]);
-            } else {
-                $appendices[] = [
-                    'isFile'   => true,
-                    'content'  => file_get_contents($sentAttachment['path']),
-                    'filename' => TextFormatModel::formatFilename([
-                            'filename'  => $sentAttachment['comment'],
-                            'maxLength' => 251
-                        ]) . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION)
-                ];
-            }
-        }
+        $documentsToSign = FastParapheurController::prepareDocumentsToSign(
+            $args['steps'],
+            $sentMainDocument,
+            $summarySheetFilePath,
+            $sentAttachments,
+            $appendices,
+            isset($otpInfoXML['content'])
+        );
 
-        if (empty($otpInfoXML['content'] ?? null)) {
-            $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['user_id']]);
-            $summarySheetFilePath = FastParapheurController::getSummarySheetFile([
-                'docResId' => $args['resIdMaster'],
-                'login'    => $user['user_id']
-            ]);
-            $appendices[] = [
-                'isFile'   => true,
-                'content'  => file_get_contents($summarySheetFilePath),
-                'filename' => TextFormatModel::formatFilename([
-                    'filename'  => 'Fiche-De-Liaison.' . pathinfo($summarySheetFilePath, PATHINFO_EXTENSION),
-                    'maxLength' => 50
-                ])
-            ];
-            unlink($summarySheetFilePath);
-        }
-
-        if (empty($uploads)) {
+        if (empty($documentsToSign)) {
             return ['error' => 'resource has nothing to sign', 'code' => 400];
         }
 
         $returnIds = ['sended' => ['letterbox_coll' => [], 'attachments_coll' => []]];
 
-        foreach ($uploads as $upload) {
+        foreach ($documentsToSign as $docToSign) {
             $result = FastParapheurController::onDemandUploadFilesToFast([
-                'config'     => $args['config'],
-                'upload'     => $upload,
-                'circuit'    => $circuit,
-                'appendices' => $appendices
+                'config'    => $args['config'],
+                'document'  => $docToSign,
+                'circuit'   => $circuit,
             ]);
             if (!empty($result['error'])) {
                 return ['code' => $result['code'], 'error' => $result['error']];
@@ -1597,10 +1551,142 @@ class FastParapheurController
                 }
             }
 
-            $returnIds['sended'][$upload['id']['collId']][$upload['id']['resId']] = (string)$result['response'];
+            $returnIds['sended'][$docToSign['id']['collId']][$docToSign['id']['resId']] = (string)$result['response'];
         }
 
         return $returnIds;
+    }
+
+    /**
+     * Prepare an array of signable documents for {@see FastParapheurController::onDemandUploadFilesToFast}
+     *
+     * @param array $workflowSteps
+     * @param array $mainResource
+     * @param string $summarySheetFilePath
+     * @param array $attachments
+     * @param array $appendices
+     * @param bool $isOtpActive
+     * @param string $comment
+     *
+     * @return array of signable document item :
+     *  - id:
+     *      - collId: Document type, letterbox_coll or attachments_coll
+     *      - resId: Document id
+     *  - doc:
+     *       - path: Document path
+     *       - filename: Document file path
+     * - appendices: List of non signable documents that are integrated
+     * - comment: Annotation from user
+     *
+     * @throws Exception
+     */
+    public static function prepareDocumentsToSign(
+        array $workflowSteps,
+        array $mainResource,
+        string $summarySheetFilePath,
+        array $attachments = [],
+        array $appendices = [],
+        bool $isOtpActive = false,
+        string $comment = ""
+    ): array {
+        ValidatorModel::notEmpty($mainResource, ['resId', 'subject', 'filePath', 'integrations']);
+        ValidatorModel::intType($mainResource, ['resId']);
+        ValidatorModel::stringType($mainResource, ['subject', 'filePath', 'integrations']);
+        ValidatorModel::boolType($mainResource, ['signable']);
+
+        $doc = [];
+
+        if (!$isOtpActive) {
+            if (!empty($summarySheetFilePath)) {
+                $appendices[] = [
+                    'isFile'   => true,
+                    'content'  => file_get_contents($summarySheetFilePath),
+                    'filename' => TextFormatModel::formatFilename([
+                        'filename'  => 'Fiche-De-Liaison.' . pathinfo($summarySheetFilePath, PATHINFO_EXTENSION),
+                        'maxLength' => 50
+                    ])
+                ];
+                unlink($summarySheetFilePath);
+            }
+
+            $appendices[] = [
+                'isFile'   => true,
+                'content'  => file_get_contents($mainResource['filePath']),
+                'filename' => TextFormatModel::formatFilename([
+                        'filename'  => $mainResource['subject'],
+                        'maxLength' => 251
+                    ]) . '.' . pathinfo($mainResource['filePath'], PATHINFO_EXTENSION)
+            ];
+        }
+
+        foreach ($attachments as $attachment) {
+            if (
+                !isset($attachment['resId']) ||
+                !isset($attachment['title']) ||
+                !isset($attachment['filePath'])
+            ) {
+                continue;
+            }
+            if (!is_file($attachment['filePath'])) {
+                continue;
+            }
+            $doc[] = [
+                'id'         => [
+                    'collId' => 'attachments_coll',
+                    'resId'  => $attachment['resId']
+                ],
+                'doc'        => [
+                    'path'     => $attachment['filePath'],
+                    'filename' => TextFormatModel::formatFilename([
+                            'filename'  => $attachment['title'],
+                            'maxLength' => 251
+                        ]) . '.' . pathinfo($attachment['filePath'], PATHINFO_EXTENSION)
+                ],
+                'appendices' => $appendices,
+                'comment'    => $comment
+            ];
+        }
+
+        // Send main document if in signature book
+        $mainResource['integrations'] = json_decode($mainResource['integrations'], true);
+
+        if (
+            !empty($mainResource['integrations']['inSignatureBook']) &&
+            !empty($mainResource['filePath']) &&
+            !empty($mainResource['signable'])
+        ) {
+            // The last appendix is always the main document
+            unset($appendices[count($appendices) - 1]);
+
+            $doc[] = [
+                'id'         => [
+                    'collId' => 'letterbox_coll',
+                    'resId'  => $mainResource['resId']
+                ],
+                'doc'        => [
+                    'path'     => $mainResource['filePath'],
+                    'filename' => TextFormatModel::formatFilename([
+                            'filename'  => $mainResource['subject'],
+                            'maxLength' => 251
+                        ]) . '.' . pathinfo($mainResource['filePath'], PATHINFO_EXTENSION)
+                ],
+                'appendices' => $appendices,
+                'comment'    => $comment
+            ];
+
+            $externalState = json_decode($resource['external_state'] ?? '{}', true);
+            $externalState['signatureBookWorkflow']['workflow'] = $workflowSteps;
+            ResModel::update([
+                'where'   => ['res_id = ?'],
+                'data'    => [$mainResource['resId']],
+                'postSet' => [
+                    'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' .
+                        json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
+                ]
+            ]);
+        }
+
+        return $doc;
     }
 
     /**
@@ -1610,8 +1696,8 @@ class FastParapheurController
      */
     public static function onDemandUploadFilesToFast(array $args): array
     {
-        ValidatorModel::notEmpty($args, ['config', 'upload', 'circuit']);
-        ValidatorModel::arrayType($args, ['config', 'upload', 'circuit', 'appendices']);
+        ValidatorModel::notEmpty($args, ['config', 'document', 'circuit']);
+        ValidatorModel::arrayType($args, ['config', 'document', 'circuit']);
 
         $curlReturn = CurlModel::exec([
             'method'        => 'POST',
@@ -1623,13 +1709,13 @@ class FastParapheurController
                 CURLOPT_SSLCERTTYPE   => $args['config']['certType']
             ],
             'multipartBody' => [
-                'comment' => $args['upload']['comment'],
+                'comment' => $args['document']['comment'],
                 'doc'     => [
                     'isFile'   => true,
-                    'filename' => $args['upload']['doc']['filename'],
-                    'content'  => file_get_contents($args['upload']['doc']['path'])
+                    'filename' => $args['document']['doc']['filename'],
+                    'content'  => file_get_contents($args['document']['doc']['path'])
                 ],
-                'annexes' => ['subvalues' => $args['appendices']],
+                'annexes' => ['subvalues' => $args['document']['appendices']],
                 'circuit' => json_encode($args['circuit'])
             ]
         ]);
