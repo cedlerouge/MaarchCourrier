@@ -2,43 +2,16 @@
     <mat-spinner style="margin:auto;"></mat-spinner>
 </div>
 <div class="signatorybook-container">
-    <div class="signatorybook-header">
-        <div class="signatorybook-header-left" style="justify-content: start">
-            <div class="prev-next-container">
-                <button mat-button class="prev-button"
-                    [title]="'lang.previousRes' | translate"
-                    [disabled]="!canGoToPrevious"
-                    (click)="$event.stopPropagation(); goToResource('previous')">
-                    <i class="fa fa-angle-left" style="height: auto"></i>
-                    <span>{{ 'lang.previous' | translate }}</span>
-                </button>
-                <button mat-icon-button (click)="toggleResList()">
-                    <mat-icon class="fa fa-inbox"></mat-icon>
-                </button>
-                <button mat-button class="next-button"
-                    [title]="'lang.nextRes' | translate"
-                    [disabled]="!canGoToNext"
-                    (click)="$event.stopPropagation(); goToResource('next')">
-                    <span>{{ 'lang.next' | translate }}</span>
-                    <i class="fa fa-angle-right" style="height: auto"></i>
-                </button>
-            </div>
-        </div>
-        <div class="signatorybook-header-center" style="justify-content: center">
-            <mat-icon class="maarchLogo" svgIcon="maarchLogoFull"></mat-icon>
-            <div>Parapheur électronique</div>
-            <button mat-icon-button [title]="'lang.backBasket' | translate" (click)="backToBasket()">
-                <mat-icon class="fa-solid fa-arrow-right-from-bracket" style="font-size: 17px;"></mat-icon>
-            </button>
-        </div>
-        <div class="signatorybook-header-right" style="justify-content: end">
-            <div style="font-size: initial">
-                <mat-checkbox class="checkbox-mass-sign" [checked]="true"
-                    >Éligible à une action de masse <span class="mass-action-count">4</span></mat-checkbox
-                >
-            </div>
-        </div>
-    </div>
+    <app-signature-book-header
+    [canGoToPrevious]="canGoToPrevious"
+    [canGoToNext]="canGoToNext"
+    [resId]="resId"
+    [userId]="userId"
+    [groupId]="groupId"
+    [basketId]="basketId"
+    (setNextPrevEvent)="setNextPrev()"
+    (toggleResListDrawer)="drawerResList?.toggle()"
+    ></app-signature-book-header>
     <mat-drawer-container style="flex: 1" [hasBackdrop]="false">
         <mat-drawer #drawerResList class="drawer-res-list" autoFocus="false" mode="over" [ngStyle]="{'width': '500px'}" (openedChange)="showPanelContent()">
             <app-resources-list
@@ -69,7 +42,7 @@
                 <div class="signatorybook-content">
                     <div class="book-content">
                         <mat-drawer-container style="flex: 1;background: none;">
-                            <mat-drawer mode="over" #drawerStamps>
+                            <mat-drawer class="drawer-stamps-list" mode="over" #drawerStamps>
                                 <app-maarch-sb-stamps [userId]="userId" (stampsLoaded)="defaultStamp = $event"></app-maarch-sb-stamps>
                             </mat-drawer>
                             <mat-drawer-content style="display: flex; flex-direction: column">

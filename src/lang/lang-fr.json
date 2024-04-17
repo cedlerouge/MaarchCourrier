@@ -2850,5 +2850,8 @@
     "visaAvisWorkflow": "Circuit de visa / avis",
     "allowMultipleAvisAssignment": "Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle",
     "displayStampsList": "Afficher la liste des griffes",
-    "moreActions": "Plus d'actions"
+    "moreActions": "Plus d'actions",
+    "toggleResListDrawer": "Ouvrir/Fermer le panneau latéral",
+    "nextParaph": "Parapheur suivant",
+    "prevParaph": "Parapheur précédent"
 }

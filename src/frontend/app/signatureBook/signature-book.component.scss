@@ -1,33 +1,3 @@
-.signatorybook-header {
-    font-size: 30px;
-    background: var(--maarch-color-primary);
-    padding: 10px;
-    color: white;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 10px;
-
-    &-left {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        flex: none;
-    }
-    &-center {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex: 1;
-    }
-    &-right {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        flex: none;
-    }
-}
-
 .signatorybook-container {
     display: flex;
     flex-direction: column;
@@ -94,18 +64,6 @@
     }
 }
 
-.prev-next-container {
-    display: flex;
-    align-items: center;
-    .prev-button ::ng-deep .mat-button-wrapper,
-    .next-button ::ng-deep .mat-button-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: white;
-    }
-}
-
 .subSubject {
     color: var(--maarch-color-secondary);
     align-self: flex-end;
@@ -140,7 +98,7 @@
     font-weight: bold;
 }
 
-.drawer-res-list {
+.drawer-res-list, .drawer-stamps-list {
     ::ng-deep .mat-drawer-inner-container {
         overflow: hidden !important;
     }
