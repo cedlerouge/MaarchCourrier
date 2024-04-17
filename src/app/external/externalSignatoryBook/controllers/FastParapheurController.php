@@ -1338,13 +1338,6 @@ class FastParapheurController
             return ['error' => 'steps are empty or invalid', 'code' => 400];
         }
 
-        $optionOTP = FastParapheurController::isOtpActive();
-        if (!empty($optionOTP['errors'])) {
-            return $optionOTP['errors'];
-        } elseif (!$optionOTP['OTP'] && !empty($otpInfo)) {
-            return ['error' => _EXTERNAL_USER_FOUND_BUT_OPTION_OTP_DISABLE];
-        }
-
         $otpInfoXML = null;
         if (!empty($otpInfo)) {
             $otpInfoXML = FastParapheurController::generateOtpXml([
@@ -1868,7 +1861,6 @@ class FastParapheurController
     public static function prepareSteps(array $steps): array
     {
         $mappedSteps = [];
-        // TODO rework steps mechanic, will not work for signaturePositions !
         if (empty($steps)) {
             return ['error' => 'steps is empty'];
         }
