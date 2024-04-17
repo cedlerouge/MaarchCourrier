@@ -36,7 +36,7 @@ class ContinueCircuitActionTest extends TestCase
     private MaarchParapheurSignatureServiceMock $signatureServiceMock;
 
     private array $dataMainDocument = [
-        "resid"                  => 100,
+        "resId"                  => 100,
         "documentId"             => 4,
         "certificate"            => 'certifciate',
         "signatures"             => [
@@ -52,7 +52,7 @@ class ContinueCircuitActionTest extends TestCase
     ];
 
     private array $dataAttachment = [
-        "resid"                  => 1,
+        "resId"                  => 1,
         "isAttachment"           => true,
         "documentId"             => 5,
         "certificate"            => 'certifciate',
