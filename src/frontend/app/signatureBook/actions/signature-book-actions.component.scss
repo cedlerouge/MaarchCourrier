@@ -145,6 +145,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    position: fixed;
+    right: 6%;
     font-size: 18px;
     border: 1px solid white;
     background-color: white;
@@ -157,17 +159,13 @@
     }
 
     &-valid {
-        position: fixed;
-        right: 111px;
-        bottom: 146px;
+        bottom: 16%;
         color: var(--maarch-color-success);
 
     }
 
     &-reject {
-        position: relative;
-        left: -19px;
-        bottom: 38px;
+        bottom: 5%;
         color: var(--maarch-color-danger);
     }
 }
