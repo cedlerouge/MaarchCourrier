@@ -1,40 +1,51 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief   Redirect Basket Model Abstract
-* @author  dev@maarch.org
-*/
+ * @brief   Redirect Basket Model Abstract
+ * @author  dev@maarch.org
+ */
 
 namespace Basket\models;
 
+use Exception;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\DatabaseModel;
 use User\models\UserModel;
 
 class RedirectBasketModel
 {
-    public static function get(array $aArgs = [])
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function get(array $aArgs = []): array
     {
         ValidatorModel::arrayType($aArgs, ['select', 'where', 'data']);
 
         $redirectedBaskets = DatabaseModel::select([
-            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
-            'table'     => ['redirected_baskets'],
-            'where'     => empty($aArgs['where']) ? [] : $aArgs['where'],
-            'data'      => empty($aArgs['data']) ? [] : $aArgs['data'],
+            'select' => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+            'table'  => ['redirected_baskets'],
+            'where'  => empty($aArgs['where']) ? [] : $aArgs['where'],
+            'data'   => empty($aArgs['data']) ? [] : $aArgs['data'],
         ]);
 
         return $redirectedBaskets;
     }
 
-    public static function create(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return true
+     * @throws Exception
+     */
+    public static function create(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['actual_user_id', 'owner_user_id', 'basket_id', 'group_id']);
         ValidatorModel::stringType($aArgs, ['basket_id']);
@@ -43,35 +54,45 @@ class RedirectBasketModel
         DatabaseModel::insert([
             'table'         => 'redirected_baskets',
             'columnsValues' => [
-                'actual_user_id'    => $aArgs['actual_user_id'],
-                'owner_user_id'     => $aArgs['owner_user_id'],
-                'basket_id'         => $aArgs['basket_id'],
-                'group_id'          => $aArgs['group_id']
+                'actual_user_id' => $aArgs['actual_user_id'],
+                'owner_user_id'  => $aArgs['owner_user_id'],
+                'basket_id'      => $aArgs['basket_id'],
+                'group_id'       => $aArgs['group_id']
             ]
         ]);
 
         return true;
     }
 
-    public static function update(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return true
+     * @throws Exception
+     */
+    public static function update(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['actual_user_id', 'owner_user_id', 'basket_id', 'group_id']);
         ValidatorModel::stringType($aArgs, ['basket_id']);
         ValidatorModel::intVal($aArgs, ['actual_user_id', 'owner_user_id', 'group_id']);
 
         DatabaseModel::update([
-            'table'     => 'redirected_baskets',
-            'set'       => [
-                'actual_user_id'    => $aArgs['actual_user_id']
+            'table' => 'redirected_baskets',
+            'set'   => [
+                'actual_user_id' => $aArgs['actual_user_id']
             ],
-            'where'     => ['owner_user_id = ?', 'basket_id = ?', 'group_id = ?'],
-            'data'      => [$aArgs['owner_user_id'], $aArgs['basket_id'], $aArgs['group_id']]
+            'where' => ['owner_user_id = ?', 'basket_id = ?', 'group_id = ?'],
+            'data'  => [$aArgs['owner_user_id'], $aArgs['basket_id'], $aArgs['group_id']]
         ]);
 
         return true;
     }
 
-    public static function delete(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return true
+     * @throws Exception
+     */
+    public static function delete(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['where', 'data']);
         ValidatorModel::arrayType($aArgs, ['where', 'data']);
@@ -85,17 +106,31 @@ class RedirectBasketModel
         return true;
     }
 
-    public static function getAssignedBasketsByUserId(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getAssignedBasketsByUserId(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['userId']);
         ValidatorModel::intVal($aArgs, ['userId']);
 
         $aBaskets = DatabaseModel::select([
-            'select'    => ['rb.id', 'ba.basket_id', 'ba.basket_name', 'ba.basket_clause', 'rb.owner_user_id', 'rb.group_id', 'usergroups.group_id as "oldGroupId"', 'usergroups.group_desc'],
-            'table'     => ['baskets ba, redirected_baskets rb, usergroups'],
-            'where'     => ['rb.actual_user_id = ?', 'rb.basket_id = ba.basket_id', 'usergroups.id = rb.group_id'],
-            'data'      => [$aArgs['userId']],
-            'order_by'  => ['ba.basket_order, ba.basket_name']
+            'select'   => [
+                'rb.id',
+                'ba.basket_id',
+                'ba.basket_name',
+                'ba.basket_clause',
+                'rb.owner_user_id',
+                'rb.group_id',
+                'usergroups.group_id as "oldGroupId"',
+                'usergroups.group_desc'
+            ],
+            'table'    => ['baskets ba, redirected_baskets rb, usergroups'],
+            'where'    => ['rb.actual_user_id = ?', 'rb.basket_id = ba.basket_id', 'usergroups.id = rb.group_id'],
+            'data'     => [$aArgs['userId']],
+            'order_by' => ['ba.basket_order, ba.basket_name']
         ]);
 
         foreach ($aBaskets as $key => $value) {
@@ -105,17 +140,29 @@ class RedirectBasketModel
         return $aBaskets;
     }
 
-    public static function getRedirectedBasketsByUserId(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getRedirectedBasketsByUserId(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['userId']);
         ValidatorModel::intVal($aArgs, ['userId']);
 
         $aBaskets = DatabaseModel::select([
-            'select'    => ['rb.id', 'ba.basket_id', 'ba.basket_name', 'rb.actual_user_id', 'rb.group_id', 'usergroups.group_desc'],
-            'table'     => ['baskets ba, redirected_baskets rb, usergroups'],
-            'where'     => ['rb.owner_user_id = ?', 'rb.basket_id = ba.basket_id', 'usergroups.id = rb.group_id'],
-            'data'      => [$aArgs['userId']],
-            'order_by'  => ['rb.id']
+            'select'   => [
+                'rb.id',
+                'ba.basket_id',
+                'ba.basket_name',
+                'rb.actual_user_id',
+                'rb.group_id',
+                'usergroups.group_desc'
+            ],
+            'table'    => ['baskets ba, redirected_baskets rb, usergroups'],
+            'where'    => ['rb.owner_user_id = ?', 'rb.basket_id = ba.basket_id', 'usergroups.id = rb.group_id'],
+            'data'     => [$aArgs['userId']],
+            'order_by' => ['rb.id']
         ]);
 
         foreach ($aBaskets as $key => $value) {

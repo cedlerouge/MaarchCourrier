@@ -44,16 +44,14 @@ class RetrieveThumbnailResourceByPage
     ) {
         $this->resourceRepository = $resourceRepositoryInterface;
         $this->resourceFile = $resourceFileInterface;
-        $this->resourceLog  = $resourceLog;
+        $this->resourceLog = $resourceLog;
     }
 
     /**
      * Retrieves thumbnail of resource by page number.
-     *
      * @param int $resId The ID of the resource.
      * @param int $page The ID of the resource.
-     *
-     * @return  ResourceFileInfo
+     * @return ResourceFileInfo
      * @throws ParameterMustBeGreaterThanZeroException
      * @throws ResourceDoesNotExistException
      * @throws ResourceOutOfPerimeterException
@@ -84,7 +82,7 @@ class RetrieveThumbnailResourceByPage
         }
 
         $check = $this->resourceFile->convertOnePageToThumbnail($resId, 'resource', $page);
-        if (strpos($check, 'errors:') !== false) {
+        if (str_contains($check, 'errors:')) {
             throw new ConvertThumbnailException($check);
         }
 
@@ -130,13 +128,26 @@ class RetrieveThumbnailResourceByPage
     }
 
     /**
+     * @param int $resId
+     * @param string $type
+     * @param int $version
+     * @return ResourceConverted|null
      * @throws ParameterCanNotBeEmptyException
      */
     private function getResourceVersionThumbnailByPage(int $resId, string $type, int $version): ?ResourceConverted
     {
         $checkThumbnailPageType = ctype_digit(str_replace('TNL', '', $type));
-        if (empty($type) || (!in_array($type, $this->resourceRepository::ADR_RESOURCE_TYPES) && !$checkThumbnailPageType)) {
-            throw new ParameterCanNotBeEmptyException('type', implode(', ', $this->resourceRepository::ADR_RESOURCE_TYPES) . " or thumbnail page 'TNL*'");
+        if (
+            empty($type) ||
+            (!in_array($type, $this->resourceRepository::ADR_RESOURCE_TYPES) && !$checkThumbnailPageType)
+        ) {
+            throw new ParameterCanNotBeEmptyException(
+                'type',
+                implode(
+                    ', ',
+                    $this->resourceRepository::ADR_RESOURCE_TYPES
+                ) . " or thumbnail page 'TNL*'"
+            );
         }
 
         $document = $this->resourceRepository->getResourceVersion($resId, $type, $version);
@@ -159,9 +170,7 @@ class RetrieveThumbnailResourceByPage
 
     /**
      * @param ResourceConverted|null $resourceConverted
-     *
      * @return array
-     *
      * @throws ResourceDocserverDoesNotExistException
      * @throws ResourceDoesNotExistException
      */
@@ -176,7 +185,11 @@ class RetrieveThumbnailResourceByPage
             throw new ResourceDocserverDoesNotExistException();
         }
 
-        $pathToThumbnail = $this->resourceFile->buildFilePath($adrDocserver->getPathTemplate(), $resourceConverted->getPath(), $resourceConverted->getFilename());
+        $pathToThumbnail = $this->resourceFile->buildFilePath(
+            $adrDocserver->getPathTemplate(),
+            $resourceConverted->getPath(),
+            $resourceConverted->getFilename()
+        );
 
         return [$adrDocserver, $pathToThumbnail];
     }

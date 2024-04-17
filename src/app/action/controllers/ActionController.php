@@ -1,19 +1,19 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-* @brief   ActionController
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ * @brief   ActionController
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 namespace Action\controllers;
 
 use Basket\models\GroupBasketRedirectModel;
 use CustomField\models\CustomFieldModel;
+use Exception;
 use Group\controllers\GroupController;
 use Group\controllers\PrivilegeController;
 use Group\models\GroupModel;
@@ -29,7 +29,13 @@ use SrcCore\http\Response;
 
 class ActionController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function get(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_actions', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -44,7 +50,14 @@ class ActionController
         return $response->withJson(['actions' => $actions]);
     }
 
-    public function getById(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function getById(Request $request, Response $response, array $aArgs): Response
     {
         if (!Validator::intVal()->validate($aArgs['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id is not an integer']);
@@ -81,7 +94,13 @@ class ActionController
         return $response->withJson($action);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_actions', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -102,15 +121,19 @@ class ActionController
 
             if (!empty($parameters['requiredFields'])) {
                 if (!Validator::arrayType()->validate($parameters['requiredFields'])) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Data parameter requiredFields is not an array']);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => 'Data parameter requiredFields is not an array']
+                    );
                 }
                 $customFields = CustomFieldModel::get(['select' => ['id']]);
                 $customFields = array_column($customFields, 'id');
                 foreach ($parameters['requiredFields'] as $requiredField) {
-                    if (strpos($requiredField, 'indexingCustomField_') !== false) {
+                    if (str_contains($requiredField, 'indexingCustomField_')) {
                         $idCustom = explode("_", $requiredField)[1];
                         if (!in_array($idCustom, $customFields)) {
-                            return $response->withStatus(400)->withJson(['errors' => 'Data custom field does not exist']);
+                            return $response->withStatus(400)->withJson(
+                                ['errors' => 'Data custom field does not exist']
+                            );
                         }
                         $requiredFields[] = $requiredField;
                     }
@@ -167,37 +190,48 @@ class ActionController
         return $response->withJson(['actionId' => $id]);
     }
 
-    public function update(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_actions', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $body       = $request->getParsedBody();
+        $body = $request->getParsedBody();
         $body['id'] = $args['id'];
 
-        $body   = $this->manageValue($body);
+        $body = $this->manageValue($body);
         $errors = $this->control($body, 'update');
         if (!empty($errors)) {
             return $response->withStatus(500)->withJson(['errors' => $errors]);
         }
 
         $requiredFields = [];
-        $parameters     = [];
+        $parameters = [];
         if (!empty($body['parameters'])) {
             $parameters = $body['parameters'];
 
             if (!empty($parameters['requiredFields'])) {
                 if (!Validator::arrayType()->validate($parameters['requiredFields'])) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Data parameter requiredFields is not an array']);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => 'Data parameter requiredFields is not an array']
+                    );
                 }
                 $customFields = CustomFieldModel::get(['select' => ['id']]);
                 $customFields = array_column($customFields, 'id');
                 foreach ($parameters['requiredFields'] as $requiredField) {
-                    if (strpos($requiredField, 'indexingCustomField_') !== false) {
+                    if (str_contains($requiredField, 'indexingCustomField_')) {
                         $idCustom = explode("_", $requiredField)[1];
                         if (!in_array($idCustom, $customFields)) {
-                            return $response->withStatus(400)->withJson(['errors' => 'Data custom field does not exist']);
+                            return $response->withStatus(400)->withJson(
+                                ['errors' => 'Data custom field does not exist']
+                            );
                         }
                         $requiredFields[] = $requiredField;
                     }
@@ -230,9 +264,12 @@ class ActionController
 
         if (!in_array($body['component'], GroupController::INDEXING_ACTIONS)) {
             GroupModel::update([
-                'postSet'   => ['indexation_parameters' => "jsonb_set(indexation_parameters, '{actions}', (indexation_parameters->'actions') - '{$args['id']}')"],
-                'where'     => ["indexation_parameters->'actions' @> ?"],
-                'data'      => ['"' . $args['id'] . '"']
+                'postSet' => [
+                    'indexation_parameters' => "jsonb_set(indexation_parameters, '{actions}'," .
+                        " (indexation_parameters->'actions') - '{$args['id']}')"
+                ],
+                'where'   => ["indexation_parameters->'actions' @> ?"],
+                'data'    => ['"' . $args['id'] . '"']
             ]);
         }
 
@@ -247,7 +284,14 @@ class ActionController
         return $response->withJson(['success' => 'success']);
     }
 
-    public function delete(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_actions', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -266,9 +310,12 @@ class ActionController
         GroupBasketRedirectModel::delete(['where' => ['action_id = ?'], 'data' => [$args['id']]]);
 
         GroupModel::update([
-            'postSet'   => ['indexation_parameters' => "jsonb_set(indexation_parameters, '{actions}', (indexation_parameters->'actions') - '{$args['id']}')"],
-            'where'     => ["indexation_parameters->'actions' @> ?"],
-            'data'      => ['"' . $args['id'] . '"']
+            'postSet' => [
+                'indexation_parameters' => "jsonb_set(indexation_parameters, '{actions}'," .
+                    " (indexation_parameters->'actions') - '{$args['id']}')"
+            ],
+            'where'   => ["indexation_parameters->'actions' @> ?"],
+            'data'    => ['"' . $args['id'] . '"']
         ]);
 
         HistoryController::add([
@@ -282,7 +329,13 @@ class ActionController
         return $response->withJson(['actions' => ActionModel::get()]);
     }
 
-    protected function control($aArgs, $mode)
+    /**
+     * @param $aArgs
+     * @param $mode
+     * @return array
+     * @throws Exception
+     */
+    protected function control($aArgs, $mode): array
     {
         $errors = [];
 
@@ -320,40 +373,60 @@ class ActionController
             $errors[] = 'id_status is empty';
         }
 
-        if (!Validator::notEmpty()->validate($aArgs['history']) || ($aArgs['history'] != 'Y' && $aArgs['history'] != 'N')) {
+        if (
+            !Validator::notEmpty()->validate($aArgs['history']) ||
+            ($aArgs['history'] != 'Y' && $aArgs['history'] != 'N')
+        ) {
             $errors[] = 'Invalid history value';
         }
 
         $lockVisaCircuit = $aArgs['parameters']['lockVisaCircuit'] ?? false;
-        if ($aArgs['component'] == 'sendSignatureBookAction' && !Validator::notEmpty()->validate($lockVisaCircuit) && !Validator::boolType()->validate($lockVisaCircuit)) {
+        if (
+            $aArgs['component'] == 'sendSignatureBookAction' && !Validator::notEmpty()->validate($lockVisaCircuit) &&
+            !Validator::boolType()->validate($lockVisaCircuit)
+        ) {
             $errors[] = 'lockCircuitVisa is not a boolean';
         }
 
-        $keepDestForRedirection =  $aArgs['parameters']['keepDestForRedirection'] ?? false;
-        if ($aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepDestForRedirection) && !Validator::boolType()->validate($keepDestForRedirection)) {
+        $keepDestForRedirection = $aArgs['parameters']['keepDestForRedirection'] ?? false;
+        if (
+            $aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepDestForRedirection) &&
+            !Validator::boolType()->validate($keepDestForRedirection)
+        ) {
             $errors[] = 'keepDestForRedirection is not a boolean';
         }
 
-        $keepCopyForRedirection =  $aArgs['parameters']['keepCopyForRedirection'] ?? false;
-        if ($aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepCopyForRedirection) && !Validator::boolType()->validate($keepCopyForRedirection)) {
+        $keepCopyForRedirection = $aArgs['parameters']['keepCopyForRedirection'] ?? false;
+        if (
+            $aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepCopyForRedirection) &&
+            !Validator::boolType()->validate($keepCopyForRedirection)
+        ) {
             $errors[] = 'keepCopyForRedirection is not a boolean';
         }
 
-        $keepOtherRoleForRedirection =  $aArgs['parameters']['keepOtherRoleForRedirection'] ?? false;
-        if ($aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepOtherRoleForRedirection) && !Validator::boolType()->validate($keepOtherRoleForRedirection)) {
+        $keepOtherRoleForRedirection = $aArgs['parameters']['keepOtherRoleForRedirection'] ?? false;
+        if (
+            $aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepOtherRoleForRedirection) &&
+            !Validator::boolType()->validate($keepOtherRoleForRedirection)
+        ) {
             $errors[] = 'keepOtherRoleForRedirection is not a boolean';
         }
 
         return $errors;
     }
 
-    public function initAction(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function initAction(Request $request, Response $response): Response
     {
-        $obj['action']['history']          = true;
-        $obj['action']['keyword']          = '';
-        $obj['action']['actionPageId']     = 'confirm_status';
-        $obj['action']['id_status']        = '_NOSTATUS_';
-        $obj['categoriesList']             = ResModel::getCategories();
+        $obj['action']['history'] = true;
+        $obj['action']['keyword'] = '';
+        $obj['action']['actionPageId'] = 'confirm_status';
+        $obj['action']['id_status'] = '_NOSTATUS_';
+        $obj['categoriesList'] = ResModel::getCategories();
         $obj['action']['parameters']['lockVisaCircuit'] = false;
         $obj['action']['parameters']['keepDestForRedirection'] = false;
         $obj['action']['parameters']['keepCopyForRedirection'] = false;
@@ -362,7 +435,7 @@ class ActionController
         $obj['action']['actionCategories'] = array_column($obj['categoriesList'], 'id');
 
         $obj['statuses'] = StatusModel::get();
-        array_unshift($obj['statuses'], ['id' => '_NOSTATUS_','label_status' => _UNCHANGED]);
+        array_unshift($obj['statuses'], ['id' => '_NOSTATUS_', 'label_status' => _UNCHANGED]);
         $obj['keywordsList'] = ActionModel::getKeywords();
 
         return $response->withJson($obj);
@@ -371,7 +444,7 @@ class ActionController
     protected function manageValue($request)
     {
         foreach ($request as $key => $value) {
-            if (in_array($key, ['history'])) {
+            if ($key == 'history') {
                 if (empty($value)) {
                     $request[$key] = 'N';
                 } else {
@@ -382,7 +455,12 @@ class ActionController
         return $request;
     }
 
-    public static function checkRequiredFields(array $args)
+    /**
+     * @param array $args
+     * @return string[]|true[]
+     * @throws Exception
+     */
+    public static function checkRequiredFields(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resId', 'actionRequiredFields']);
         ValidatorModel::intVal($args, ['resId']);
@@ -408,16 +486,17 @@ class ActionController
 
     /**
      * @description Replace selected fields value
-     * @param   array   $args
-     * @return  bool    true
+     * @param array $args
+     * @return bool
+     * @throws Exception
      */
-    public static function replaceFieldsData(array $args)
+    public static function replaceFieldsData(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
         ValidatorModel::arrayType($args, ['fillRequiredFields']);
 
-        $set   = ['modification_date' => 'CURRENT_TIMESTAMP'];
+        $set = ['modification_date' => 'CURRENT_TIMESTAMP'];
         $where = ['res_id = ?'];
 
         if (!empty($args['fillRequiredFields'])) {
@@ -434,9 +513,14 @@ class ActionController
 
             foreach ($fillRequiredFields as $fillRequiredFieldItem) {
                 $idCustom = explode("_", $fillRequiredFieldItem['id'])[1];
-                $customFieldModel = CustomFieldModel::get(['select' => ['label'],'where' => ['id = ?'],'data' => [$idCustom]]);
+                $customFieldModel = CustomFieldModel::get(
+                    ['select' => ['label'], 'where' => ['id = ?'], 'data' => [$idCustom]]
+                );
 
-                if (!empty($customFieldModel) && in_array($fillRequiredFieldItem['id'], $modelFields) && !empty($fillRequiredFieldItem['value'])) {
+                if (
+                    !empty($customFieldModel) && in_array($fillRequiredFieldItem['id'], $modelFields) &&
+                    !empty($fillRequiredFieldItem['value'])
+                ) {
                     $resourceCustomFields[$idCustom] = $fillRequiredFieldItem['value'];
                     if ($fillRequiredFieldItem['value'] === '_TODAY') {
                         $resourceCustomFields[$idCustom] = date('Y-m-d');

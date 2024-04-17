@@ -1,16 +1,16 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Entity Controller
-* @author dev@maarch.org
-*/
+ * @brief Entity Controller
+ * @author dev@maarch.org
+ */
 
 namespace Entity\controllers;
 
@@ -20,6 +20,7 @@ use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
 use Entity\models\ListTemplateItemModel;
 use Entity\models\ListTemplateModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use Group\models\GroupModel;
 use History\controllers\HistoryController;
@@ -42,43 +43,63 @@ use IndexingModel\models\IndexingModelModel;
 
 class EntityController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
-        return $response->withJson(['entities' => EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']])]);
+        return $response->withJson(
+            ['entities' => EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']])]
+        );
     }
 
-    public function getById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function getById(Request $request, Response $response, array $args): Response
     {
         $entity = EntityModel::getById([
-            'id' => $args['id'],
+            'id'     => $args['id'],
             'select' => ['*']
         ]);
         if (empty($entity)) {
             return $response->withStatus(400)->withJson(['errors' => 'Entity not found']);
         }
         $entity = [
-            'id'                    => $entity['id'],
-            'entity_label'          => $entity['entity_label'],
-            'short_label'           => $entity['short_label'],
-            'entity_full_name'      => $entity['entity_full_name'],
-            'entity_type'           => $entity['entity_type'],
-            'entity_id'             => $entity['entity_id'],
-            'enabled'               => $entity['enabled'],
-            'parent_entity_id'      => $entity['parent_entity_id'],
-            'addressNumber'         => $entity['address_number'],
-            'addressStreet'         => $entity['address_street'],
-            'addressAdditional1'    => $entity['address_additional1'],
-            'addressAdditional2'    => $entity['address_additional2'],
-            'addressPostcode'       => $entity['address_postcode'],
-            'addressTown'           => $entity['address_town'],
-            'addressCountry'        => $entity['address_country'],
-            'email'                 => $entity['email']
+            'id'                 => $entity['id'],
+            'entity_label'       => $entity['entity_label'],
+            'short_label'        => $entity['short_label'],
+            'entity_full_name'   => $entity['entity_full_name'],
+            'entity_type'        => $entity['entity_type'],
+            'entity_id'          => $entity['entity_id'],
+            'enabled'            => $entity['enabled'],
+            'parent_entity_id'   => $entity['parent_entity_id'],
+            'addressNumber'      => $entity['address_number'],
+            'addressStreet'      => $entity['address_street'],
+            'addressAdditional1' => $entity['address_additional1'],
+            'addressAdditional2' => $entity['address_additional2'],
+            'addressPostcode'    => $entity['address_postcode'],
+            'addressTown'        => $entity['address_town'],
+            'addressCountry'     => $entity['address_country'],
+            'email'              => $entity['email']
         ];
 
         return $response->withJson($entity);
     }
 
-    public function getDetailledById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getDetailledById(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'manage_entities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -90,26 +111,27 @@ class EntityController
         }
 
         $entity = [
-            'id'                    => $entity['id'],
-            'entity_label'          => $entity['entity_label'],
-            'short_label'           => $entity['short_label'],
-            'entity_full_name'      => $entity['entity_full_name'],
-            'entity_type'           => $entity['entity_type'],
-            'entity_id'             => $entity['entity_id'],
-            'enabled'               => $entity['enabled'],
-            'parent_entity_id'      => $entity['parent_entity_id'],
-            'addressNumber'         => $entity['address_number'],
-            'addressStreet'         => $entity['address_street'],
-            'addressAdditional1'    => $entity['address_additional1'],
-            'addressAdditional2'    => $entity['address_additional2'],
-            'addressPostcode'       => $entity['address_postcode'],
-            'addressTown'           => $entity['address_town'],
-            'addressCountry'        => $entity['address_country'],
-            'email'                 => $entity['email'],
-            'producerService'       => $entity['producer_service'],
-            'business_id'           => $entity['business_id'],
-            'external_id'           => $entity['external_id'],
-            'fastParapheurSubscriberId' => json_decode($entity['external_id'], true)['fastParapheurSubscriberId'] ?? null,
+            'id'                        => $entity['id'],
+            'entity_label'              => $entity['entity_label'],
+            'short_label'               => $entity['short_label'],
+            'entity_full_name'          => $entity['entity_full_name'],
+            'entity_type'               => $entity['entity_type'],
+            'entity_id'                 => $entity['entity_id'],
+            'enabled'                   => $entity['enabled'],
+            'parent_entity_id'          => $entity['parent_entity_id'],
+            'addressNumber'             => $entity['address_number'],
+            'addressStreet'             => $entity['address_street'],
+            'addressAdditional1'        => $entity['address_additional1'],
+            'addressAdditional2'        => $entity['address_additional2'],
+            'addressPostcode'           => $entity['address_postcode'],
+            'addressTown'               => $entity['address_town'],
+            'addressCountry'            => $entity['address_country'],
+            'email'                     => $entity['email'],
+            'producerService'           => $entity['producer_service'],
+            'business_id'               => $entity['business_id'],
+            'external_id'               => $entity['external_id'],
+            'fastParapheurSubscriberId' => json_decode($entity['external_id'], true)['fastParapheurSubscriberId'] ??
+                null,
         ];
 
         $aEntities = EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']]);
@@ -120,14 +142,19 @@ class EntityController
         }
 
         $entity['types'] = EntityModel::getTypes();
-        $listTemplateTypes = ListTemplateModel::getTypes(['select' => ['difflist_type_roles'], 'where' => ['difflist_type_id = ?'], 'data' => ['entity_id']]);
-        $rolesForService = empty($listTemplateTypes[0]['difflist_type_roles']) ? [] : explode(' ', $listTemplateTypes[0]['difflist_type_roles']);
+        $listTemplateTypes = ListTemplateModel::getTypes(
+            ['select' => ['difflist_type_roles'], 'where' => ['difflist_type_id = ?'], 'data' => ['entity_id']]
+        );
+        $rolesForService = empty($listTemplateTypes[0]['difflist_type_roles']) ? [] : explode(
+            ' ',
+            $listTemplateTypes[0]['difflist_type_roles']
+        );
 
         //List Templates
         $listTemplates = ListTemplateModel::get([
-            'select'    => ['id', 'title', 'description', 'type'],
-            'where'     => ['entity_id = ?'],
-            'data'      => [$entity['id']]
+            'select' => ['id', 'title', 'description', 'type'],
+            'where'  => ['entity_id = ?'],
+            'data'   => [$entity['id']]
         ]);
 
         $entity['listTemplate'] = [];
@@ -137,7 +164,9 @@ class EntityController
         $entity['visaCircuit'] = [];
         $entity['opinionCircuit'] = [];
         foreach ($listTemplates as $listTemplate) {
-            $listTemplateItems = ListTemplateItemModel::get(['select' => ['*'], 'where' => ['list_template_id = ?'], 'data' => [$listTemplate['id']]]);
+            $listTemplateItems = ListTemplateItemModel::get(
+                ['select' => ['*'], 'where' => ['list_template_id = ?'], 'data' => [$listTemplate['id']]]
+            );
 
             if ($listTemplate['type'] == 'diffusionList') {
                 $entity['listTemplate'] = $listTemplate;
@@ -145,19 +174,25 @@ class EntityController
                 foreach ($listTemplateItems as $listTemplateItem) {
                     if ($listTemplateItem['item_type'] == 'user') {
                         $entity['listTemplate']['items'][$listTemplateItem['item_mode']][] = [
-                            'id'                    => $listTemplateItem['item_id'],
-                            'type'                  => $listTemplateItem['item_type'],
-                            'sequence'              => $listTemplateItem['sequence'],
-                            'labelToDisplay'        => UserModel::getLabelledUserById(['id' => $listTemplateItem['item_id']]),
-                            'descriptionToDisplay'  => UserModel::getPrimaryEntityById(['id' => $listTemplateItem['item_id'], 'select' => ['entities.entity_label']])['entity_label']
+                            'id'                   => $listTemplateItem['item_id'],
+                            'type'                 => $listTemplateItem['item_type'],
+                            'sequence'             => $listTemplateItem['sequence'],
+                            'labelToDisplay'       => UserModel::getLabelledUserById(
+                                ['id' => $listTemplateItem['item_id']]
+                            ),
+                            'descriptionToDisplay' => UserModel::getPrimaryEntityById(
+                                ['id' => $listTemplateItem['item_id'], 'select' => ['entities.entity_label']]
+                            )['entity_label']
                         ];
                     } elseif ($listTemplateItem['item_type'] == 'entity') {
                         $entity['listTemplate']['items'][$listTemplateItem['item_mode']][] = [
-                            'id'                    => $listTemplateItem['item_id'],
-                            'type'                  => $listTemplateItem['item_type'],
-                            'sequence'              => $listTemplateItem['sequence'],
-                            'labelToDisplay'        => EntityModel::getById(['id' => $listTemplateItem['item_id'], 'select' => ['entity_label']])['entity_label'],
-                            'descriptionToDisplay'  => ''
+                            'id'                   => $listTemplateItem['item_id'],
+                            'type'                 => $listTemplateItem['item_type'],
+                            'sequence'             => $listTemplateItem['sequence'],
+                            'labelToDisplay'       => EntityModel::getById(
+                                ['id' => $listTemplateItem['item_id'], 'select' => ['entity_label']]
+                            )['entity_label'],
+                            'descriptionToDisplay' => ''
                         ];
                     }
                 }
@@ -166,27 +201,37 @@ class EntityController
                 $entity[$listTemplate['type']]['items'] = [];
                 foreach ($listTemplateItems as $listTemplateItem) {
                     $entity[$listTemplate['type']]['items'][] = [
-                        'id'                    => $listTemplateItem['item_id'],
-                        'type'                  => $listTemplateItem['item_type'],
-                        'mode'                  => $listTemplateItem['item_mode'],
-                        'sequence'              => $listTemplateItem['sequence'],
-                        'idToDisplay'           => UserModel::getLabelledUserById(['id' => $listTemplateItem['item_id']]),
-                        'descriptionToDisplay'  => UserModel::getPrimaryEntityById(['id' => $listTemplateItem['item_id'], 'select' => ['entities.entity_label']])['entity_label']
+                        'id'                   => $listTemplateItem['item_id'],
+                        'type'                 => $listTemplateItem['item_type'],
+                        'mode'                 => $listTemplateItem['item_mode'],
+                        'sequence'             => $listTemplateItem['sequence'],
+                        'idToDisplay'          => UserModel::getLabelledUserById(
+                            ['id' => $listTemplateItem['item_id']]
+                        ),
+                        'descriptionToDisplay' => UserModel::getPrimaryEntityById(
+                            ['id' => $listTemplateItem['item_id'], 'select' => ['entities.entity_label']]
+                        )['entity_label']
                     ];
                 }
             }
         }
 
         $entity['templates'] = TemplateModel::getByEntity([
-            'select'    => ['t.template_id', 't.template_label', 'template_comment', 't.template_target', 't.template_attachment_type'],
-            'entities'  => [$args['id']]
+            'select'   => [
+                't.template_id',
+                't.template_label',
+                'template_comment',
+                't.template_target',
+                't.template_attachment_type'
+            ],
+            'entities' => [$args['id']]
         ]);
 
         $models = [];
         $tmpModels = IndexingModelModel::get([
             'select' => ['id', 'label', 'category'],
-            'where' => ['(id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id = ? OR keyword = ?))'],
-            'data'  => [$entity['entity_id'], IndexingModelController::ALL_ENTITIES]
+            'where'  => ['(id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id = ? OR keyword = ?))'],
+            'data'   => [$entity['entity_id'], IndexingModelController::ALL_ENTITIES]
         ]);
         foreach ($tmpModels as $key => $model) {
             $models[$key]['indexingModelId'] = $model['id'];
@@ -195,33 +240,61 @@ class EntityController
         }
         $entity['indexingModels'] = $models;
 
-        $entity['users'] = EntityModel::getUsersById(['id' => $entity['entity_id'], 'select' => ['users.id','users.user_id', 'users.firstname', 'users.lastname', 'users.status']]);
+        $entity['users'] = EntityModel::getUsersById(
+            [
+                'id'     => $entity['entity_id'],
+                'select' => ['users.id', 'users.user_id', 'users.firstname', 'users.lastname', 'users.status']
+            ]
+        );
         $children = EntityModel::get(['select' => [1], 'where' => ['parent_entity_id = ?'], 'data' => [$args['id']]]);
         $entity['contact'] = $this->getContactLinkCount($entity['id']);
         $entity['hasChildren'] = count($children) > 0;
         $documents = ResModel::get(['select' => [1], 'where' => ['destination = ?'], 'data' => [$args['id']]]);
         $entity['documents'] = count($documents);
-        $instances = ListInstanceModel::get(['select' => [1], 'where' => ['item_id = ?', 'item_type = ?'], 'data' => [$entity['id'], 'entity_id']]);
+        $instances = ListInstanceModel::get(
+            ['select' => [1], 'where' => ['item_id = ?', 'item_type = ?'], 'data' => [$entity['id'], 'entity_id']]
+        );
         $entity['instances'] = count($instances);
-        $redirects = GroupBasketRedirectModel::get(['select' => [1], 'where' => ['entity_id = ?'], 'data' => [$args['id']]]);
+        $redirects = GroupBasketRedirectModel::get(
+            ['select' => [1], 'where' => ['entity_id = ?'], 'data' => [$args['id']]]
+        );
         $entity['redirects'] = count($redirects);
-        $entity['canAdminUsers'] = PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $GLOBALS['id']]);
-        $entity['canAdminTemplates'] = PrivilegeController::hasPrivilege(['privilegeId' => 'admin_templates', 'userId' => $GLOBALS['id']]);
+        $entity['canAdminUsers'] = PrivilegeController::hasPrivilege(
+            ['privilegeId' => 'admin_users', 'userId' => $GLOBALS['id']]
+        );
+        $entity['canAdminTemplates'] = PrivilegeController::hasPrivilege(
+            ['privilegeId' => 'admin_templates', 'userId' => $GLOBALS['id']]
+        );
         $siret = ParameterModel::getById(['id' => 'siret', 'select' => ['param_value_string']]);
         $entity['canSynchronizeSiret'] = !empty($siret['param_value_string']);
-        $entity['canAdminIndexingModels'] = PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']]);
+        $entity['canAdminIndexingModels'] = PrivilegeController::hasPrivilege(
+            ['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']]
+        );
 
         return $response->withJson(['entity' => $entity]);
     }
 
-    public function getContactLinkCount(int $id)
+    /**
+     * @param int $id
+     * @return int|null
+     */
+    public function getContactLinkCount(int $id): ?int
     {
-        $linkCount = count(ResourceContactModel::get(['select' => ['distinct res_id'], 'where' => ['item_id = ?', 'type = ?'], 'data' => [$id, 'entity']]));
+        $linkCount = count(
+            ResourceContactModel::get(
+                ['select' => ['distinct res_id'], 'where' => ['item_id = ?', 'type = ?'], 'data' => [$id, 'entity']]
+            )
+        );
         return $linkCount;
     }
 
-
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'manage_entities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -231,14 +304,25 @@ class EntityController
 
         if (empty($body)) {
             return $response->withStatus(400)->withJson(['errors' => 'Body is empty']);
-        } elseif (!Validator::stringType()->notEmpty()->validate($body['entity_id']) || !preg_match("/^[\w-]*$/", $body['entity_id']) || (strlen($body['entity_id']) > 32)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body entity_id is empty, not a string or not valid']);
+        } elseif (
+            !Validator::stringType()->notEmpty()->validate($body['entity_id']) ||
+            !preg_match("/^[\w-]*$/", $body['entity_id']) || (strlen($body['entity_id']) > 32)
+        ) {
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body entity_id is empty, not a string or not valid']
+            );
         } elseif (!Validator::stringType()->notEmpty()->validate($body['entity_label'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body entity_label is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body entity_label is empty or not a string']
+            );
         } elseif (!Validator::stringType()->notEmpty()->validate($body['short_label'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body short_label is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body short_label is empty or not a string']
+            );
         } elseif (!Validator::stringType()->notEmpty()->validate($body['entity_type'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body entity_type is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body entity_type is empty or not a string']
+            );
         } elseif (!empty($body['email']) && !filter_var($body['email'], FILTER_VALIDATE_EMAIL)) {
             return $response->withStatus(400)->withJson(['errors' => 'Body email is not valid']);
         }
@@ -253,24 +337,24 @@ class EntityController
             $externalId['fastParapheurSubscriberId'] = $body['fastParapheurSubscriberId'];
         }
         $id = EntityModel::create([
-            'entity_id'             => $body['entity_id'],
-            'entity_label'          => $body['entity_label'],
-            'short_label'           => $body['short_label'],
-            'address_number'        => $body['addressNumber'] ?? null,
-            'address_street'        => $body['addressStreet'] ?? null,
-            'address_additional1'   => $body['addressAdditional1'] ?? null,
-            'address_additional2'   => $body['addressAdditional2'] ?? null,
-            'address_postcode'      => $body['addressPostcode'] ?? null,
-            'address_town'          => $body['addressTown'] ?? null,
-            'address_country'       => $body['addressCountry'] ?? null,
-            'email'                 => $body['email'] ?? null,
-            'business_id'           => $body['business_id'] ?? null,
-            'parent_entity_id'      => $body['parent_entity_id'],
-            'entity_type'           => $body['entity_type'],
-            'ldap_id'               => $body['ldap_id'] ?? null,
-            'entity_full_name'      => $body['entity_full_name'] ?? null,
-            'producer_service'      => $body['producerService'],
-            'external_id'           => !empty($externalId) ? json_encode($externalId) : '{}',
+            'entity_id'           => $body['entity_id'],
+            'entity_label'        => $body['entity_label'],
+            'short_label'         => $body['short_label'],
+            'address_number'      => $body['addressNumber'] ?? null,
+            'address_street'      => $body['addressStreet'] ?? null,
+            'address_additional1' => $body['addressAdditional1'] ?? null,
+            'address_additional2' => $body['addressAdditional2'] ?? null,
+            'address_postcode'    => $body['addressPostcode'] ?? null,
+            'address_town'        => $body['addressTown'] ?? null,
+            'address_country'     => $body['addressCountry'] ?? null,
+            'email'               => $body['email'] ?? null,
+            'business_id'         => $body['business_id'] ?? null,
+            'parent_entity_id'    => $body['parent_entity_id'],
+            'entity_type'         => $body['entity_type'],
+            'ldap_id'             => $body['ldap_id'] ?? null,
+            'entity_full_name'    => $body['entity_full_name'] ?? null,
+            'producer_service'    => $body['producerService'],
+            'external_id'         => !empty($externalId) ? json_encode($externalId) : '{}',
         ]);
         HistoryController::add([
             'tableName' => 'entities',
@@ -288,7 +372,9 @@ class EntityController
                 $pEntity = 'Y';
             }
 
-            UserEntityModel::addUserEntity(['id' => $GLOBALS['id'], 'entityId' => $body['entity_id'], 'role' => '', 'primaryEntity' => $pEntity]);
+            UserEntityModel::addUserEntity(
+                ['id' => $GLOBALS['id'], 'entityId' => $body['entity_id'], 'role' => '', 'primaryEntity' => $pEntity]
+            );
             HistoryController::add([
                 'tableName' => 'users',
                 'recordId'  => $GLOBALS['id'],
@@ -299,10 +385,19 @@ class EntityController
             ]);
         }
 
-        return $response->withJson(['entities' => EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']]), 'id' => $id]);
+        return $response->withJson(
+            ['entities' => EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']]), 'id' => $id]
+        );
     }
 
-    public function update(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'manage_entities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -346,24 +441,25 @@ class EntityController
         } else {
             unset($externalId['fastParapheurSubscriberId']);
         }
-        EntityModel::update(['set' => [
-                'entity_label'          => $body['entity_label'],
-                'short_label'           => $body['short_label'],
-                'address_number'        => $body['addressNumber'],
-                'address_street'        => $body['addressStreet'],
-                'address_additional1'   => $body['addressAdditional1'],
-                'address_additional2'   => $body['addressAdditional2'],
-                'address_postcode'      => $body['addressPostcode'],
-                'address_town'          => $body['addressTown'],
-                'address_country'       => $body['addressCountry'],
-                'email'                 => $body['email'],
-                'business_id'           => $body['business_id'],
-                'parent_entity_id'      => $body['parent_entity_id'],
-                'entity_type'           => $body['entity_type'],
-                'ldap_id'               => $body['ldap_id'] ?? null,
-                'entity_full_name'      => $body['entity_full_name'],
-                'producer_service'      => $body['producerService'],
-                'external_id'           => !empty($externalId) ? json_encode($externalId) : '{}',
+        EntityModel::update([
+            'set'   => [
+                'entity_label'        => $body['entity_label'],
+                'short_label'         => $body['short_label'],
+                'address_number'      => $body['addressNumber'],
+                'address_street'      => $body['addressStreet'],
+                'address_additional1' => $body['addressAdditional1'],
+                'address_additional2' => $body['addressAdditional2'],
+                'address_postcode'    => $body['addressPostcode'],
+                'address_town'        => $body['addressTown'],
+                'address_country'     => $body['addressCountry'],
+                'email'               => $body['email'],
+                'business_id'         => $body['business_id'],
+                'parent_entity_id'    => $body['parent_entity_id'],
+                'entity_type'         => $body['entity_type'],
+                'ldap_id'             => $body['ldap_id'] ?? null,
+                'entity_full_name'    => $body['entity_full_name'],
+                'producer_service'    => $body['producerService'],
+                'external_id'         => !empty($externalId) ? json_encode($externalId) : '{}',
             ],
             'where' => ['entity_id = ?'],
             'data'  => [$aArgs['id']]
@@ -378,7 +474,9 @@ class EntityController
         ]);
 
         if (empty($body['parent_entity_id'])) {
-            $hasEntity = UserEntityModel::get(['select' => [1], 'where' => ['user_id = ?', 'entity_id = ?'], 'data' => [$GLOBALS['id'], $aArgs['id']]]);
+            $hasEntity = UserEntityModel::get(
+                ['select' => [1], 'where' => ['user_id = ?', 'entity_id = ?'], 'data' => [$GLOBALS['id'], $aArgs['id']]]
+            );
             if (empty($hasEntity)) {
                 $primaryEntity = UserModel::getPrimaryEntityById(['id' => $GLOBALS['id'], 'select' => [1]]);
                 $pEntity = 'N';
@@ -386,7 +484,9 @@ class EntityController
                     $pEntity = 'Y';
                 }
 
-                UserEntityModel::addUserEntity(['id' => $GLOBALS['id'], 'entityId' => $aArgs['id'], 'role' => '', 'primaryEntity' => $pEntity]);
+                UserEntityModel::addUserEntity(
+                    ['id' => $GLOBALS['id'], 'entityId' => $aArgs['id'], 'role' => '', 'primaryEntity' => $pEntity]
+                );
                 HistoryController::add([
                     'tableName' => 'users',
                     'recordId'  => $GLOBALS['id'],
@@ -398,10 +498,19 @@ class EntityController
             }
         }
 
-        return $response->withJson(['entities' => EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']])]);
+        return $response->withJson(
+            ['entities' => EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']])]
+        );
     }
 
-    public function delete(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'manage_entities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -419,14 +528,21 @@ class EntityController
             }
         }
 
-        $children  = EntityModel::get(['select' => [1], 'where' => ['parent_entity_id = ?'], 'data' => [$aArgs['id']]]);
+        $children = EntityModel::get(['select' => [1], 'where' => ['parent_entity_id = ?'], 'data' => [$aArgs['id']]]);
         $documents = ResModel::get(['select' => [1], 'where' => ['destination = ?'], 'data' => [$aArgs['id']]]);
-        $users     = EntityModel::getUsersById(['select' => [1], 'id' => $aArgs['id']]);
-        $templates = TemplateAssociationModel::get(['select' => [1], 'where' => ['value_field = ?'], 'data' => [$aArgs['id']]]);
-        $instances = ListInstanceModel::get(['select' => [1], 'where' => ['item_id = ?', 'item_type = ?'], 'data' => [$entity['id'], 'entity_id']]);
-        $redirects = GroupBasketRedirectModel::get(['select' => [1], 'where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]);
+        $users = EntityModel::getUsersById(['select' => [1], 'id' => $aArgs['id']]);
+        $templates = TemplateAssociationModel::get(
+            ['select' => [1], 'where' => ['value_field = ?'], 'data' => [$aArgs['id']]]
+        );
+        $instances = ListInstanceModel::get(
+            ['select' => [1], 'where' => ['item_id = ?', 'item_type = ?'], 'data' => [$entity['id'], 'entity_id']]
+        );
+        $redirects = GroupBasketRedirectModel::get(
+            ['select' => [1], 'where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]
+        );
 
-        $allowedCount = count($children) + count($documents) + count($users) + count($templates) + count($instances) + count($redirects);
+        $allowedCount = count($children) + count($documents) + count($users) + count($templates) + count($instances) +
+            count($redirects);
         if ($allowedCount > 0) {
             return $response->withStatus(400)->withJson(['errors' => 'Entity is still used']);
         }
@@ -440,7 +556,9 @@ class EntityController
             $entities['deleted'] = $control['deleted'];
         }
 
-        $templateLists = ListTemplateModel::get(['select' => ['id'], 'where' => ['entity_id = ?'], 'data' => [$entity['id']]]);
+        $templateLists = ListTemplateModel::get(
+            ['select' => ['id'], 'where' => ['entity_id = ?'], 'data' => [$entity['id']]]
+        );
         if (!empty($templateLists)) {
             foreach ($templateLists as $templateList) {
                 ListTemplateModel::delete([
@@ -451,11 +569,13 @@ class EntityController
             }
         }
 
-        ContactGroupListModel::delete(['where' => ['correspondent_id = ?', 'correspondent_type = ?'], 'data' => [$entity['id'], 'entity']]);
+        ContactGroupListModel::delete(
+            ['where' => ['correspondent_id = ?', 'correspondent_type = ?'], 'data' => [$entity['id'], 'entity']]
+        );
         GroupModel::update([
-            'postSet'   => ['indexation_parameters' => "jsonb_set(indexation_parameters, '{entities}', (indexation_parameters->'entities') - '{$entity['id']}')"],
-            'where'     => ["indexation_parameters->'entities' @> ?"],
-            'data'      => ['"' . $entity['id'] . '"']
+            'postSet' => ['indexation_parameters' => "jsonb_set(indexation_parameters, '{entities}', (indexation_parameters->'entities') - '{$entity['id']}')"],
+            'where'   => ["indexation_parameters->'entities' @> ?"],
+            'data'    => ['"' . $entity['id'] . '"']
         ]);
 
         EntityModel::delete(['where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]);
@@ -475,20 +595,32 @@ class EntityController
         return $response->withJson($entities);
     }
 
-    public function reassignEntity(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function reassignEntity(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'manage_entities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $dyingEntity = EntityModel::getByEntityId(['entityId' => $aArgs['id'], 'select' => ['id', 'parent_entity_id', 'business_id']]);
+        $dyingEntity = EntityModel::getByEntityId(
+            ['entityId' => $aArgs['id'], 'select' => ['id', 'parent_entity_id', 'business_id']]
+        );
         $successorEntity = EntityModel::getByEntityId(['entityId' => $aArgs['newEntityId'], 'select' => ['id']]);
         if (empty($dyingEntity) || empty($successorEntity)) {
             return $response->withStatus(400)->withJson(['errors' => 'Entity does not exist']);
         }
         $entities = EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']]);
         foreach ($entities as $entity) {
-            if (($entity['entity_id'] == $aArgs['id'] && $entity['allowed'] == false) || ($entity['entity_id'] == $aArgs['newEntityId'] && $entity['allowed'] == false)) {
+            if (
+                ($entity['entity_id'] == $aArgs['id'] && $entity['allowed'] == false) ||
+                ($entity['entity_id'] == $aArgs['newEntityId'] && $entity['allowed'] == false)
+            ) {
                 return $response->withStatus(403)->withJson(['errors' => 'Entity out of perimeter']);
             }
         }
@@ -503,10 +635,22 @@ class EntityController
         }
 
         //Documents
-        ResModel::update(['set' => ['destination' => $aArgs['newEntityId']], 'where' => ['destination = ?', 'status != ?'], 'data' => [$aArgs['id'], 'DEL']]);
+        ResModel::update(
+            [
+                'set'   => ['destination' => $aArgs['newEntityId']],
+                'where' => ['destination = ?', 'status != ?'],
+                'data'  => [$aArgs['id'], 'DEL']
+            ]
+        );
 
         //Users
-        $users = UserEntityModel::get(['select' => ['user_id', 'entity_id', 'primary_entity'], 'where' => ['entity_id = ? OR entity_id = ?'], 'data' => [$aArgs['id'], $aArgs['newEntityId']]]);
+        $users = UserEntityModel::get(
+            [
+                'select' => ['user_id', 'entity_id', 'primary_entity'],
+                'where'  => ['entity_id = ? OR entity_id = ?'],
+                'data'   => [$aArgs['id'], $aArgs['newEntityId']]
+            ]
+        );
         $tmpUsers = [];
         $doubleUsers = [];
         foreach ($users as $user) {
@@ -518,30 +662,67 @@ class EntityController
         foreach ($users as $user) {
             if (in_array($user['user_id'], $doubleUsers)) {
                 if ($user['entity_id'] == $aArgs['id'] && $user['primary_entity'] == 'N') {
-                    UserEntityModel::delete(['where' => ['user_id = ?', 'entity_id = ?'], 'data' => [$user['user_id'], $aArgs['id']]]);
+                    UserEntityModel::delete(
+                        ['where' => ['user_id = ?', 'entity_id = ?'], 'data' => [$user['user_id'], $aArgs['id']]]
+                    );
                 } elseif ($user['entity_id'] == $aArgs['id'] && $user['primary_entity'] == 'Y') {
-                    UserEntityModel::delete(['where' => ['user_id = ?', 'entity_id = ?'], 'data' => [$user['user_id'], $aArgs['newEntityId']]]);
+                    UserEntityModel::delete(
+                        [
+                            'where' => ['user_id = ?', 'entity_id = ?'],
+                            'data'  => [$user['user_id'], $aArgs['newEntityId']]
+                        ]
+                    );
                 }
             }
         }
-        UserEntityModel::update(['set' => ['entity_id' => $aArgs['newEntityId']], 'where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]);
+        UserEntityModel::update(
+            ['set' => ['entity_id' => $aArgs['newEntityId']], 'where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]
+        );
 
         //Entities
-        $entities = EntityModel::get(['select' => ['entity_id', 'parent_entity_id'], 'where' => ['parent_entity_id = ?'], 'data' => [$aArgs['id']]]);
+        $entities = EntityModel::get(
+            [
+                'select' => ['entity_id', 'parent_entity_id'],
+                'where'  => ['parent_entity_id = ?'],
+                'data'   => [$aArgs['id']]
+            ]
+        );
         foreach ($entities as $entity) {
             if ($entity['entity_id'] == $aArgs['newEntityId']) {
-                EntityModel::update(['set' => ['parent_entity_id' => $dyingEntity['parent_entity_id']], 'where' => ['entity_id = ?'], 'data' => [$aArgs['newEntityId']]]);
+                EntityModel::update(
+                    [
+                        'set'   => ['parent_entity_id' => $dyingEntity['parent_entity_id']],
+                        'where' => ['entity_id = ?'],
+                        'data'  => [$aArgs['newEntityId']]
+                    ]
+                );
             } else {
-                EntityModel::update(['set' => ['parent_entity_id' => $aArgs['newEntityId']], 'where' => ['entity_id = ?'], 'data' => [$entity['entity_id']]]);
+                EntityModel::update(
+                    [
+                        'set'   => ['parent_entity_id' => $aArgs['newEntityId']],
+                        'where' => ['entity_id = ?'],
+                        'data'  => [$entity['entity_id']]
+                    ]
+                );
             }
         }
 
         //Baskets
-        GroupBasketRedirectModel::update(['set' => ['entity_id' => $aArgs['newEntityId']], 'where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]);
+        GroupBasketRedirectModel::update(
+            ['set' => ['entity_id' => $aArgs['newEntityId']], 'where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]
+        );
         //ListInstances
-        ListInstanceModel::update(['set' => ['item_id' => $successorEntity['id']], 'where' => ['item_id = ?', 'item_type = ?'], 'data' => [$dyingEntity['id'], 'entity_id']]);
+        ListInstanceModel::update(
+            [
+                'set'   => ['item_id' => $successorEntity['id']],
+                'where' => ['item_id = ?', 'item_type = ?'],
+                'data'  => [$dyingEntity['id'], 'entity_id']
+            ]
+        );
         //ListTemplates
-        $templateLists = ListTemplateModel::get(['select' => ['id'], 'where' => ['entity_id = ?'], 'data' => [$dyingEntity['id']]]);
+        $templateLists = ListTemplateModel::get(
+            ['select' => ['id'], 'where' => ['entity_id = ?'], 'data' => [$dyingEntity['id']]]
+        );
         if (!empty($templateLists)) {
             foreach ($templateLists as $templateList) {
                 ListTemplateModel::delete([
@@ -552,18 +733,40 @@ class EntityController
             }
         }
         //Templates
-        TemplateAssociationModel::update(['set' => ['value_field' => $aArgs['newEntityId']], 'where' => ['value_field = ?'], 'data' => [$aArgs['id']]]);
+        TemplateAssociationModel::update(
+            [
+                'set'   => ['value_field' => $aArgs['newEntityId']],
+                'where' => ['value_field = ?'],
+                'data'  => [$aArgs['id']]
+            ]
+        );
         //GroupIndexing
         GroupModel::update([
-            'postSet'   => ['indexation_parameters' => "jsonb_set(indexation_parameters, '{entities}', (indexation_parameters->'entities') - '{$dyingEntity['id']}')"],
-            'where'     => ["indexation_parameters->'entities' @> ?"],
-            'data'      => ['"' . $dyingEntity['id'] . '"']
+            'postSet' => ['indexation_parameters' => "jsonb_set(indexation_parameters, '{entities}', (indexation_parameters->'entities') - '{$dyingEntity['id']}')"],
+            'where'   => ["indexation_parameters->'entities' @> ?"],
+            'data'    => ['"' . $dyingEntity['id'] . '"']
         ]);
         //ResourceContact
-        $dyingConnection = ResourceContactModel::get(['select' => ['id', 'res_id', 'item_id', 'mode'], 'where' => ['type = ?', 'item_id = ?'], 'data' => ['entity', $dyingEntity['id']]]);
+        $dyingConnection = ResourceContactModel::get(
+            [
+                'select' => ['id', 'res_id', 'item_id', 'mode'],
+                'where'  => ['type = ?', 'item_id = ?'],
+                'data'   => ['entity', $dyingEntity['id']]
+            ]
+        );
         $successorConnection = [];
         if (!empty($dyingConnection)) {
-            $successorConnection = ResourceContactModel::get(['select' => ['id', 'res_id', 'item_id', 'mode'], 'where' => ['type = ?', 'item_id = ?', 'res_id in (?)'], 'data' => ['entity', $successorEntity['id'], array_unique(array_column($dyingConnection, 'res_id'))]]);
+            $successorConnection = ResourceContactModel::get(
+                [
+                    'select' => ['id', 'res_id', 'item_id', 'mode'],
+                    'where'  => ['type = ?', 'item_id = ?', 'res_id in (?)'],
+                    'data'   => [
+                        'entity',
+                        $successorEntity['id'],
+                        array_unique(array_column($dyingConnection, 'res_id'))
+                    ]
+                ]
+            );
         }
         $dyingIds = array_column($dyingConnection, 'id');
         $idsToDelete = [];
@@ -578,7 +781,9 @@ class EntityController
             ResourceContactModel::delete(['where' => ['id in (?)'], 'data' => [$idsToDelete]]);
         }
         if (!empty($dyingIds)) {
-            ResourceContactModel::update(['set' => ['item_id' => $successorEntity['id']], 'where' => ['id in (?)'], 'data' => [$dyingIds]]);
+            ResourceContactModel::update(
+                ['set' => ['item_id' => $successorEntity['id']], 'where' => ['id in (?)'], 'data' => [$dyingIds]]
+            );
         }
         EntityModel::delete(['where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]);
 
@@ -595,7 +800,14 @@ class EntityController
         return $response->withJson($entities);
     }
 
-    public function updateStatus(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function updateStatus(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'manage_entities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -626,7 +838,9 @@ class EntityController
         }
         $fatherAndSons = EntityModel::getEntityChildren(['entityId' => $aArgs['id']]);
 
-        EntityModel::update(['set' => ['enabled' => $status], 'where' => ['entity_id in (?)'], 'data' => [$fatherAndSons]]);
+        EntityModel::update(
+            ['set' => ['enabled' => $status], 'where' => ['entity_id in (?)'], 'data' => [$fatherAndSons]]
+        );
         HistoryController::add([
             'tableName' => 'entities',
             'recordId'  => $aArgs['id'],
@@ -639,7 +853,13 @@ class EntityController
         return $response->withJson(['success' => 'success']);
     }
 
-    public function getUsersById(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     */
+    public function getUsersById(Request $request, Response $response, array $aArgs): Response
     {
         $entity = EntityModel::getById(['id' => $aArgs['id'], 'select' => ['entity_id']]);
         if (empty($entity)) {
@@ -647,26 +867,39 @@ class EntityController
         }
 
         $users = UserEntityModel::getWithUsers([
-            'select'    => ['DISTINCT users.id', 'users.user_id', 'firstname', 'lastname'],
-            'where'     => ['users_entities.entity_id = ?', 'status not in (?)'],
-            'data'      => [$entity['entity_id'], ['DEL', 'ABS']],
-            'orderBy'   => ['lastname', 'firstname']
+            'select'  => ['DISTINCT users.id', 'users.user_id', 'firstname', 'lastname'],
+            'where'   => ['users_entities.entity_id = ?', 'status not in (?)'],
+            'data'    => [$entity['entity_id'], ['DEL', 'ABS']],
+            'orderBy' => ['lastname', 'firstname']
         ]);
 
         foreach ($users as $key => $user) {
             $users[$key]['labelToDisplay'] = "{$user['firstname']} {$user['lastname']}";
-            $users[$key]['descriptionToDisplay'] = UserModel::getPrimaryEntityById(['id' => $user['id'], 'select' => ['entities.entity_label']])['entity_label'];
+            $users[$key]['descriptionToDisplay'] = UserModel::getPrimaryEntityById(
+                ['id' => $user['id'], 'select' => ['entities.entity_label']]
+            )['entity_label'];
         }
 
         return $response->withJson(['users' => $users]);
     }
 
-    public function getTypes(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getTypes(Request $request, Response $response): Response
     {
         return $response->withJson(['types' => EntityModel::getTypes()]);
     }
 
-    public function getParentAddress(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function getParentAddress(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'manage_entities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -679,18 +912,27 @@ class EntityController
 
         while (!empty($entity['parent_entity_id'])) {
             $entity = EntityModel::getByEntityId([
-                'entityId'  => $entity['parent_entity_id'],
-                'select'    => ['parent_entity_id', 'address_number', 'address_street', 'address_additional1', 'address_additional2', 'address_postcode', 'address_town', 'address_country']
+                'entityId' => $entity['parent_entity_id'],
+                'select'   => [
+                    'parent_entity_id',
+                    'address_number',
+                    'address_street',
+                    'address_additional1',
+                    'address_additional2',
+                    'address_postcode',
+                    'address_town',
+                    'address_country'
+                ]
             ]);
             if (!empty($entity['address_street'])) {
                 return $response->withJson([
-                    'addressNumber'         => $entity['address_number'],
-                    'addressStreet'         => $entity['address_street'],
-                    'addressAdditional1'    => $entity['address_additional1'],
-                    'addressAdditional2'    => $entity['address_additional2'],
-                    'addressPostcode'       => $entity['address_postcode'],
-                    'addressTown'           => $entity['address_town'],
-                    'addressCountry'        => $entity['address_country']
+                    'addressNumber'      => $entity['address_number'],
+                    'addressStreet'      => $entity['address_street'],
+                    'addressAdditional1' => $entity['address_additional1'],
+                    'addressAdditional2' => $entity['address_additional2'],
+                    'addressPostcode'    => $entity['address_postcode'],
+                    'addressTown'        => $entity['address_town'],
+                    'addressCountry'     => $entity['address_country']
                 ]);
             }
         }
@@ -698,16 +940,40 @@ class EntityController
         return $response->withJson(null);
     }
 
-    public function export(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function export(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'manage_entities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
         $allowedFieldsCamelCase = [
-            'id', 'entityId', 'entityLabel', 'shortLabel', 'entityFullName', 'enabled', 'addressNumber', 'addressStreet', 'addressAdditional1', 'addressAdditional2',
-            'addressPostcode', 'addressTown', 'addressCountry', 'email', 'parentEntityId', 'entityType', 'businessId', 'folderImport', 'producerService',
-            'diffusionList', 'visaCircuit', 'opinionCircuit',
+            'id',
+            'entityId',
+            'entityLabel',
+            'shortLabel',
+            'entityFullName',
+            'enabled',
+            'addressNumber',
+            'addressStreet',
+            'addressAdditional1',
+            'addressAdditional2',
+            'addressPostcode',
+            'addressTown',
+            'addressCountry',
+            'email',
+            'parentEntityId',
+            'entityType',
+            'businessId',
+            'folderImport',
+            'producerService',
+            'diffusionList',
+            'visaCircuit',
+            'opinionCircuit',
             'users',
             'templates'
         ];
@@ -737,7 +1003,10 @@ class EntityController
         if (!empty($body['data'])) {
             $fields = [];
             foreach ($body['data'] as $parameter) {
-                if (!empty($parameter['label']) && is_string($parameter['label']) && !empty($parameter['value']) && is_string($parameter['value'])) {
+                if (
+                    !empty($parameter['label']) && is_string($parameter['label']) && !empty($parameter['value']) &&
+                    is_string($parameter['value'])
+                ) {
                     if (!in_array($parameter['value'], array_keys($allowedFields))) {
                         continue;
                     }
@@ -749,7 +1018,9 @@ class EntityController
             }
         }
         if (empty($fields)) {
-            return $response->withStatus(400)->withJson(['errors' => 'no allowed fields selected for entities export']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'no allowed fields selected for entities export']
+            );
         }
 
         ini_set('memory_limit', -1);
@@ -787,7 +1058,7 @@ class EntityController
                 $templateTypes[] = $field['value'];
             }
         }
-        $includeUsers     = in_array('users', array_column($fields, 'value'));
+        $includeUsers = in_array('users', array_column($fields, 'value'));
         $includeTemplates = in_array('templates', array_column($fields, 'value'));
 
         $roles = BroadcastListRoleModel::getRoles();
@@ -821,7 +1092,9 @@ class EntityController
                         if ($templateItem['item_type'] == 'user') {
                             $item[] = UserModel::getLabelledUserById(['id' => $templateItem['item_id']]);
                         } elseif ($templateItem['item_type'] == 'entity') {
-                            $entityLabel = EntityModel::getById(['select' => ['entity_label'], 'id' => $templateItem['item_id']]);
+                            $entityLabel = EntityModel::getById(
+                                ['select' => ['entity_label'], 'id' => $templateItem['item_id']]
+                            );
                             $item[] = $entityLabel['entity_label'];
                         }
 
@@ -834,9 +1107,9 @@ class EntityController
             // Users in entity
             if ($includeUsers) {
                 $users = UserEntityModel::getWithUsers([
-                    'select'    => ['DISTINCT users.id', 'firstname', 'lastname'],
-                    'where'     => ['users_entities.entity_id = ?'],
-                    'data'      => [$entity['entity_id']]
+                    'select' => ['DISTINCT users.id', 'firstname', 'lastname'],
+                    'where'  => ['users_entities.entity_id = ?'],
+                    'data'   => [$entity['entity_id']]
                 ]);
                 $users = array_map(function ($user) {
                     return $user['firstname'] . ' ' . $user['lastname'];
@@ -847,8 +1120,8 @@ class EntityController
             // Document templates
             if ($includeTemplates) {
                 $templates = TemplateModel::getByEntity([
-                    'select'    => ['t.template_label', 't.template_target'],
-                    'entities'  => [$entity['entity_id']]
+                    'select'   => ['t.template_label', 't.template_target'],
+                    'entities' => [$entity['entity_id']]
                 ]);
                 $templates = array_map(function ($template) {
                     return $template['template_label'] . ' ' . $template['template_target'];
@@ -873,7 +1146,10 @@ class EntityController
         rewind($file);
 
         $response->write(stream_get_contents($file));
-        $response = $response->withAddedHeader('Content-Disposition', 'attachment; filename=export_maarch.csv');
+        $response = $response->withAddedHeader(
+            'Content-Disposition',
+            'attachment; filename=export_maarch.csv'
+        );
         $contentType = 'application/vnd.ms-excel';
         fclose($file);
 

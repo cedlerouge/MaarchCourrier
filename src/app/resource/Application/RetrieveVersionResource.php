@@ -72,7 +72,10 @@ class RetrieveVersionResource
             throw new ParameterMustBeGreaterThanZeroException('version');
         }
         if (empty($type) || (!in_array($type, $this->resourceRepository::ADR_RESOURCE_TYPES))) {
-            throw new ParameterCanNotBeEmptyException('type', implode(', ', $this->resourceRepository::ADR_RESOURCE_TYPES));
+            throw new ParameterCanNotBeEmptyException(
+                'type',
+                implode(', ', $this->resourceRepository::ADR_RESOURCE_TYPES)
+            );
         }
 
         $document = $this->resourceRepository->getMainResourceData($resId);
@@ -91,7 +94,10 @@ class RetrieveVersionResource
 
         $docserverAndFilePath = $this->retrieveResourceDocserverAndFilePath->getDocserverAndFilePath($document);
 
-        $fingerPrint = $this->resourceFile->getFingerPrint($docserverAndFilePath->getDocserver()->getDocserverTypeId(), $docserverAndFilePath->getFilePath());
+        $fingerPrint = $this->resourceFile->getFingerPrint(
+            $docserverAndFilePath->getDocserver()->getDocserverTypeId(),
+            $docserverAndFilePath->getFilePath()
+        );
         if (!empty($fingerPrint) && empty($document->getFingerprint())) {
             $this->resourceRepository->updateFingerprint($resId, $fingerPrint);
         }
@@ -102,7 +108,10 @@ class RetrieveVersionResource
 
         $filename = $this->resourceRepository->formatFilename($subject);
 
-        $fileContentWithNoWatermark = $this->resourceFile->getFileContent($docserverAndFilePath->getFilePath(), $docserverAndFilePath->getDocserver()->getIsEncrypted());
+        $fileContentWithNoWatermark = $this->resourceFile->getFileContent(
+            $docserverAndFilePath->getFilePath(),
+            $docserverAndFilePath->getDocserver()->getIsEncrypted()
+        );
 
         $fileContent = $this->resourceFile->getWatermark($resId, $fileContentWithNoWatermark);
         if (empty($fileContent) || $fileContent === 'null') {

@@ -1,16 +1,16 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Resource List Controller
-* @author dev@maarch.org
-*/
+ * @brief Resource List Controller
+ * @author dev@maarch.org
+ */
 
 namespace Resource\controllers;
 
@@ -29,6 +29,7 @@ use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
+use Exception;
 use Folder\models\FolderModel;
 use Group\models\GroupModel;
 use Note\models\NoteModel;
@@ -53,14 +54,30 @@ use User\models\UserModel;
 
 class ResourceListController
 {
-    public function get(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function get(Request $request, Response $response, array $aArgs): Response
     {
-        $errors = ResourceListController::listControl(['groupId' => $aArgs['groupId'], 'userId' => $aArgs['userId'], 'basketId' => $aArgs['basketId'], 'currentUserId' => $GLOBALS['id']]);
+        $errors = ResourceListController::listControl(
+            [
+                'groupId'       => $aArgs['groupId'],
+                'userId'        => $aArgs['userId'],
+                'basketId'      => $aArgs['basketId'],
+                'currentUserId' => $GLOBALS['id']
+            ]
+        );
         if (!empty($errors['errors'])) {
             return $response->withStatus($errors['code'])->withJson(['errors' => $errors['errors']]);
         }
 
-        $basket = BasketModel::getById(['id' => $aArgs['basketId'], 'select' => ['basket_clause', 'basket_res_order', 'basket_name', 'basket_id']]);
+        $basket = BasketModel::getById(
+            ['id' => $aArgs['basketId'], 'select' => ['basket_clause', 'basket_res_order', 'basket_name', 'basket_id']]
+        );
         $user = UserModel::getById(['id' => $aArgs['userId'], 'select' => ['user_id']]);
         $group = GroupModel::getById(['id' => $aArgs['groupId'], 'select' => ['group_id']]);
 
@@ -68,49 +85,64 @@ class ResourceListController
         $data['offset'] = (empty($data['offset']) || !is_numeric($data['offset']) ? 0 : (int)$data['offset']);
         $data['limit'] = (empty($data['limit']) || !is_numeric($data['limit']) ? 10 : (int)$data['limit']);
 
-        $allQueryData = ResourceListController::getResourcesListQueryData(['data' => $data, 'basketClause' => $basket['basket_clause'], 'login' => $user['user_id']]);
+        $allQueryData = ResourceListController::getResourcesListQueryData(
+            ['data' => $data, 'basketClause' => $basket['basket_clause'], 'login' => $user['user_id']]
+        );
         if (!empty($allQueryData['order'])) {
             $data['order'] = $allQueryData['order'];
         }
 
         $rawResources = ResourceListModel::getOnView([
-            'select'    => ['res_id'],
-            'table'     => $allQueryData['table'],
-            'leftJoin'  => $allQueryData['leftJoin'],
-            'where'     => $allQueryData['where'],
-            'data'      => $allQueryData['queryData'],
-            'orderBy'   => empty($data['order']) ? [$basket['basket_res_order']] : [$data['order']]
+            'select'   => ['res_id'],
+            'table'    => $allQueryData['table'],
+            'leftJoin' => $allQueryData['leftJoin'],
+            'where'    => $allQueryData['where'],
+            'data'     => $allQueryData['queryData'],
+            'orderBy'  => empty($data['order']) ? [$basket['basket_res_order']] : [$data['order']]
         ]);
         $count = count($rawResources);
 
-        $resIds = ResourceListController::getIdsWithOffsetAndLimit(['resources' => $rawResources, 'offset' => $data['offset'], 'limit' => $data['limit']]);
+        $resIds = ResourceListController::getIdsWithOffsetAndLimit(
+            ['resources' => $rawResources, 'offset' => $data['offset'], 'limit' => $data['limit']]
+        );
 
         $followedDocuments = UserFollowedResourceModel::get([
-            'select'    => ['res_id'],
-            'where'     => ['user_id = ?'],
-            'data'      => [$GLOBALS['id']],
+            'select' => ['res_id'],
+            'where'  => ['user_id = ?'],
+            'data'   => [$GLOBALS['id']],
         ]);
 
         $trackedMails = array_column($followedDocuments, 'res_id');
         $allResources = array_column($rawResources, 'res_id');
 
         $formattedResources = [];
-        $defaultAction      = [];
-        $displayFolderTags  = false;
-        $templateColumns    = 0;
+        $defaultAction = [];
+        $displayFolderTags = false;
+        $templateColumns = 0;
         if (!empty($resIds)) {
             $excludeAttachmentTypes = ['signed_response', 'summary_sheet'];
             $attachments = AttachmentModel::get([
-                'select'    => ['COUNT(res_id)', 'res_id_master'],
-                'where'     => ['res_id_master in (?)', 'status not in (?)', 'attachment_type not in (?)', '((status = ? AND typist = ?) OR status != ?)'],
-                'data'      => [$resIds, ['DEL', 'OBS'], $excludeAttachmentTypes, 'TMP', $GLOBALS['id'], 'TMP'],
-                'groupBy'   => ['res_id_master']
+                'select'  => ['COUNT(res_id)', 'res_id_master'],
+                'where'   => [
+                    'res_id_master in (?)',
+                    'status not in (?)',
+                    'attachment_type not in (?)',
+                    '((status = ? AND typist = ?) OR status != ?)'
+                ],
+                'data'    => [$resIds, ['DEL', 'OBS'], $excludeAttachmentTypes, 'TMP', $GLOBALS['id'], 'TMP'],
+                'groupBy' => ['res_id_master']
             ]);
 
-            $groupBasket     = GroupBasketModel::get(['select' => ['list_display', 'list_event', 'list_event_data'], 'where' => ['basket_id = ?', 'group_id = ?'], 'data' => [$basket['basket_id'], $group['group_id']]]);
-            $listDisplay     = json_decode($groupBasket[0]['list_display'], true);
+            $groupBasket = GroupBasketModel::get(
+                [
+                    'select' => ['list_display', 'list_event', 'list_event_data'],
+                    'where'  => ['basket_id = ?', 'group_id = ?'],
+                    'data'   => [$basket['basket_id'], $group['group_id']]
+                ]
+            );
+            $listDisplay = json_decode($groupBasket[0]['list_display'], true);
             $templateColumns = $listDisplay['templateColumns'];
-            $listDisplay     = $listDisplay['subInfos'];
+            $listDisplay = $listDisplay['subInfos'];
 
             $selectData = ResourceListController::getSelectData(['listDisplay' => $listDisplay]);
 
@@ -121,21 +153,21 @@ class ResourceListController
             $order .= 'END';
 
             $resources = ResourceListModel::getOnResource([
-                'select'    => $selectData['select'],
-                'table'     => $selectData['tableFunction'],
-                'leftJoin'  => $selectData['leftJoinFunction'],
-                'where'     => ['res_letterbox.res_id in (?)'],
-                'data'      => [$resIds],
-                'orderBy'   => [$order]
+                'select'   => $selectData['select'],
+                'table'    => $selectData['tableFunction'],
+                'leftJoin' => $selectData['leftJoinFunction'],
+                'where'    => ['res_letterbox.res_id in (?)'],
+                'data'     => [$resIds],
+                'orderBy'  => [$order]
             ]);
 
             $formattedResources = ResourceListController::getFormattedResources([
-                'resources'     => $resources,
-                'userId'        => $GLOBALS['id'],
-                'attachments'   => $attachments,
-                'checkLocked'   => true,
-                'listDisplay'   => $listDisplay,
-                'trackedMails'  => $trackedMails
+                'resources'    => $resources,
+                'userId'       => $GLOBALS['id'],
+                'attachments'  => $attachments,
+                'checkLocked'  => true,
+                'listDisplay'  => $listDisplay,
+                'trackedMails' => $trackedMails
             ]);
 
             $defaultAction['component'] = $groupBasket[0]['list_event'];
@@ -158,15 +190,32 @@ class ResourceListController
         ]);
     }
 
-    public static function getSelectData(array $args)
+    /**
+     * @param array $args
+     * @return array[]
+     */
+    public static function getSelectData(array $args): array
     {
         $select = [
-            'res_letterbox.res_id', 'res_letterbox.subject', 'res_letterbox.barcode', 'res_letterbox.alt_identifier',
-            'status.label_status AS "status.label_status"', 'status.img_filename AS "status.img_filename"', 'priorities.color AS "priorities.color"',
-            'res_letterbox.closing_date', 'res_letterbox.locker_user_id', 'res_letterbox.locker_time', 'res_letterbox.confidentiality',
-            'res_letterbox.filename as res_filename', 'res_letterbox.integrations', 'res_letterbox.retention_frozen', 'res_letterbox.binding', 'res_letterbox.process_limit_date', 'res_letterbox.creation_date'
+            'res_letterbox.res_id',
+            'res_letterbox.subject',
+            'res_letterbox.barcode',
+            'res_letterbox.alt_identifier',
+            'status.label_status AS "status.label_status"',
+            'status.img_filename AS "status.img_filename"',
+            'priorities.color AS "priorities.color"',
+            'res_letterbox.closing_date',
+            'res_letterbox.locker_user_id',
+            'res_letterbox.locker_time',
+            'res_letterbox.confidentiality',
+            'res_letterbox.filename as res_filename',
+            'res_letterbox.integrations',
+            'res_letterbox.retention_frozen',
+            'res_letterbox.binding',
+            'res_letterbox.process_limit_date',
+            'res_letterbox.creation_date'
         ];
-        $tableFunction    = ['status', 'priorities'];
+        $tableFunction = ['status', 'priorities'];
         $leftJoinFunction = ['res_letterbox.status = status.id', 'res_letterbox.priority = priorities.id'];
         foreach ($args['listDisplay'] as $value) {
             $value = (array)$value;
@@ -189,7 +238,10 @@ class ResourceListController
                 $select[] = 'res_letterbox.modification_date';
             } elseif ($value['value'] == 'getOpinionLimitDate') {
                 $select[] = 'res_letterbox.opinion_limit_date';
-            } elseif (strpos($value['value'], 'indexingCustomField_') !== false && !in_array('res_letterbox.custom_fields', $select)) {
+            } elseif (
+                str_contains($value['value'], 'indexingCustomField_') &&
+                !in_array('res_letterbox.custom_fields', $select)
+            ) {
                 $select[] = 'res_letterbox.custom_fields';
             }
         }
@@ -197,26 +249,49 @@ class ResourceListController
         return ['select' => $select, 'tableFunction' => $tableFunction, 'leftJoinFunction' => $leftJoinFunction];
     }
 
-    public function getFilters(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function getFilters(Request $request, Response $response, array $aArgs): Response
     {
-        $errors = ResourceListController::listControl(['groupId' => $aArgs['groupId'], 'userId' => $aArgs['userId'], 'basketId' => $aArgs['basketId'], 'currentUserId' => $GLOBALS['id']]);
+        $errors = ResourceListController::listControl(
+            [
+                'groupId'       => $aArgs['groupId'],
+                'userId'        => $aArgs['userId'],
+                'basketId'      => $aArgs['basketId'],
+                'currentUserId' => $GLOBALS['id']
+            ]
+        );
         if (!empty($errors['errors'])) {
             return $response->withStatus($errors['code'])->withJson(['errors' => $errors['errors']]);
         }
 
         $basket = BasketModel::getById(['id' => $aArgs['basketId'], 'select' => ['basket_clause']]);
-        $whereClause = PreparedClauseController::getPreparedClause(['clause' => $basket['basket_clause'], 'userId' => $aArgs['userId']]);
+        $whereClause = PreparedClauseController::getPreparedClause(
+            ['clause' => $basket['basket_clause'], 'userId' => $aArgs['userId']]
+        );
         $where = [$whereClause];
         $queryData = [];
 
         $queryParams = $request->getQueryParams();
 
-        $filters = ResourceListController::getFormattedFilters(['where' => $where, 'queryData' => $queryData, 'queryParams' => $queryParams]);
+        $filters = ResourceListController::getFormattedFilters(
+            ['where' => $where, 'queryData' => $queryData, 'queryParams' => $queryParams]
+        );
 
         return $response->withJson($filters);
     }
 
-    public static function getResourcesListQueryData(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getResourcesListQueryData(array $args): array
     {
         ValidatorModel::stringType($args, ['basketClause', 'login']);
         ValidatorModel::arrayType($args, ['data']);
@@ -226,7 +301,9 @@ class ResourceListController
         $where = [];
         if (!empty($args['basketClause'])) {
             $user = UserModel::getByLogin(['login' => $args['login'], 'select' => ['id']]);
-            $whereClause = PreparedClauseController::getPreparedClause(['clause' => $args['basketClause'], 'userId' => $user['id']]);
+            $whereClause = PreparedClauseController::getPreparedClause(
+                ['clause' => $args['basketClause'], 'userId' => $user['id']]
+            );
             $where = [$whereClause];
         }
         $queryData = [];
@@ -340,31 +417,53 @@ class ResourceListController
             $queryData[] = $resourcesInFolders;
         }
 
-        if (!empty($args['data']['order']) && strpos($args['data']['order'], 'alt_identifier') !== false) {
+        if (!empty($args['data']['order']) && str_contains($args['data']['order'], 'alt_identifier')) {
             $order = 'order_alphanum(alt_identifier) ' . explode(' ', $args['data']['order'])[1];
         }
-        if (!empty($args['data']['order']) && strpos($args['data']['order'], 'dest_user') !== false) {
+        if (!empty($args['data']['order']) && str_contains($args['data']['order'], 'dest_user')) {
             $order = '(us.lastname, us.firstname) ' . explode(' ', $args['data']['order'])[1];
             $table[] = '(SELECT firstname, lastname, id from users) AS us';
             $leftJoin[] = 'us.id = res_view_letterbox.dest_user';
         }
-        if (!empty($args['data']['order']) && strpos($args['data']['order'], 'priority') !== false) {
+        if (!empty($args['data']['order']) && str_contains($args['data']['order'], 'priority')) {
             $order = 'priorities.order ' . explode(' ', $args['data']['order'])[1];
             $table[] = 'priorities';
             $leftJoin[] = 'res_view_letterbox.priority = priorities.id';
         }
 
-        return ['table' => $table, 'leftJoin' => $leftJoin, 'where' => $where, 'queryData' => $queryData, 'order' => $order];
+        return [
+            'table'     => $table,
+            'leftJoin'  => $leftJoin,
+            'where'     => $where,
+            'queryData' => $queryData,
+            'order'     => $order
+        ];
     }
 
-    public function getActions(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getActions(Request $request, Response $response, array $args): Response
     {
-        $errors = ResourceListController::listControl(['groupId' => $args['groupId'], 'userId' => $args['userId'], 'basketId' => $args['basketId'], 'currentUserId' => $GLOBALS['id']]);
+        $errors = ResourceListController::listControl(
+            [
+                'groupId'       => $args['groupId'],
+                'userId'        => $args['userId'],
+                'basketId'      => $args['basketId'],
+                'currentUserId' => $GLOBALS['id']
+            ]
+        );
         if (!empty($errors['errors'])) {
             return $response->withStatus($errors['code'])->withJson(['errors' => $errors['errors']]);
         }
 
-        $basket = BasketModel::getById(['id' => $args['basketId'], 'select' => ['basket_clause', 'basket_res_order', 'basket_name', 'basket_id']]);
+        $basket = BasketModel::getById(
+            ['id' => $args['basketId'], 'select' => ['basket_clause', 'basket_res_order', 'basket_name', 'basket_id']]
+        );
         $group = GroupModel::getById(['id' => $args['groupId'], 'select' => ['group_id']]);
 
         $queryParams = $request->getQueryParams();
@@ -376,9 +475,9 @@ class ResourceListController
         }
 
         $rawActions = ActionGroupBasketModel::get([
-            'select'    => ['id_action', 'default_action_list', 'where_clause'],
-            'where'     => ['basket_id = ?', 'group_id = ?', "{$usedIn} = ?"],
-            'data'      => [$basket['basket_id'], $group['group_id'], 'Y']
+            'select' => ['id_action', 'default_action_list', 'where_clause'],
+            'where'  => ['basket_id = ?', 'group_id = ?', "{$usedIn} = ?"],
+            'data'   => [$basket['basket_id'], $group['group_id'], 'Y']
         ]);
 
         $actions = [];
@@ -393,12 +492,27 @@ class ResourceListController
         }
 
         if (!empty($actions)) {
-            $actions = ActionModel::get(['select' => ['id', 'label_action', 'component'], 'where' => ['id in (?)'], 'data' => [$actions], 'orderBy' => ["id = {$defaultAction} DESC",'label_action']]);
+            $actions = ActionModel::get(
+                [
+                    'select'  => ['id', 'label_action', 'component'],
+                    'where'   => ['id in (?)'],
+                    'data'    => [$actions],
+                    'orderBy' => ["id = {$defaultAction} DESC", 'label_action']
+                ]
+            );
             foreach ($actions as $key => $action) {
                 if (!empty($queryParams['resId'])) {
                     if (!empty($actionsClauses[$action['id']])) {
-                        $whereClause = PreparedClauseController::getPreparedClause(['clause' => $actionsClauses[$action['id']], 'userId' => $GLOBALS['id']]);
-                        $ressource = ResModel::getOnView(['select' => [1], 'where' => ['res_id = ?', $whereClause], 'data' => [$queryParams['resId']]]);
+                        $whereClause = PreparedClauseController::getPreparedClause(
+                            ['clause' => $actionsClauses[$action['id']], 'userId' => $GLOBALS['id']]
+                        );
+                        $ressource = ResModel::getOnView(
+                            [
+                                'select' => [1],
+                                'where'  => ['res_id = ?', $whereClause],
+                                'data'   => [$queryParams['resId']]
+                            ]
+                        );
                         if (empty($ressource)) {
                             unset($actions[$key]);
                             continue;
@@ -420,7 +534,14 @@ class ResourceListController
         return $response->withJson(['actions' => array_values($actions)]);
     }
 
-    public function setAction(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function setAction(Request $request, Response $response, array $aArgs): Response
     {
         $body = $request->getParsedBody();
         if (!Validator::arrayType()->notEmpty()->validate($body['resources'])) {
@@ -429,38 +550,53 @@ class ResourceListController
         $body['resources'] = array_unique($body['resources']);
         $body['resources'] = array_slice($body['resources'], 0, 500);
 
-        $errors = ResourceListController::listControl(['groupId' => $aArgs['groupId'], 'userId' => $aArgs['userId'], 'basketId' => $aArgs['basketId'], 'currentUserId' => $GLOBALS['id']]);
+        $errors = ResourceListController::listControl(
+            [
+                'groupId'       => $aArgs['groupId'],
+                'userId'        => $aArgs['userId'],
+                'basketId'      => $aArgs['basketId'],
+                'currentUserId' => $GLOBALS['id']
+            ]
+        );
         if (!empty($errors['errors'])) {
             return $response->withStatus($errors['code'])->withJson(['errors' => $errors['errors']]);
         }
 
-        $basket = BasketModel::getById(['id' => $aArgs['basketId'], 'select' => ['basket_clause', 'basket_id', 'basket_name']]);
+        $basket = BasketModel::getById(
+            ['id' => $aArgs['basketId'], 'select' => ['basket_clause', 'basket_id', 'basket_name']]
+        );
         $group = GroupModel::getById(['id' => $aArgs['groupId'], 'select' => ['group_id']]);
         $actionGroupBasket = ActionGroupBasketModel::get([
-            'select'    => [1],
-            'where'     => ['basket_id = ?', 'group_id = ?', 'id_action = ?'],
-            'data'      => [$basket['basket_id'], $group['group_id'], $aArgs['actionId']]
+            'select' => [1],
+            'where'  => ['basket_id = ?', 'group_id = ?', 'id_action = ?'],
+            'data'   => [$basket['basket_id'], $group['group_id'], $aArgs['actionId']]
         ]);
         if (empty($actionGroupBasket)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Action is not linked to this group basket']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Action is not linked to this group basket']
+            );
         }
 
-        $action = ActionModel::getById(['id' => $aArgs['actionId'], 'select' => ['id', 'component', 'parameters', 'label_action']]);
+        $action = ActionModel::getById(
+            ['id' => $aArgs['actionId'], 'select' => ['id', 'component', 'parameters', 'label_action']]
+        );
         if (empty($action['component'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Action component does not exist']);
         }
         if (!array_key_exists($action['component'], ActionMethodController::COMPONENTS_ACTIONS)) {
             return $response->withStatus(400)->withJson(['errors' => 'Action method does not exist']);
         }
-        $action['parameters']   = json_decode($action['parameters'], true);
-        $actionRequiredFields   = $action['parameters']['requiredFields'] ?? [];
-        $fillRequiredFields     = $action['parameters']['fillRequiredFields'] ?? [];
+        $action['parameters'] = json_decode($action['parameters'], true);
+        $actionRequiredFields = $action['parameters']['requiredFields'] ?? [];
+        $fillRequiredFields = $action['parameters']['fillRequiredFields'] ?? [];
 
-        $whereClause = PreparedClauseController::getPreparedClause(['clause' => $basket['basket_clause'], 'userId' => $aArgs['userId']]);
+        $whereClause = PreparedClauseController::getPreparedClause(
+            ['clause' => $basket['basket_clause'], 'userId' => $aArgs['userId']]
+        );
         $resources = ResModel::getOnView([
-            'select'    => ['res_id', 'locker_user_id', 'locker_time'],
-            'where'     => [$whereClause, 'res_view_letterbox.res_id in (?)'],
-            'data'      => [$body['resources']]
+            'select' => ['res_id', 'locker_user_id', 'locker_time'],
+            'where'  => [$whereClause, 'res_view_letterbox.res_id in (?)'],
+            'data'   => [$body['resources']]
         ]);
 
         $resourcesInBasket = array_column($resources, 'res_id');
@@ -491,26 +627,36 @@ class ResourceListController
         $body['data'] = empty($body['data']) ? [] : $body['data'];
         $body['note'] = empty($body['note']) ? [] : $body['note'];
 
-        $method          = ActionMethodController::COMPONENTS_ACTIONS[$action['component']];
+        $method = ActionMethodController::COMPONENTS_ACTIONS[$action['component']];
         $methodResponses = [];
         foreach ($resourcesForAction as $key => $resId) {
             if (!empty($actionRequiredFields)) {
-                $requiredFieldsValid = ActionController::checkRequiredFields(['resId' => $resId, 'actionRequiredFields' => $actionRequiredFields]);
+                $requiredFieldsValid = ActionController::checkRequiredFields(
+                    ['resId' => $resId, 'actionRequiredFields' => $actionRequiredFields]
+                );
                 if (!empty($requiredFieldsValid['errors'])) {
                     if (empty($methodResponses['errors'])) {
                         $methodResponses['errors'] = [];
                     }
-                    $methodResponses['errors'] = array_merge($methodResponses['errors'], [$requiredFieldsValid['errors']]);
+                    $methodResponses['errors'] = array_merge(
+                        $methodResponses['errors'],
+                        [$requiredFieldsValid['errors']]
+                    );
                     continue;
                 }
             }
             if (!empty($fillRequiredFields)) {
-                $replaceFieldsData = ActionController::replaceFieldsData(['resId' => $resId, 'fillRequiredFields' => $fillRequiredFields]);
+                $replaceFieldsData = ActionController::replaceFieldsData(
+                    ['resId' => $resId, 'fillRequiredFields' => $fillRequiredFields]
+                );
                 if (!empty($replaceFieldsData['errors'])) {
                     if (empty($methodResponses['errors'])) {
                         $methodResponses['errors'] = [];
                     }
-                    $methodResponses['errors'] = array_merge($methodResponses['errors'], [$replaceFieldsData['errors']]);
+                    $methodResponses['errors'] = array_merge(
+                        $methodResponses['errors'],
+                        [$replaceFieldsData['errors']]
+                    );
                     continue;
                 }
             }
@@ -519,12 +665,24 @@ class ResourceListController
                 if (empty($methodResponses['errors'])) {
                     $methodResponses['errors'] = [];
                 }
-                $methodResponses['errors'] = array_merge($methodResponses['errors'], ['Fingerprints do not match for resource ' . $resId]);
+                $methodResponses['errors'] = array_merge(
+                    $methodResponses['errors'],
+                    ['Fingerprints do not match for resource ' . $resId]
+                );
                 continue;
             }
 
             if (!empty($method)) {
-                $methodResponse = ActionMethodController::$method(['resId' => $resId, 'data' => $body['data'], 'note' => $body['note'], 'action' => $action, 'resources' => $resourcesForAction, 'userId' => $aArgs['userId']]);
+                $methodResponse = ActionMethodController::$method(
+                    [
+                        'resId'     => $resId,
+                        'data'      => $body['data'],
+                        'note'      => $body['note'],
+                        'action'    => $action,
+                        'resources' => $resourcesForAction,
+                        'userId'    => $aArgs['userId']
+                    ]
+                );
 
                 if (!empty($methodResponse['errors'])) {
                     if (empty($methodResponses['errors'])) {
@@ -543,7 +701,16 @@ class ResourceListController
         }
         $historic = empty($methodResponse['history']) ? '' : $methodResponse['history'];
         if (!empty($resourcesForAction)) {
-            ActionMethodController::terminateAction(['id' => $aArgs['actionId'], 'resources' => $resourcesForAction, 'basketName' => $basket['basket_name'], 'note' => $body['note'], 'history' => $historic, 'finishInScript' => !empty($methodResponse['postscript'])]);
+            ActionMethodController::terminateAction(
+                [
+                    'id'             => $aArgs['actionId'],
+                    'resources'      => $resourcesForAction,
+                    'basketName'     => $basket['basket_name'],
+                    'note'           => $body['note'],
+                    'history'        => $historic,
+                    'finishInScript' => !empty($methodResponse['postscript'])
+                ]
+            );
         }
 
         if (!empty($methodResponse['postscript'])) {
@@ -559,7 +726,14 @@ class ResourceListController
         return $response->withStatus(204);
     }
 
-    public function lock(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function lock(Request $request, Response $response, array $aArgs): Response
     {
         $body = $request->getParsedBody();
         if (!Validator::arrayType()->notEmpty()->validate($body['resources'])) {
@@ -567,18 +741,27 @@ class ResourceListController
         }
         $body['resources'] = array_slice($body['resources'], 0, 500);
 
-        $errors = ResourceListController::listControl(['groupId' => $aArgs['groupId'], 'userId' => $aArgs['userId'], 'basketId' => $aArgs['basketId'], 'currentUserId' => $GLOBALS['id']]);
+        $errors = ResourceListController::listControl(
+            [
+                'groupId'       => $aArgs['groupId'],
+                'userId'        => $aArgs['userId'],
+                'basketId'      => $aArgs['basketId'],
+                'currentUserId' => $GLOBALS['id']
+            ]
+        );
         if (!empty($errors['errors'])) {
             return $response->withStatus($errors['code'])->withJson(['errors' => $errors['errors']]);
         }
 
         $basket = BasketModel::getById(['id' => $aArgs['basketId'], 'select' => ['basket_clause']]);
 
-        $whereClause = PreparedClauseController::getPreparedClause(['clause' => $basket['basket_clause'], 'userId' => $aArgs['userId']]);
+        $whereClause = PreparedClauseController::getPreparedClause(
+            ['clause' => $basket['basket_clause'], 'userId' => $aArgs['userId']]
+        );
         $resources = ResModel::getOnView([
-            'select'    => ['res_id', 'locker_user_id', 'locker_time'],
-            'where'     => [$whereClause, 'res_view_letterbox.res_id in (?)'],
-            'data'      => [$body['resources']]
+            'select' => ['res_id', 'locker_user_id', 'locker_time'],
+            'where'  => [$whereClause, 'res_view_letterbox.res_id in (?)'],
+            'data'   => [$body['resources']]
         ]);
 
         $resourcesInBasket = array_column($resources, 'res_id');
@@ -608,7 +791,10 @@ class ResourceListController
 
         if (!empty($resourcesToLock)) {
             ResModel::update([
-                'set'   => ['locker_user_id' => $GLOBALS['id'], 'locker_time' => 'CURRENT_TIMESTAMP + interval \'1\' MINUTE'],
+                'set'   => [
+                    'locker_user_id' => $GLOBALS['id'],
+                    'locker_time'    => 'CURRENT_TIMESTAMP + interval \'1\' MINUTE'
+                ],
                 'where' => ['res_id in (?)'],
                 'data'  => [$resourcesToLock]
             ]);
@@ -617,7 +803,14 @@ class ResourceListController
         return $response->withStatus(204);
     }
 
-    public function unlock(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function unlock(Request $request, Response $response, array $aArgs): Response
     {
         $body = $request->getParsedBody();
         if (!Validator::arrayType()->notEmpty()->validate($body['resources'])) {
@@ -625,18 +818,27 @@ class ResourceListController
         }
         $body['resources'] = array_slice($body['resources'], 0, 500);
 
-        $errors = ResourceListController::listControl(['groupId' => $aArgs['groupId'], 'userId' => $aArgs['userId'], 'basketId' => $aArgs['basketId'], 'currentUserId' => $GLOBALS['id']]);
+        $errors = ResourceListController::listControl(
+            [
+                'groupId'       => $aArgs['groupId'],
+                'userId'        => $aArgs['userId'],
+                'basketId'      => $aArgs['basketId'],
+                'currentUserId' => $GLOBALS['id']
+            ]
+        );
         if (!empty($errors['errors'])) {
             return $response->withStatus($errors['code'])->withJson(['errors' => $errors['errors']]);
         }
 
         $basket = BasketModel::getById(['id' => $aArgs['basketId'], 'select' => ['basket_clause']]);
 
-        $whereClause = PreparedClauseController::getPreparedClause(['clause' => $basket['basket_clause'], 'userId' => $aArgs['userId']]);
+        $whereClause = PreparedClauseController::getPreparedClause(
+            ['clause' => $basket['basket_clause'], 'userId' => $aArgs['userId']]
+        );
         $resources = ResModel::getOnView([
-            'select'    => ['res_id', 'locker_user_id', 'locker_time'],
-            'where'     => [$whereClause, 'res_view_letterbox.res_id in (?)'],
-            'data'      => [$body['resources']]
+            'select' => ['res_id', 'locker_user_id', 'locker_time'],
+            'where'  => [$whereClause, 'res_view_letterbox.res_id in (?)'],
+            'data'   => [$body['resources']]
         ]);
 
         $resourcesInBasket = array_column($resources, 'res_id');
@@ -647,7 +849,10 @@ class ResourceListController
 
         $resourcesToUnlock = [];
         foreach ($resources as $resource) {
-            if (!(!empty($resource['locker_user_id']) && $resource['locker_user_id'] != $GLOBALS['id'] && strtotime($resource['locker_time']) > time())) {
+            if (
+                !(!empty($resource['locker_user_id']) && $resource['locker_user_id'] != $GLOBALS['id'] &&
+                    strtotime($resource['locker_time']) > time())
+            ) {
                 $resourcesToUnlock[] = $resource['res_id'];
             }
         }
@@ -663,7 +868,14 @@ class ResourceListController
         return $response->withStatus(204);
     }
 
-    public function areLocked(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function areLocked(Request $request, Response $response, array $args): Response
     {
         $body = $request->getParsedBody();
         if (!Validator::arrayType()->notEmpty()->validate($body['resources'])) {
@@ -671,18 +883,27 @@ class ResourceListController
         }
         $body['resources'] = array_slice($body['resources'], 0, 500);
 
-        $errors = ResourceListController::listControl(['groupId' => $args['groupId'], 'userId' => $args['userId'], 'basketId' => $args['basketId'], 'currentUserId' => $GLOBALS['id']]);
+        $errors = ResourceListController::listControl(
+            [
+                'groupId'       => $args['groupId'],
+                'userId'        => $args['userId'],
+                'basketId'      => $args['basketId'],
+                'currentUserId' => $GLOBALS['id']
+            ]
+        );
         if (!empty($errors['errors'])) {
             return $response->withStatus($errors['code'])->withJson(['errors' => $errors['errors']]);
         }
 
         $basket = BasketModel::getById(['id' => $args['basketId'], 'select' => ['basket_clause']]);
 
-        $whereClause = PreparedClauseController::getPreparedClause(['clause' => $basket['basket_clause'], 'userId' => $args['userId']]);
+        $whereClause = PreparedClauseController::getPreparedClause(
+            ['clause' => $basket['basket_clause'], 'userId' => $args['userId']]
+        );
         $resources = ResModel::getOnView([
-            'select'    => ['res_id', 'locker_user_id', 'locker_time'],
-            'where'     => [$whereClause, 'res_view_letterbox.res_id in (?)'],
-            'data'      => [$body['resources']]
+            'select' => ['res_id', 'locker_user_id', 'locker_time'],
+            'where'  => [$whereClause, 'res_view_letterbox.res_id in (?)'],
+            'data'   => [$body['resources']]
         ]);
 
         $resourcesInBasket = array_column($resources, 'res_id');
@@ -719,34 +940,43 @@ class ResourceListController
             }
         }
 
-        return $response->withJson(['countLockedResources' => $locked, 'lockers' => $lockers, 'resourcesToProcess' => $resourcesToLock]);
+        return $response->withJson(
+            ['countLockedResources' => $locked, 'lockers' => $lockers, 'resourcesToProcess' => $resourcesToLock]
+        );
     }
 
-    public static function listControl(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array|string[]
+     * @throws Exception
+     */
+    public static function listControl(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['groupId', 'userId', 'basketId', 'currentUserId']);
         ValidatorModel::intVal($aArgs, ['groupId', 'userId', 'basketId', 'currentUserId']);
 
         $group = GroupModel::getById(['id' => $aArgs['groupId'], 'select' => ['group_id']]);
-        $basket = BasketModel::getById(['id' => $aArgs['basketId'], 'select' => ['basket_id', 'basket_clause', 'basket_res_order', 'basket_name']]);
+        $basket = BasketModel::getById(
+            ['id' => $aArgs['basketId'], 'select' => ['basket_id', 'basket_clause', 'basket_res_order', 'basket_name']]
+        );
         if (empty($group) || empty($basket)) {
             return ['errors' => 'Group or basket does not exist', 'code' => 403];
         }
 
         if ($aArgs['userId'] == $aArgs['currentUserId']) {
             $redirectedBasket = RedirectBasketModel::get([
-                'select'    => [1],
-                'where'     => ['owner_user_id = ?', 'basket_id = ?', 'group_id = ?'],
-                'data'      => [$aArgs['userId'], $basket['basket_id'], $aArgs['groupId']]
+                'select' => [1],
+                'where'  => ['owner_user_id = ?', 'basket_id = ?', 'group_id = ?'],
+                'data'   => [$aArgs['userId'], $basket['basket_id'], $aArgs['groupId']]
             ]);
             if (!empty($redirectedBasket[0])) {
                 return ['errors' => 'Basket out of perimeter (redirected)', 'code' => 403];
             }
         } else {
             $redirectedBasket = RedirectBasketModel::get([
-                'select'    => ['actual_user_id'],
-                'where'     => ['owner_user_id = ?', 'basket_id = ?', 'group_id = ?'],
-                'data'      => [$aArgs['userId'], $basket['basket_id'], $aArgs['groupId']]
+                'select' => ['actual_user_id'],
+                'where'  => ['owner_user_id = ?', 'basket_id = ?', 'group_id = ?'],
+                'data'   => [$aArgs['userId'], $basket['basket_id'], $aArgs['groupId']]
             ]);
             if (empty($redirectedBasket[0]) || $redirectedBasket[0]['actual_user_id'] != $aArgs['currentUserId']) {
                 return ['errors' => 'Basket out of perimeter', 'code' => 403];
@@ -759,7 +989,13 @@ class ResourceListController
             return ['errors' => 'Group is not linked to this user', 'code' => 403];
         }
 
-        $isBasketLinked = GroupBasketModel::get(['select' => [1], 'where' => ['basket_id = ?', 'group_id = ?'], 'data' => [$basket['basket_id'], $group['group_id']]]);
+        $isBasketLinked = GroupBasketModel::get(
+            [
+                'select' => [1],
+                'where'  => ['basket_id = ?', 'group_id = ?'],
+                'data'   => [$basket['basket_id'], $group['group_id']]
+            ]
+        );
         if (empty($isBasketLinked)) {
             return ['errors' => 'Group is not linked to this basket', 'code' => 403];
         }
@@ -767,16 +1003,21 @@ class ResourceListController
         return ['success' => 'success'];
     }
 
-    private static function getAssignee(array $args)
+    /**
+     * @param array $args
+     * @return string
+     * @throws Exception
+     */
+    private static function getAssignee(array $args): string
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
 
         $res = ResModel::getById(['select' => ['destination'], 'resId' => $args['resId']]);
         $listInstances = ListInstanceModel::get([
-            'select'    => ['item_id'],
-            'where'     => ['difflist_type = ?', 'res_id = ?', 'item_mode = ?'],
-            'data'      => ['entity_id', $args['resId'], 'dest']
+            'select' => ['item_id'],
+            'where'  => ['difflist_type = ?', 'res_id = ?', 'item_mode = ?'],
+            'data'   => ['entity_id', $args['resId'], 'dest']
         ]);
 
         $assignee = '';
@@ -791,26 +1032,31 @@ class ResourceListController
         return $assignee;
     }
 
-    private static function getVisaWorkflow(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    private static function getVisaWorkflow(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
 
         $listInstances = ListInstanceModel::get([
-            'select'    => ['item_id', 'requested_signature', 'process_date'],
-            'where'     => ['difflist_type = ?', 'res_id = ?'],
-            'data'      => ['VISA_CIRCUIT', $args['resId']],
-            'orderBy'   => ['listinstance_id']
+            'select'  => ['item_id', 'requested_signature', 'process_date'],
+            'where'   => ['difflist_type = ?', 'res_id = ?'],
+            'data'    => ['VISA_CIRCUIT', $args['resId']],
+            'orderBy' => ['listinstance_id']
         ]);
 
         $users = [];
         $currentFound = false;
         foreach ($listInstances as $listInstance) {
             $users[] = [
-                'user'      => UserModel::getLabelledUserById(['id' => $listInstance['item_id']]),
-                'mode'      => $listInstance['requested_signature'] ? 'sign' : 'visa',
-                'date'      => TextFormatModel::formatDate($listInstance['process_date']),
-                'current'   => empty($listInstance['process_date']) && !$currentFound
+                'user'    => UserModel::getLabelledUserById(['id' => $listInstance['item_id']]),
+                'mode'    => $listInstance['requested_signature'] ? 'sign' : 'visa',
+                'date'    => TextFormatModel::formatDate($listInstance['process_date']),
+                'current' => empty($listInstance['process_date']) && !$currentFound
             ];
             if (empty($listInstance['process_date']) && !$currentFound) {
                 $currentFound = true;
@@ -820,40 +1066,61 @@ class ResourceListController
         return $users;
     }
 
-    private static function getSignatories(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    private static function getSignatories(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
 
         $listInstances = ListInstanceModel::get([
-            'select'    => ['item_id', 'process_date'],
-            'where'     => ['difflist_type = ?', 'res_id = ?' ,'requested_signature = ?'],
-            'data'      => ['VISA_CIRCUIT', $args['resId'], true],
-            'orderBy'   => ['listinstance_id']
+            'select'  => ['item_id', 'process_date'],
+            'where'   => ['difflist_type = ?', 'res_id = ?', 'requested_signature = ?'],
+            'data'    => ['VISA_CIRCUIT', $args['resId'], true],
+            'orderBy' => ['listinstance_id']
         ]);
 
         $users = [];
         foreach ($listInstances as $listInstance) {
             $users[] = [
-                'user'      => UserModel::getLabelledUserById(['id' => $listInstance['item_id']]),
-                'date'      => TextFormatModel::formatDate($listInstance['process_date']),
+                'user' => UserModel::getLabelledUserById(['id' => $listInstance['item_id']]),
+                'date' => TextFormatModel::formatDate($listInstance['process_date']),
             ];
         }
 
         return $users;
     }
 
-    private static function getParallelOpinionsNumber(array $args)
+    /**
+     * @param array $args
+     * @return mixed
+     * @throws Exception
+     */
+    private static function getParallelOpinionsNumber(array $args): mixed
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
 
-        $notes = NoteModel::get(['select' => ['count(1)'], 'where' => ['identifier = ?', 'note_text like ?'], 'data' => [$args['resId'], '[avis%']]);
+        $notes = NoteModel::get(
+            [
+                'select' => ['count(1)'],
+                'where'  => ['identifier = ?', 'note_text like ?'],
+                'data'   => [$args['resId'], '[avis%']
+            ]
+        );
 
         return $notes[0]['count'];
     }
 
-    private static function getFolders(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    private static function getFolders(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resId', 'userId']);
         ValidatorModel::intVal($args, ['resId', 'userId']);
@@ -866,15 +1133,20 @@ class ResourceListController
         }
 
         $folders = FolderModel::getWithEntitiesAndResources([
-            'select'    => ['DISTINCT(folders.id)', 'folders.label'],
-            'where'     => ['res_id = ?', '(user_id = ? OR entity_id in (?) OR keyword = ?)'],
-            'data'      => [$args['resId'], $args['userId'], $entities, 'ALL_ENTITIES']
+            'select' => ['DISTINCT(folders.id)', 'folders.label'],
+            'where'  => ['res_id = ?', '(user_id = ? OR entity_id in (?) OR keyword = ?)'],
+            'data'   => [$args['resId'], $args['userId'], $entities, 'ALL_ENTITIES']
         ]);
 
         return $folders;
     }
 
-    public static function getIdsWithOffsetAndLimit(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getIdsWithOffsetAndLimit(array $args): array
     {
         ValidatorModel::arrayType($args, ['resources']);
         ValidatorModel::intVal($args, ['offset', 'limit']);
@@ -893,7 +1165,12 @@ class ResourceListController
         return $ids;
     }
 
-    public static function getFormattedResources(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getFormattedResources(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resources', 'userId']);
         ValidatorModel::arrayType($args, ['resources', 'attachments', 'listDisplay']);
@@ -902,38 +1179,43 @@ class ResourceListController
 
         $formattedResources = [];
 
-        $resources   = $args['resources'];
+        $resources = $args['resources'];
         $attachments = $args['attachments'];
 
-        $customFields       = CustomFieldModel::get(['select' => ['id', 'type', 'label']]);
+        $customFields = CustomFieldModel::get(['select' => ['id', 'type', 'label']]);
         $customFieldsLabels = array_column($customFields, 'label', 'id');
-        $customFields       = array_column($customFields, 'type', 'id');
+        $customFields = array_column($customFields, 'type', 'id');
 
         foreach ($resources as $key => $resource) {
-            $formattedResources[$key]['resId']              = $resource['res_id'];
-            $formattedResources[$key]['chrono']             = $resource['alt_identifier'];
-            $formattedResources[$key]['barcode']            = $resource['barcode'] ?? null;
-            $formattedResources[$key]['subject']            = $resource['subject'];
-            $formattedResources[$key]['confidentiality']    = $resource['confidentiality'] ?? null;
-            $formattedResources[$key]['statusLabel']        = $resource['status.label_status'];
-            $formattedResources[$key]['statusImage']        = $resource['status.img_filename'];
-            $formattedResources[$key]['priorityColor']      = $resource['priorities.color'];
-            $formattedResources[$key]['closing_date']       = $resource['closing_date'] ?? null;
-            $formattedResources[$key]['countAttachments']   = 0;
-            $formattedResources[$key]['hasDocument']        = $resource['res_filename'] != null;
-            $formattedResources[$key]['mailTracking']       = in_array($resource['res_id'], $args['trackedMails']);
-            $formattedResources[$key]['integrations']       = !empty($resource['integrations']) ? json_decode($resource['integrations'], true) : [];
-            $formattedResources[$key]['retentionFrozen']    = $resource['retention_frozen'];
-            $formattedResources[$key]['binding']            = $resource['binding'];
-            $formattedResources[$key]['processLimitDate']   = $resource['process_limit_date'];
-            $formattedResources[$key]['creationDate']   = $resource['creation_date'];
+            $formattedResources[$key]['resId'] = $resource['res_id'];
+            $formattedResources[$key]['chrono'] = $resource['alt_identifier'];
+            $formattedResources[$key]['barcode'] = $resource['barcode'] ?? null;
+            $formattedResources[$key]['subject'] = $resource['subject'];
+            $formattedResources[$key]['confidentiality'] = $resource['confidentiality'] ?? null;
+            $formattedResources[$key]['statusLabel'] = $resource['status.label_status'];
+            $formattedResources[$key]['statusImage'] = $resource['status.img_filename'];
+            $formattedResources[$key]['priorityColor'] = $resource['priorities.color'];
+            $formattedResources[$key]['closing_date'] = $resource['closing_date'] ?? null;
+            $formattedResources[$key]['countAttachments'] = 0;
+            $formattedResources[$key]['hasDocument'] = $resource['res_filename'] != null;
+            $formattedResources[$key]['mailTracking'] = in_array($resource['res_id'], $args['trackedMails']);
+            $formattedResources[$key]['integrations'] = !empty($resource['integrations']) ? json_decode(
+                $resource['integrations'],
+                true
+            ) : [];
+            $formattedResources[$key]['retentionFrozen'] = $resource['retention_frozen'];
+            $formattedResources[$key]['binding'] = $resource['binding'];
+            $formattedResources[$key]['processLimitDate'] = $resource['process_limit_date'];
+            $formattedResources[$key]['creationDate'] = $resource['creation_date'];
             foreach ($attachments as $attachment) {
                 if ($attachment['res_id_master'] == $resource['res_id']) {
                     $formattedResources[$key]['countAttachments'] = $attachment['count'];
                     break;
                 }
             }
-            $formattedResources[$key]['countNotes'] = NoteModel::countByResId(['resId' => [$resource['res_id']], 'userId' => $args['userId']])[$resource['res_id']];
+            $formattedResources[$key]['countNotes'] = NoteModel::countByResId(
+                ['resId' => [$resource['res_id']], 'userId' => $args['userId']]
+            )[$resource['res_id']];
             $acknowledgementReceipts = count(AcknowledgementReceiptModel::get([
                 'select' => [1],
                 'where'  => ['res_id = ?'],
@@ -954,7 +1236,8 @@ class ResourceListController
                 'where'  => ["document->>'id' = ?", "(status != 'DRAFT' or (status = 'DRAFT' and user_id = ?))"],
                 'data'   => [$resource['res_id'], $args['userId']],
             ]));
-            $formattedResources[$key]['countSentResources'] = $acknowledgementReceipts + $messagesExchange + $shippings + $emails;
+            $formattedResources[$key]['countSentResources'] = $acknowledgementReceipts + $messagesExchange +
+                $shippings + $emails;
 
             if (!empty($args['checkLocked'])) {
                 $isLocked = true;
@@ -966,7 +1249,9 @@ class ResourceListController
                     $isLocked = false;
                 }
                 if ($isLocked) {
-                    $formattedResources[$key]['locker'] = UserModel::getLabelledUserById(['id' => $resource['locker_user_id']]);
+                    $formattedResources[$key]['locker'] = UserModel::getLabelledUserById(
+                        ['id' => $resource['locker_user_id']]
+                    );
                 }
                 $formattedResources[$key]['isLocked'] = $isLocked;
             }
@@ -975,10 +1260,13 @@ class ResourceListController
                 $display = [];
                 $listDisplayValues = array_column($args['listDisplay'], 'value');
                 if (
-                    in_array('getRegisteredMailRecipient', $listDisplayValues) || in_array('getRegisteredMailReference', $listDisplayValues)
-                    || in_array('getRegisteredMailIssuingSite', $listDisplayValues)
+                    in_array('getRegisteredMailRecipient', $listDisplayValues) ||
+                    in_array('getRegisteredMailReference', $listDisplayValues) ||
+                    in_array('getRegisteredMailIssuingSite', $listDisplayValues)
                 ) {
-                    $registeredMail = RegisteredMailModel::getByResId(['resId' => $resource['res_id'], 'select' => ['issuing_site', 'recipient', 'reference']]);
+                    $registeredMail = RegisteredMailModel::getByResId(
+                        ['resId' => $resource['res_id'], 'select' => ['issuing_site', 'recipient', 'reference']]
+                    );
                 }
                 if (!empty($args['listDisplay'])) {
                     if ($args['listDisplay'][0] !== 'folders') {
@@ -994,25 +1282,40 @@ class ResourceListController
                                 $value['displayValue'] = $resource['doctypes.description'];
                                 $display[] = $value;
                             } elseif ($value['value'] == 'getAssignee') {
-                                $value['displayValue'] = ResourceListController::getAssignee(['resId' => $resource['res_id']]);
+                                $value['displayValue'] = ResourceListController::getAssignee(
+                                    ['resId' => $resource['res_id']]
+                                );
                                 $display[] = $value;
                             } elseif ($value['value'] == 'getSenders') {
-                                $value['displayValue'] = ContactController::getFormattedContacts(['resId' => $resource['res_id'], 'mode' => 'sender', 'onlyContact' => true]);
+                                $value['displayValue'] = ContactController::getFormattedContacts(
+                                    ['resId' => $resource['res_id'], 'mode' => 'sender', 'onlyContact' => true]
+                                );
                                 $display[] = $value;
                             } elseif ($value['value'] == 'getRecipients') {
-                                $value['displayValue'] = ContactController::getFormattedContacts(['resId' => $resource['res_id'], 'mode' => 'recipient', 'onlyContact' => true]);
+                                $value['displayValue'] = ContactController::getFormattedContacts(
+                                    ['resId' => $resource['res_id'], 'mode' => 'recipient', 'onlyContact' => true]
+                                );
                                 $display[] = $value;
                             } elseif ($value['value'] == 'getVisaWorkflow') {
-                                $value['displayValue'] = ResourceListController::getVisaWorkflow(['resId' => $resource['res_id']]);
+                                $value['displayValue'] = ResourceListController::getVisaWorkflow(
+                                    ['resId' => $resource['res_id']]
+                                );
                                 $display[] = $value;
                             } elseif ($value['value'] == 'getSignatories') {
-                                $value['displayValue'] = ResourceListController::getSignatories(['resId' => $resource['res_id']]);
+                                $value['displayValue'] = ResourceListController::getSignatories(
+                                    ['resId' => $resource['res_id']]
+                                );
                                 $display[] = $value;
                             } elseif ($value['value'] == 'getParallelOpinionsNumber') {
-                                $value['displayValue'] = ResourceListController::getParallelOpinionsNumber(['resId' => $resource['res_id']]);
+                                $value['displayValue'] = ResourceListController::getParallelOpinionsNumber(
+                                    ['resId' => $resource['res_id']]
+                                );
                                 $display[] = $value;
                             } elseif ($value['value'] == 'getCreationAndProcessLimitDates') {
-                                $value['displayValue'] = ['creationDate' => $resource['creation_date'], 'processLimitDate' => $resource['process_limit_date']];
+                                $value['displayValue'] = [
+                                    'creationDate'     => $resource['creation_date'],
+                                    'processLimitDate' => $resource['process_limit_date']
+                                ];
                                 $display[] = $value;
                             } elseif ($value['value'] == 'getCreationDate') {
                                 $value['displayValue'] = $resource['creation_date'];
@@ -1035,11 +1338,21 @@ class ResourceListController
                             } elseif ($value['value'] == 'getRegisteredMailRecipient') {
                                 if (!empty($registeredMail)) {
                                     $recipient = json_decode($registeredMail['recipient'], true);
-                                    if (!empty($recipient['company']) && (!empty($recipient['firstname']) || !empty($recipient['lastname']))) {
-                                        $recipient = $recipient['firstname'] . ' ' . $recipient['lastname'] . ' (' . $recipient['company'] . ')';
-                                    } elseif (empty($recipient['company']) && (!empty($recipient['firstname']) || !empty($recipient['lastname']))) {
+                                    if (
+                                        !empty($recipient['company']) &&
+                                        (!empty($recipient['firstname']) || !empty($recipient['lastname']))
+                                    ) {
+                                        $recipient = $recipient['firstname'] . ' ' . $recipient['lastname'] . ' (' .
+                                            $recipient['company'] . ')';
+                                    } elseif (
+                                        empty($recipient['company']) &&
+                                        (!empty($recipient['firstname']) || !empty($recipient['lastname']))
+                                    ) {
                                         $recipient = $recipient['firstname'] . ' ' . $recipient['lastname'];
-                                    } elseif (!empty($recipient['company']) && empty($recipient['firstname']) && empty($recipient['lastname'])) {
+                                    } elseif (
+                                        !empty($recipient['company']) && empty($recipient['firstname']) &&
+                                        empty($recipient['lastname'])
+                                    ) {
                                         $recipient = $recipient['company'];
                                     }
                                     $value['displayValue'] = $recipient;
@@ -1052,27 +1365,37 @@ class ResourceListController
                                 $display[] = $value;
                             } elseif ($value['value'] == 'getRegisteredMailIssuingSite') {
                                 if (!empty($registeredMail)) {
-                                    $site = IssuingSiteModel::getById(['id' => $registeredMail['issuing_site'], 'select' => ['label']]);
+                                    $site = IssuingSiteModel::getById(
+                                        ['id' => $registeredMail['issuing_site'], 'select' => ['label']]
+                                    );
                                     $value['displayValue'] = $site['label'];
                                 } else {
                                     $value['displayValue'] = '';
                                 }
                                 $display[] = $value;
-                            } elseif (strpos($value['value'], 'indexingCustomField_') !== false) {
+                            } elseif (str_contains($value['value'], 'indexingCustomField_')) {
                                 $customId = explode('_', $value['value'])[1];
                                 $customValue = json_decode($resource['custom_fields'] ?? '{}', true);
 
                                 $value['displayLabel'] = $customFieldsLabels[$customId] ?? '';
                                 if ($customFields[$customId] == 'contact' && !empty($customValue[$customId])) {
-                                    $value['displayValue'] = ContactController::getContactCustomField(['contacts' => $customValue[$customId], 'onlyContact' => true]);
-                                } elseif ($customFields[$customId] == 'banAutocomplete' && !empty($customValue[$customId])) {
+                                    $value['displayValue'] = ContactController::getContactCustomField(
+                                        ['contacts' => $customValue[$customId], 'onlyContact' => true]
+                                    );
+                                } elseif (
+                                    $customFields[$customId] == 'banAutocomplete' &&
+                                    !empty($customValue[$customId])
+                                ) {
                                     $value['displayValue'] = $customValue[$customId][0]['addressNumber'] ?? '';
                                     $value['displayValue'] .= ' ';
                                     $value['displayValue'] .= $customValue[$customId][0]['addressStreet'] ?? '';
                                     $value['displayValue'] .= ' ';
                                     $value['displayValue'] .= $customValue[$customId][0]['addressTown'] ?? '';
                                 } elseif ($customFields[$customId] == 'date' && !empty($customValue[$customId])) {
-                                    $value['displayValue'] = TextFormatModel::formatDate($customValue[$customId], 'd-m-Y');
+                                    $value['displayValue'] = TextFormatModel::formatDate(
+                                        $customValue[$customId],
+                                        'd-m-Y'
+                                    );
                                 } elseif ($customFields[$customId] == 'checkbox' && !empty($customValue[$customId])) {
                                     $value['displayValue'] = implode(', ', $customValue[$customId]);
                                 } else {
@@ -1083,7 +1406,9 @@ class ResourceListController
                         }
                     }
                 }
-                $formattedResources[$key]['folders'] = ResourceListController::getFolders(['resId' => $resource['res_id'], 'userId' => $args['userId']]);
+                $formattedResources[$key]['folders'] = ResourceListController::getFolders(
+                    ['resId' => $resource['res_id'], 'userId' => $args['userId']]
+                );
                 $formattedResources[$key]['display'] = $display;
             }
         }
@@ -1091,7 +1416,12 @@ class ResourceListController
         return $formattedResources;
     }
 
-    public static function getFormattedFilters(array $args)
+    /**
+     * @param array $args
+     * @return array[]
+     * @throws Exception
+     */
+    public static function getFormattedFilters(array $args): array
     {
         ValidatorModel::notEmpty($args, ['where']);
         ValidatorModel::arrayType($args, ['where', 'queryData', 'queryParams']);
@@ -1111,16 +1441,16 @@ class ResourceListController
 
         $wherePriorities = $where;
         $whereCategories = $where;
-        $whereStatuses   = $where;
-        $whereEntities   = $where;
-        $whereDocTypes   = $where;
-        $whereFolders    = $where;
-        $dataPriorities  = $queryData;
-        $dataCategories  = $queryData;
-        $dataStatuses    = $queryData;
-        $dataEntities    = $queryData;
-        $dataDocTypes    = $queryData;
-        $dataFolders     = $queryData;
+        $whereStatuses = $where;
+        $whereEntities = $where;
+        $whereDocTypes = $where;
+        $whereFolders = $where;
+        $dataPriorities = $queryData;
+        $dataCategories = $queryData;
+        $dataStatuses = $queryData;
+        $dataEntities = $queryData;
+        $dataDocTypes = $queryData;
+        $dataFolders = $queryData;
 
         if (isset($data['priorities'])) {
             if (empty($data['priorities'])) {
@@ -1134,17 +1464,17 @@ class ResourceListController
                     $tmpWhere = 'priority in (?)';
                 }
                 $dataCategories[] = explode(',', $replace);
-                $dataStatuses[]   = explode(',', $replace);
-                $dataEntities[]   = explode(',', $replace);
-                $dataDocTypes[]   = explode(',', $replace);
-                $dataFolders[]    = explode(',', $replace);
+                $dataStatuses[] = explode(',', $replace);
+                $dataEntities[] = explode(',', $replace);
+                $dataDocTypes[] = explode(',', $replace);
+                $dataFolders[] = explode(',', $replace);
             }
 
             $whereCategories[] = $tmpWhere;
-            $whereStatuses[]   = $tmpWhere;
-            $whereEntities[]   = $tmpWhere;
-            $whereDocTypes[]   = $tmpWhere;
-            $whereFolders[]    = $tmpWhere;
+            $whereStatuses[] = $tmpWhere;
+            $whereEntities[] = $tmpWhere;
+            $whereDocTypes[] = $tmpWhere;
+            $whereFolders[] = $tmpWhere;
         }
         if (isset($data['categories'])) {
             if (empty($data['categories'])) {
@@ -1158,41 +1488,41 @@ class ResourceListController
                     $tmpWhere = 'category_id in (?)';
                 }
                 $dataPriorities[] = explode(',', $replace);
-                $dataStatuses[]   = explode(',', $replace);
-                $dataEntities[]   = explode(',', $replace);
-                $dataDocTypes[]   = explode(',', $replace);
-                $dataFolders[]    = explode(',', $replace);
+                $dataStatuses[] = explode(',', $replace);
+                $dataEntities[] = explode(',', $replace);
+                $dataDocTypes[] = explode(',', $replace);
+                $dataFolders[] = explode(',', $replace);
             }
 
             $wherePriorities[] = $tmpWhere;
-            $whereStatuses[]   = $tmpWhere;
-            $whereEntities[]   = $tmpWhere;
-            $whereDocTypes[]   = $tmpWhere;
-            $whereFolders[]    = $tmpWhere;
+            $whereStatuses[] = $tmpWhere;
+            $whereEntities[] = $tmpWhere;
+            $whereDocTypes[] = $tmpWhere;
+            $whereFolders[] = $tmpWhere;
         }
         if (!empty($data['statuses'])) {
             $wherePriorities[] = 'status in (?)';
-            $dataPriorities[]  = explode(',', $data['statuses']);
+            $dataPriorities[] = explode(',', $data['statuses']);
             $whereCategories[] = 'status in (?)';
-            $dataCategories[]  = explode(',', $data['statuses']);
-            $whereEntities[]   = 'status in (?)';
-            $dataEntities[]    = explode(',', $data['statuses']);
-            $whereDocTypes[]   = 'status in (?)';
-            $dataDocTypes[]    = explode(',', $data['statuses']);
-            $whereFolders[]    = 'status in (?)';
-            $dataFolders[]     = explode(',', $data['statuses']);
+            $dataCategories[] = explode(',', $data['statuses']);
+            $whereEntities[] = 'status in (?)';
+            $dataEntities[] = explode(',', $data['statuses']);
+            $whereDocTypes[] = 'status in (?)';
+            $dataDocTypes[] = explode(',', $data['statuses']);
+            $whereFolders[] = 'status in (?)';
+            $dataFolders[] = explode(',', $data['statuses']);
         }
         if (!empty($data['doctypes'])) {
             $wherePriorities[] = 'type_id in (?)';
-            $dataPriorities[]  = explode(',', $data['doctypes']);
+            $dataPriorities[] = explode(',', $data['doctypes']);
             $whereCategories[] = 'type_id in (?)';
-            $dataCategories[]  = explode(',', $data['doctypes']);
-            $whereEntities[]   = 'type_id in (?)';
-            $dataEntities[]    = explode(',', $data['doctypes']);
-            $whereStatuses[]   = 'type_id in (?)';
-            $dataStatuses[]    = explode(',', $data['doctypes']);
-            $whereFolders[]    = 'type_id in (?)';
-            $dataFolders[]     = explode(',', $data['doctypes']);
+            $dataCategories[] = explode(',', $data['doctypes']);
+            $whereEntities[] = 'type_id in (?)';
+            $dataEntities[] = explode(',', $data['doctypes']);
+            $whereStatuses[] = 'type_id in (?)';
+            $dataStatuses[] = explode(',', $data['doctypes']);
+            $whereFolders[] = 'type_id in (?)';
+            $dataFolders[] = explode(',', $data['doctypes']);
         }
         if (isset($data['entities'])) {
             if (empty($data['entities'])) {
@@ -1209,14 +1539,14 @@ class ResourceListController
                 $dataCategories[] = explode(',', $replace);
                 $dataStatuses[] = explode(',', $replace);
                 $dataDocTypes[] = explode(',', $replace);
-                $dataFolders[]  = explode(',', $replace);
+                $dataFolders[] = explode(',', $replace);
             }
 
             $wherePriorities[] = $tmpWhere;
             $whereCategories[] = $tmpWhere;
-            $whereStatuses[]   = $tmpWhere;
-            $whereDocTypes[]   = $tmpWhere;
-            $whereFolders[]    = $tmpWhere;
+            $whereStatuses[] = $tmpWhere;
+            $whereDocTypes[] = $tmpWhere;
+            $whereFolders[] = $tmpWhere;
         }
         if (!empty($data['entitiesChildren'])) {
             $entities = explode(',', $data['entitiesChildren']);
@@ -1227,15 +1557,15 @@ class ResourceListController
             }
             if (!empty($entitiesChildren)) {
                 $wherePriorities[] = 'destination in (?)';
-                $dataPriorities[]  = $entitiesChildren;
+                $dataPriorities[] = $entitiesChildren;
                 $whereCategories[] = 'destination in (?)';
-                $dataCategories[]  = $entitiesChildren;
-                $whereStatuses[]   = 'destination in (?)';
-                $dataStatuses[]    = $entitiesChildren;
-                $whereDocTypes[]   = 'destination in (?)';
-                $dataDocTypes[]    = $entitiesChildren;
-                $whereFolders[]    = 'destination in (?)';
-                $dataFolders[]     = $entitiesChildren;
+                $dataCategories[] = $entitiesChildren;
+                $whereStatuses[] = 'destination in (?)';
+                $dataStatuses[] = $entitiesChildren;
+                $whereDocTypes[] = 'destination in (?)';
+                $dataDocTypes[] = $entitiesChildren;
+                $whereFolders[] = 'destination in (?)';
+                $dataFolders[] = $entitiesChildren;
             }
         }
 
@@ -1253,24 +1583,24 @@ class ResourceListController
             }
             if (!empty($resIdsInFolders)) {
                 $wherePriorities[] = 'res_id in (?)';
-                $dataPriorities[]  = $resIdsInFolders;
+                $dataPriorities[] = $resIdsInFolders;
                 $whereCategories[] = 'res_id in (?)';
-                $dataCategories[]  = $resIdsInFolders;
-                $whereEntities[]   = 'res_id in (?)';
-                $dataEntities[]    = $resIdsInFolders;
-                $whereStatuses[]   = 'res_id in (?)';
-                $dataStatuses[]    = $resIdsInFolders;
-                $whereDocTypes[]   = 'res_id in (?)';
-                $dataDocTypes[]    = $resIdsInFolders;
+                $dataCategories[] = $resIdsInFolders;
+                $whereEntities[] = 'res_id in (?)';
+                $dataEntities[] = $resIdsInFolders;
+                $whereStatuses[] = 'res_id in (?)';
+                $dataStatuses[] = $resIdsInFolders;
+                $whereDocTypes[] = 'res_id in (?)';
+                $dataDocTypes[] = $resIdsInFolders;
             }
         }
 
         $priorities = [];
         $rawPriorities = ResModel::getOnView([
-            'select'    => ['count(res_id)', 'priority'],
-            'where'     => $wherePriorities,
-            'data'      => $dataPriorities,
-            'groupBy'   => ['priority']
+            'select'  => ['count(res_id)', 'priority'],
+            'where'   => $wherePriorities,
+            'data'    => $dataPriorities,
+            'groupBy' => ['priority']
         ]);
 
         foreach ($rawPriorities as $value) {
@@ -1279,19 +1609,19 @@ class ResourceListController
                 $priority = PriorityModel::getById(['select' => ['label'], 'id' => $value['priority']]);
             }
             $priorities[] = [
-                'id'        => empty($value['priority']) ? null : $value['priority'],
-                'label'     => empty($priority['label']) ? '_UNDEFINED' : $priority['label'],
-                'count'     => $value['count']
+                'id'    => empty($value['priority']) ? null : $value['priority'],
+                'label' => empty($priority['label']) ? '_UNDEFINED' : $priority['label'],
+                'count' => $value['count']
             ];
         }
 
         $categories = [];
         $allCategories = ResModel::getCategories();
         $rawCategories = ResModel::getOnView([
-            'select'    => ['count(res_id)', 'category_id'],
-            'where'     => $whereCategories,
-            'data'      => $dataCategories,
-            'groupBy'   => ['category_id']
+            'select'  => ['count(res_id)', 'category_id'],
+            'where'   => $whereCategories,
+            'data'    => $dataCategories,
+            'groupBy' => ['category_id']
         ]);
         foreach ($rawCategories as $value) {
             $label = null;
@@ -1303,61 +1633,63 @@ class ResourceListController
                 }
             }
             $categories[] = [
-                'id'        => empty($value['category_id']) ? null : $value['category_id'],
-                'label'     => empty($label) ? '_UNDEFINED' : $label,
-                'count'     => $value['count']
+                'id'    => empty($value['category_id']) ? null : $value['category_id'],
+                'label' => empty($label) ? '_UNDEFINED' : $label,
+                'count' => $value['count']
             ];
         }
 
         $statuses = [];
         $rawStatuses = ResModel::getOnView([
-            'select'    => ['count(res_id)', 'status'],
-            'where'     => $whereStatuses,
-            'data'      => $dataStatuses,
-            'groupBy'   => ['status']
+            'select'  => ['count(res_id)', 'status'],
+            'where'   => $whereStatuses,
+            'data'    => $dataStatuses,
+            'groupBy' => ['status']
         ]);
         foreach ($rawStatuses as $value) {
             if (!empty($value['status'])) {
                 $status = StatusModel::getById(['select' => ['label_status'], 'id' => $value['status']]);
                 $statuses[] = [
-                    'id'        => $value['status'],
-                    'label'     => empty($status['label_status']) ? '_UNDEFINED' : $status['label_status'],
-                    'count'     => $value['count']
+                    'id'    => $value['status'],
+                    'label' => empty($status['label_status']) ? '_UNDEFINED' : $status['label_status'],
+                    'count' => $value['count']
                 ];
             }
         }
 
         $entities = [];
         $rawEntities = ResModel::getOnView([
-            'select'    => ['count(res_id)', 'destination'],
-            'where'     => $whereEntities,
-            'data'      => $dataEntities,
-            'groupBy'   => ['destination']
+            'select'  => ['count(res_id)', 'destination'],
+            'where'   => $whereEntities,
+            'data'    => $dataEntities,
+            'groupBy' => ['destination']
         ]);
         foreach ($rawEntities as $value) {
             $entity = null;
             if (!empty($value['destination'])) {
-                $entity = EntityModel::getByEntityId(['select' => ['entity_label'], 'entityId' => $value['destination']]);
+                $entity = EntityModel::getByEntityId(
+                    ['select' => ['entity_label'], 'entityId' => $value['destination']]
+                );
             }
             $entities[] = [
-                'entityId'  => empty($value['destination']) ? null : $value['destination'],
-                'label'     => empty($entity['entity_label']) ? '_UNDEFINED' : $entity['entity_label'],
-                'count'     => $value['count']
+                'entityId' => empty($value['destination']) ? null : $value['destination'],
+                'label'    => empty($entity['entity_label']) ? '_UNDEFINED' : $entity['entity_label'],
+                'count'    => $value['count']
             ];
         }
 
         $docTypes = [];
         $rawDocType = ResModel::getOnView([
-            'select'    => ['count(res_id)', 'type_id', 'type_label'],
-            'where'     => $whereDocTypes,
-            'data'      => $dataDocTypes,
-            'groupBy'   => ['type_id', 'type_label']
+            'select'  => ['count(res_id)', 'type_id', 'type_label'],
+            'where'   => $whereDocTypes,
+            'data'    => $dataDocTypes,
+            'groupBy' => ['type_id', 'type_label']
         ]);
         foreach ($rawDocType as $value) {
             $docTypes[] = [
-                'id'        => empty($value['type_id']) ? null : $value['type_id'],
-                'label'     => empty($value['type_label']) ? '_UNDEFINED' : $value['type_label'],
-                'count'     => $value['count']
+                'id'    => empty($value['type_id']) ? null : $value['type_id'],
+                'label' => empty($value['type_label']) ? '_UNDEFINED' : $value['type_label'],
+                'count' => $value['count']
             ];
         }
 
@@ -1381,7 +1713,10 @@ class ResourceListController
 
             $rawFolders = FolderModel::getWithEntitiesAndResources([
                 'select'  => ['folders.id', 'folders.label', 'count(resources_folders.res_id) as count'],
-                'where'   => ['resources_folders.res_id in (?)', '(folders.user_id = ? OR entities_folders.entity_id in (?) or keyword = ?)'],
+                'where'   => [
+                    'resources_folders.res_id in (?)',
+                    '(folders.user_id = ? OR entities_folders.entity_id in (?) or keyword = ?)'
+                ],
                 'data'    => [$resIds, $GLOBALS['id'], $userEntities, 'ALL_ENTITIES'],
                 'groupBy' => ['folders.id', 'folders.label']
             ]);
@@ -1396,10 +1731,10 @@ class ResourceListController
 
         $priorities = (count($priorities) >= 2) ? $priorities : [];
         $categories = (count($categories) >= 2) ? $categories : [];
-        $statuses   = (count($statuses) >= 2) ? $statuses : [];
-        $entities   = (count($entities) >= 2) ? $entities : [];
-        $docTypes   = (count($docTypes) >= 2) ? $docTypes : [];
-        $folders    = (count($folders) >= 2) ? $folders : [];
+        $statuses = (count($statuses) >= 2) ? $statuses : [];
+        $entities = (count($entities) >= 2) ? $entities : [];
+        $docTypes = (count($docTypes) >= 2) ? $docTypes : [];
+        $folders = (count($folders) >= 2) ? $folders : [];
 
         $entitiesChildren = [];
         foreach ($entities as $entity) {
@@ -1415,9 +1750,9 @@ class ResourceListController
                 $count = $entity['count'];
             }
             $entitiesChildren[] = [
-                'entityId'  => $entity['entityId'],
-                'label'     => $entity['label'],
-                'count'     => $count
+                'entityId' => $entity['entityId'],
+                'label'    => $entity['label'],
+                'count'    => $count
             ];
         }
 
@@ -1447,7 +1782,12 @@ class ResourceListController
         ];
     }
 
-    public static function compareSortOnLabel($a, $b)
+    /**
+     * @param $a
+     * @param $b
+     * @return int
+     */
+    public static function compareSortOnLabel($a, $b): int
     {
         if (strtolower($a['label']) < strtolower($b['label'])) {
             return -1;
@@ -1457,57 +1797,104 @@ class ResourceListController
         return 0;
     }
 
-    public static function controlFingerprints(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    public static function controlFingerprints(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
 
         $convertedDocument = AdrModel::getDocuments([
-            'select'    => ['id', 'docserver_id', 'path', 'filename', 'type', 'fingerprint'],
-            'where'     => ['res_id = ?', 'type in (?)'],
-            'data'      => [$args['resId'], ['PDF', 'SIGN']],
-            'orderBy'   => ["type='SIGN' DESC", 'version DESC'],
-            'limit'     => 1
+            'select'  => ['id', 'docserver_id', 'path', 'filename', 'type', 'fingerprint'],
+            'where'   => ['res_id = ?', 'type in (?)'],
+            'data'    => [$args['resId'], ['PDF', 'SIGN']],
+            'orderBy' => ["type='SIGN' DESC", 'version DESC'],
+            'limit'   => 1
         ]);
 
         $convertedDocument = $convertedDocument[0] ?? null;
         if (!empty($convertedDocument)) {
-            $docserver = DocserverModel::getByDocserverId(['docserverId' => $convertedDocument['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
-            $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $convertedDocument['path']) . $convertedDocument['filename'];
+            $docserver = DocserverModel::getByDocserverId(
+                [
+                    'docserverId' => $convertedDocument['docserver_id'],
+                    'select'      => ['path_template', 'docserver_type_id']
+                ]
+            );
+            $pathToDocument = $docserver['path_template'] .
+                str_replace(
+                    '#',
+                    DIRECTORY_SEPARATOR,
+                    $convertedDocument['path']
+                ) . $convertedDocument['filename'];
             if (!is_file($pathToDocument)) {
                 return false;
             }
-            $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-            $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
+            $docserverType = DocserverTypeModel::getById(
+                ['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]
+            );
+            $fingerprint = StoreController::getFingerPrint(
+                ['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]
+            );
             if (empty($convertedDocument['fingerprint'])) {
-                AdrModel::updateDocumentAdr(['set' => ['fingerprint' => $fingerprint], 'where' => ['id = ?'], 'data' => [$convertedDocument['id']]]);
+                AdrModel::updateDocumentAdr(
+                    [
+                        'set'   => ['fingerprint' => $fingerprint],
+                        'where' => ['id = ?'],
+                        'data'  => [$convertedDocument['id']]
+                    ]
+                );
                 $convertedDocument['fingerprint'] = $fingerprint;
             }
             if ($convertedDocument['fingerprint'] != $fingerprint) {
                 return false;
             }
         }
-        $allAttachments = AttachmentModel::get(['select' => ['res_id'], 'where' => ['res_id_master = ?', 'status != ?'], 'data' => [$args['resId'], 'DEL']]);
+        $allAttachments = AttachmentModel::get(
+            ['select' => ['res_id'], 'where' => ['res_id_master = ?', 'status != ?'], 'data' => [$args['resId'], 'DEL']]
+        );
         $allAttachments = array_column($allAttachments, 'res_id');
         $convertedDocuments = [];
         if (!empty($allAttachments)) {
             $convertedDocuments = AdrModel::getAttachments([
-                'select'    => ['id', 'docserver_id', 'path', 'filename', 'type', 'fingerprint'],
-                'where'     => ['res_id in (?)', 'type = ?'],
-                'data'      => [$allAttachments, 'PDF']
+                'select' => ['id', 'docserver_id', 'path', 'filename', 'type', 'fingerprint'],
+                'where'  => ['res_id in (?)', 'type = ?'],
+                'data'   => [$allAttachments, 'PDF']
             ]);
         }
 
         foreach ($convertedDocuments as $convertedDocument) {
-            $docserver = DocserverModel::getByDocserverId(['docserverId' => $convertedDocument['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
-            $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $convertedDocument['path']) . $convertedDocument['filename'];
+            $docserver = DocserverModel::getByDocserverId(
+                [
+                    'docserverId' => $convertedDocument['docserver_id'],
+                    'select'      => ['path_template', 'docserver_type_id']
+                ]
+            );
+            $pathToDocument = $docserver['path_template'] .
+                str_replace(
+                    '#',
+                    DIRECTORY_SEPARATOR,
+                    $convertedDocument['path']
+                ) . $convertedDocument['filename'];
             if (!is_file($pathToDocument)) {
                 return false;
             }
-            $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-            $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
+            $docserverType = DocserverTypeModel::getById(
+                ['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]
+            );
+            $fingerprint = StoreController::getFingerPrint(
+                ['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]
+            );
             if (empty($convertedDocument['fingerprint'])) {
-                AdrModel::updateAttachmentAdr(['set' => ['fingerprint' => $fingerprint], 'where' => ['id = ?'], 'data' => [$convertedDocument['id']]]);
+                AdrModel::updateAttachmentAdr(
+                    [
+                        'set'   => ['fingerprint' => $fingerprint],
+                        'where' => ['id = ?'],
+                        'data'  => [$convertedDocument['id']]
+                    ]
+                );
                 $convertedDocument['fingerprint'] = $fingerprint;
             }
             if ($convertedDocument['fingerprint'] != $fingerprint) {

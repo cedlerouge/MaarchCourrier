@@ -40,43 +40,37 @@ interface ResourceRepositoryInterface
 
     /**
      * Return the converted pdf from resource
-     *
-     * @param   int     $resId  Resource id
-     * @param   string  $collId Resource type id : letterbox_coll or attachments_coll
+     * @param int $resId Resource id
+     * @param string $collId Resource type id : letterbox_coll or attachments_coll
      */
     public function getConvertedPdfById(int $resId, string $collId): array;
 
     /**
-     * @param   int     $resId      Resource id
-     * @param   string  $type       Resource converted format
-     * @param   int     $version    Resource version
-     *
+     * @param int $resId Resource id
+     * @param string $type Resource converted format
+     * @param int $version Resource version
      * @return  ?array
      */
     public function getResourceVersion(int $resId, string $type, int $version): ?array;
 
     /**
-     * @param   int     $resId  Resource id
-     * @param   string  $type   Resource converted format
-     *
+     * @param int $resId Resource id
+     * @param string $type Resource converted format
      * @return  ?ResourceConverted
      */
     public function getLatestResourceVersion(int $resId, string $type): ?ResourceConverted;
 
     /**
-     * @param   int $resId      Resource id
-     * @param   int $version    Resource version
-     *
-     * @return  ResourceConverted
+     * @param int $resId Resource id
+     * @param int $version Resource version
+     * @return ResourceConverted|null
      */
     public function getLatestPdfVersion(int $resId, int $version): ?ResourceConverted;
 
     /**
      * Check if user has rights over the resource
-     *
-     * @param   int     $resId      Resource id
-     * @param   int     $userId     User id
-     *
+     * @param int $resId Resource id
+     * @param int $userId User id
      * @return  bool
      */
     public function hasRightByResId(int $resId, int $userId): bool;

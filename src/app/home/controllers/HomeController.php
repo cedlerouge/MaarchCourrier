@@ -16,6 +16,7 @@ namespace Home\controllers;
 
 use Basket\models\BasketModel;
 use Basket\models\RedirectBasketModel;
+use Exception;
 use Group\models\GroupModel;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
@@ -26,7 +27,13 @@ use Parameter\models\ParameterModel;
 
 class HomeController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function get(Request $request, Response $response): Response
     {
         $regroupedBaskets = [];
 
@@ -37,7 +44,7 @@ class HomeController
 
         $preferences = json_decode($user['preferences'], true);
         if (!empty($preferences['homeGroups'])) {
-            $orderGroups   = [];
+            $orderGroups = [];
             $noOrderGroups = [];
             foreach ($groups as $group) {
                 $key = array_search($group['id'], $preferences['homeGroups']);
@@ -53,7 +60,15 @@ class HomeController
 
         foreach ($groups as $group) {
             $baskets = BasketModel::getAvailableBasketsByGroupUser([
-                'select'        => ['baskets.id', 'baskets.basket_id', 'baskets.basket_name', 'baskets.basket_desc', 'baskets.basket_clause', 'baskets.color', 'users_baskets_preferences.color as pcolor'],
+                'select'        => [
+                    'baskets.id',
+                    'baskets.basket_id',
+                    'baskets.basket_name',
+                    'baskets.basket_desc',
+                    'baskets.basket_clause',
+                    'baskets.color',
+                    'users_baskets_preferences.color as pcolor'
+                ],
                 'userSerialId'  => $GLOBALS['id'],
                 'groupId'       => $group['group_id'],
                 'groupSerialId' => $group['id']
@@ -70,13 +85,18 @@ class HomeController
 
                 $baskets[$kBasket]['redirected'] = false;
                 foreach ($redirectedBaskets as $redirectedBasket) {
-                    if ($redirectedBasket['basket_id'] == $basket['basket_id'] && $redirectedBasket['group_id'] == $group['id']) {
+                    if (
+                        $redirectedBasket['basket_id'] == $basket['basket_id'] &&
+                        $redirectedBasket['group_id'] == $group['id']
+                    ) {
                         $baskets[$kBasket]['redirected'] = true;
                         $baskets[$kBasket]['redirectedUser'] = $redirectedBasket['userToDisplay'];
                     }
                 }
 
-                $baskets[$kBasket]['resourceNumber'] = BasketModel::getResourceNumberByClause(['userId' => $GLOBALS['id'], 'clause' => $basket['basket_clause']]);
+                $baskets[$kBasket]['resourceNumber'] = BasketModel::getResourceNumberByClause(
+                    ['userId' => $GLOBALS['id'], 'clause' => $basket['basket_clause']]
+                );
 
                 unset($baskets[$kBasket]['pcolor'], $baskets[$kBasket]['basket_clause']);
             }
@@ -93,11 +113,19 @@ class HomeController
 
         $assignedBaskets = RedirectBasketModel::getAssignedBasketsByUserId(['userId' => $GLOBALS['id']]);
         foreach ($assignedBaskets as $key => $assignedBasket) {
-            $basket = BasketModel::getByBasketId(['select' => ['id', 'basket_clause'], 'basketId' => $assignedBasket['basket_id']]);
+            $basket = BasketModel::getByBasketId(
+                ['select' => ['id', 'basket_clause'], 'basketId' => $assignedBasket['basket_id']]
+            );
             $assignedBaskets[$key]['id'] = $basket['id'];
-            $assignedBaskets[$key]['resourceNumber'] = BasketModel::getResourceNumberByClause(['userId' => $assignedBasket['owner_user_id'], 'clause' => $basket['basket_clause']]);
-            $assignedBaskets[$key]['uselessGroupId'] = GroupModel::getById(['id' => $assignedBasket['group_id'], 'select' => ['group_id']])['group_id'];
-            $assignedBaskets[$key]['ownerLogin'] = UserModel::getById(['id' => $assignedBasket['owner_user_id'], 'select' => ['user_id']])['user_id'];
+            $assignedBaskets[$key]['resourceNumber'] = BasketModel::getResourceNumberByClause(
+                ['userId' => $assignedBasket['owner_user_id'], 'clause' => $basket['basket_clause']]
+            );
+            $assignedBaskets[$key]['uselessGroupId'] = GroupModel::getById(
+                ['id' => $assignedBasket['group_id'], 'select' => ['group_id']]
+            )['group_id'];
+            $assignedBaskets[$key]['ownerLogin'] = UserModel::getById(
+                ['id' => $assignedBasket['owner_user_id'], 'select' => ['user_id']]
+            )['user_id'];
         }
 
         $externalId = json_decode($user['external_id'], true);
@@ -109,7 +137,10 @@ class HomeController
             $signatoryBookEnabled = (string)$loadedXml->signatoryBookEnabled;
             foreach ($loadedXml->signatoryBook as $value) {
                 if ($value->id == "maarchParapheur" && $value->id == $signatoryBookEnabled) {
-                    if (!empty($value->url) && !empty($value->userId) && !empty($value->password) && !empty($externalId['maarchParapheur'])) {
+                    if (
+                        !empty($value->url) && !empty($value->userId) &&
+                        !empty($value->password) && !empty($externalId['maarchParapheur'])
+                    ) {
                         $isExternalSignatoryBookConnected = true;
                         $externalSignatoryBookUrl = rtrim((string)$value->url, "/");
                     }
@@ -130,16 +161,22 @@ class HomeController
         $homeMessage = trim($homeMessage['param_value_string']);
 
         return $response->withJson([
-            'regroupedBaskets'                          => $regroupedBaskets,
-            'assignedBaskets'                           => $assignedBaskets,
-            'homeMessage'                               => $homeMessage,
-            'isLinkedToExternalSignatoryBook'           => $isExternalSignatoryBookConnected,
-            'externalSignatoryBookUrl'                  => $externalSignatoryBookUrl,
-            'signatoryBookEnabled'                      => $signatoryBookEnabled ?? null,
+            'regroupedBaskets'                => $regroupedBaskets,
+            'assignedBaskets'                 => $assignedBaskets,
+            'homeMessage'                     => $homeMessage,
+            'isLinkedToExternalSignatoryBook' => $isExternalSignatoryBookConnected,
+            'externalSignatoryBookUrl'        => $externalSignatoryBookUrl,
+            'signatoryBookEnabled'            => $signatoryBookEnabled ?? null,
         ]);
     }
 
-    public function getMaarchParapheurDocuments(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function getMaarchParapheurDocuments(Request $request, Response $response): Response
     {
         $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['external_id']]);
 
@@ -150,16 +187,18 @@ class HomeController
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if (empty($loadedXml)) {
-            return $response->withStatus(400)->withJson(['errors' => 'SignatoryBooks configuration file missing']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'SignatoryBooks configuration file missing']
+            );
         }
 
-        $url      = '';
-        $userId   = '';
+        $url = '';
+        $userId = '';
         $password = '';
         foreach ($loadedXml->signatoryBook as $value) {
             if ($value->id == "maarchParapheur") {
-                $url      = rtrim($value->url, '/');
-                $userId   = $value->userId;
+                $url = rtrim($value->url, '/');
+                $userId = $value->userId;
                 $password = $value->password;
                 break;
             }
@@ -170,18 +209,18 @@ class HomeController
         }
 
         $curlResponse = CurlModel::exec([
-            'url'           => rtrim($url, '/') . '/rest/documents',
-            'basicAuth'     => ['user' => $userId, 'password' => $password],
-            'headers'       => ['content-type:application/json'],
-            'method'        => 'GET',
-            'queryParams'   => ['userId' => $externalId['maarchParapheur'], 'limit' => 10]
+            'url'         => rtrim($url, '/') . '/rest/documents',
+            'basicAuth'   => ['user' => $userId, 'password' => $password],
+            'headers'     => ['content-type:application/json'],
+            'method'      => 'GET',
+            'queryParams' => ['userId' => $externalId['maarchParapheur'], 'limit' => 10]
         ]);
 
         if ($curlResponse['code'] != '200') {
             if (!empty($curlResponse['response']['errors'])) {
-                $errors =  $curlResponse['response']['errors'];
+                $errors = $curlResponse['response']['errors'];
             } else {
-                $errors =  $curlResponse['errors'];
+                $errors = $curlResponse['errors'];
             }
             if (empty($errors)) {
                 $errors = 'An error occured. Please check your configuration file.';

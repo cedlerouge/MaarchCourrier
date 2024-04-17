@@ -15,6 +15,7 @@
 namespace ContentManagement\controllers;
 
 use Configuration\models\ConfigurationModel;
+use Exception;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\ValidatorModel;
@@ -23,16 +24,27 @@ class DocumentEditorController
 {
     public const DOCUMENT_EDITION_METHODS = ['java', 'onlyoffice', 'collaboraonline', 'office365sharepoint'];
 
-    public static function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public static function get(Request $request, Response $response): Response
     {
         $allowedMethods = DocumentEditorController::getAllowedMethods();
 
         return $response->withJson($allowedMethods);
     }
 
-    public static function getAllowedMethods()
+    /**
+     * @return array
+     */
+    public static function getAllowedMethods(): array
     {
-        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_document_editors', 'select' => ['value']]);
+        $configuration = ConfigurationModel::getByPrivilege([
+            'privilege' => 'admin_document_editors',
+            'select'    => ['value']
+        ]);
         $configuration = !empty($configuration['value']) ? json_decode($configuration['value'], true) : [];
 
         $allowedMethods = [];
@@ -47,7 +59,12 @@ class DocumentEditorController
         return $allowedMethods;
     }
 
-    public static function isAvailable(array $args)
+    /**
+     * @param array $args
+     * @return array|bool
+     * @throws Exception
+     */
+    public static function isAvailable(array $args): array|bool
     {
         ValidatorModel::notEmpty($args, ['uri', 'port']);
         ValidatorModel::stringType($args, ['uri']);
@@ -56,22 +73,32 @@ class DocumentEditorController
         $uri = $args['uri'] ?? null;
 
         if (!DocumentEditorController::uriIsValid($uri)) {
-            return ['errors' => "Editor 'uri' is not a valid URL or IP address format", 'lang' => 'editorHasNoValidUrlOrIp'];
+            return [
+                'errors' => "Editor 'uri' is not a valid URL or IP address format",
+                'lang'   => 'editorHasNoValidUrlOrIp'
+            ];
         }
 
         $aUri = explode("/", $args['uri']);
         $exec = shell_exec("nc -vz -w 5 {$aUri[0]} {$args['port']} 2>&1");
 
-        if (strpos($exec, 'not found') !== false) {
+        if (str_contains($exec, 'not found')) {
             return ['errors' => 'Netcat command not found', 'lang' => 'preRequisiteMissing'];
         }
 
-        return strpos($exec, 'succeeded!') !== false || strpos($exec, 'open') !== false || strpos($exec, 'Connected') !== false;
+        return str_contains($exec, 'succeeded!') || str_contains($exec, 'open') || str_contains($exec, 'Connected');
     }
 
+    /**
+     * @param $args
+     * @return bool|null
+     */
     public static function uriIsValid($args): ?bool
     {
-        $whitelist = '/^(?:\w+(?:\/)?|(?:https?:\/\/)?((?:[\da-z.-]+)\.(?:[a-z.]{2,6})|(?:\d{1,3}\.){3}\d{1,3})(?:[\/\w.-]*)*\/?)$/i';
+        $whitelist = '/^(?:\w+(?:\/)?|' .
+            '(?:https?:\/\/)?((?:[\da-z.-]+)\.' .
+            '(?:[a-z.]{2,6})|(?:\d{1,3}\.){3}\d{1,3})' .
+            '(?:[\/\w.-]*)*\/?)$/i';
         return preg_match($whitelist, $args);
     }
 }

@@ -20,6 +20,7 @@ require 'vendor/autoload.php';
 use AcknowledgementReceipt\models\AcknowledgementReceiptModel;
 use Email\controllers\EmailController;
 use Email\models\EmailModel;
+use Exception;
 use SrcCore\models\DatabasePDO;
 use User\models\UserModel;
 
@@ -31,12 +32,24 @@ use User\models\UserModel;
 
 // phpcs:ignore
 $options = empty($argv[5]) ? null : unserialize($argv[5]);
+
 // phpcs:ignore
-EmailScript::send(['customId' => $argv[1], 'emailId' => $argv[2], 'userId' => $argv[3], 'encryptKey' => $argv[4], 'options' => $options]);
+EmailScript::send([
+    'customId'   => $argv[1],
+    'emailId'    => $argv[2],
+    'userId'     => $argv[3],
+    'encryptKey' => $argv[4],
+    'options'    => $options
+]);
 
 class EmailScript
 {
-    public static function send(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function send(array $args): array
     {
         $GLOBALS['customId'] = $args['customId'];
 
@@ -45,20 +58,32 @@ class EmailScript
 
         $currentUser = UserModel::getById(['id' => $args['userId'], 'select' => ['user_id']]);
         $GLOBALS['login'] = $currentUser['user_id'];
-        $GLOBALS['id']    = $args['userId'];
+        $GLOBALS['id'] = $args['userId'];
         $GLOBALS['customId'] = $args['customId'];
         $_SERVER['MAARCH_ENCRYPT_KEY'] = $args['encryptKey'];
 
         $isSent = EmailController::sendEmail(['emailId' => $args['emailId'], 'userId' => $args['userId']]);
         if (!empty($isSent['success'])) {
-            EmailModel::update(['set' => ['status' => 'SENT', 'send_date' => 'CURRENT_TIMESTAMP'], 'where' => ['id = ?'], 'data' => [$args['emailId']]]);
+            EmailModel::update(
+                [
+                    'set'   => ['status' => 'SENT', 'send_date' => 'CURRENT_TIMESTAMP'],
+                    'where' => ['id = ?'],
+                    'data'  => [$args['emailId']]
+                ]
+            );
         } else {
             EmailModel::update(['set' => ['status' => 'ERROR'], 'where' => ['id = ?'], 'data' => [$args['emailId']]]);
         }
 
         //Options
         if (!empty($args['options']['acknowledgementReceiptId']) && !empty($isSent['success'])) {
-            AcknowledgementReceiptModel::update(['set' => ['send_date' => 'CURRENT_TIMESTAMP'], 'where' => ['id = ?'], 'data' => [$args['options']['acknowledgementReceiptId']]]);
+            AcknowledgementReceiptModel::update(
+                [
+                    'set'   => ['send_date' => 'CURRENT_TIMESTAMP'],
+                    'where' => ['id = ?'],
+                    'data'  => [$args['options']['acknowledgementReceiptId']]
+                ]
+            );
         }
 
         return $isSent;

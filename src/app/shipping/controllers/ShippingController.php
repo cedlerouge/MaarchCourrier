@@ -1,21 +1,23 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Shipping Controller
-* @author dev@maarch.org
-*/
+ * @brief Shipping Controller
+ * @author dev@maarch.org
+ */
 
 namespace Shipping\controllers;
 
 use Attachment\models\AttachmentModel;
+use DateTime;
 use Entity\models\EntityModel;
+use Exception;
 use Resource\controllers\ResController;
 use Respect\Validation\Validator;
 use Shipping\models\ShippingModel;
@@ -25,9 +27,19 @@ use User\models\UserModel;
 
 class ShippingController
 {
-    public static function getByResId(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public static function getByResId(Request $request, Response $response, array $args): Response
     {
-        if (!Validator::intVal()->validate($args['resId']) || !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($args['resId']) ||
+            !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
@@ -39,7 +51,7 @@ class ShippingController
         $attachments = array_column($attachments, 'res_id');
 
         $where = '(document_id = ? and document_type = ?)';
-        $data  = [$args['resId'], 'resource'];
+        $data = [$args['resId'], 'resource'];
 
         if (!empty($attachments)) {
             $where .= ' or (document_id in (?) and document_type = ?)';
@@ -56,7 +68,10 @@ class ShippingController
         $shippings = [];
 
         foreach ($shippingsModel as $shipping) {
-            $recipientEntityLabel = EntityModel::getById(['id' => $shipping['recipient_entity_id'], 'select' => ['entity_label']]);
+            $recipientEntityLabel = EntityModel::getById([
+                'id'     => $shipping['recipient_entity_id'],
+                'select' => ['entity_label']
+            ]);
             $recipientEntityLabel = $recipientEntityLabel['entity_label'];
             $recipients = json_decode($shipping['recipients'], true);
             $contacts = [];
@@ -65,23 +80,30 @@ class ShippingController
             }
 
             $shippings[] = [
-                'id'                    => $shipping['id'],
-                'documentId'            => $shipping['document_id'],
-                'documentType'          => $shipping['document_type'],
-                'userId'                => $shipping['user_id'],
-                'userLabel'             => UserModel::getLabelledUserById(['id' => $shipping['user_id']]),
-                'fee'                   => $shipping['fee'],
-                'creationDate'          => $shipping['creation_date'],
-                'recipientEntityId'     => $shipping['recipient_entity_id'],
-                'recipientEntityLabel'  => $recipientEntityLabel,
-                'recipients'            => $contacts
+                'id'                   => $shipping['id'],
+                'documentId'           => $shipping['document_id'],
+                'documentType'         => $shipping['document_type'],
+                'userId'               => $shipping['user_id'],
+                'userLabel'            => UserModel::getLabelledUserById(['id' => $shipping['user_id']]),
+                'fee'                  => $shipping['fee'],
+                'creationDate'         => $shipping['creation_date'],
+                'recipientEntityId'    => $shipping['recipient_entity_id'],
+                'recipientEntityLabel' => $recipientEntityLabel,
+                'recipients'           => $contacts
             ];
         }
 
         return $response->withJson($shippings);
     }
 
-    public function getShippingAttachmentsList(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getShippingAttachmentsList(Request $request, Response $response, array $args): Response
     {
         if (!Validator::intVal()->validate($args['shippingId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route shippingId is not an integer']);
@@ -118,7 +140,10 @@ class ShippingController
         }
         $attachments = [];
         foreach ($shipping['attachments'] as $attachmentId) {
-            $attachment = AttachmentModel::getById(['id' => $attachmentId, 'select' => ['res_id', 'title', 'creation_date', 'attachment_type', 'filesize']]);
+            $attachment = AttachmentModel::getById([
+                'id'     => $attachmentId,
+                'select' => ['res_id', 'title', 'creation_date', 'attachment_type', 'filesize']
+            ]);
             if (empty($attachment)) {
                 continue;
             }
@@ -133,7 +158,14 @@ class ShippingController
         return $response->withJson(['attachments' => $attachments]);
     }
 
-    public function getHistory(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getHistory(Request $request, Response $response, array $args): Response
     {
         if (!Validator::intVal()->validate($args['shippingId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route shippingId is not an integer']);
@@ -166,7 +198,8 @@ class ShippingController
         }
 
         foreach ($shipping['history'] as $key => $history) {
-            $shipping['history'][$key]['eventDate'] = (new \DateTime($history['eventDate']))->format('Y-m-d H:i:s');
+            $shipping['history'][$key]['eventDate'] = (new DateTime($history['eventDate']))
+                ->format('Y-m-d H:i:s');
         }
 
         return $response->withJson(['history' => $shipping['history']]);

@@ -84,7 +84,10 @@ class RetrieveOriginalResource
 
         $docserverAndFilePath = $this->retrieveResourceDocserverAndFilePath->getDocserverAndFilePath($document);
 
-        $fingerPrint = $this->resourceFile->getFingerPrint($docserverAndFilePath->getDocserver()->getDocserverTypeId(), $docserverAndFilePath->getFilePath());
+        $fingerPrint = $this->resourceFile->getFingerPrint(
+            $docserverAndFilePath->getDocserver()->getDocserverTypeId(),
+            $docserverAndFilePath->getFilePath()
+        );
         if ($signedDocument == null && !empty($fingerPrint) && empty($document->getFingerprint())) {
             $this->resourceRepository->updateFingerprint($resId, $fingerPrint);
             $document->setFingerprint($fingerPrint);

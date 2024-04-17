@@ -64,7 +64,9 @@ class CollaboraOnlineController
             ['token' => $queryParams['access_token'], 'id' => $args['id']]
         );
         if (!empty($tokenCheckResult['errors'])) {
-            return $response->withStatus($tokenCheckResult['code'])->withJson(['errors' => $tokenCheckResult['errors']]);
+            return $response->withStatus($tokenCheckResult['code'])->withJson([
+                'errors' => $tokenCheckResult['errors']
+            ]);
         }
 
         $document = CollaboraOnlineController::getDocument([
@@ -185,7 +187,9 @@ class CollaboraOnlineController
             ['token' => $queryParams['access_token'], 'id' => $args['id']]
         );
         if (!empty($tokenCheckResult['errors'])) {
-            return $response->withStatus($tokenCheckResult['code'])->withJson(['errors' => $tokenCheckResult['errors']]);
+            return $response->withStatus($tokenCheckResult['code'])->withJson([
+                'errors' => $tokenCheckResult['errors']
+            ]);
         }
 
         $document = CollaboraOnlineController::getDocument([
@@ -237,7 +241,9 @@ class CollaboraOnlineController
             ['token' => $queryParams['access_token'], 'id' => $args['id']]
         );
         if (!empty($tokenCheckResult['errors'])) {
-            return $response->withStatus($tokenCheckResult['code'])->withJson(['errors' => $tokenCheckResult['errors']]);
+            return $response->withStatus($tokenCheckResult['code'])->withJson([
+                'errors' => $tokenCheckResult['errors']
+            ]);
         }
 
         $document = CollaboraOnlineController::getDocument([
@@ -280,7 +286,9 @@ class CollaboraOnlineController
 
         $tokenCheckResult = CollaboraOnlineController::checkToken(['token' => $body['token']]);
         if (!empty($tokenCheckResult['errors'])) {
-            return $response->withStatus($tokenCheckResult['code'])->withJson(['errors' => $tokenCheckResult['errors']]);
+            return $response->withStatus($tokenCheckResult['code'])->withJson([
+                'errors' => $tokenCheckResult['errors']
+            ]);
         }
 
         $document = CollaboraOnlineController::getDocument([
@@ -327,7 +335,9 @@ class CollaboraOnlineController
 
         $tokenCheckResult = CollaboraOnlineController::checkToken(['token' => $queryParams['token']]);
         if (!empty($tokenCheckResult['errors'])) {
-            return $response->withStatus($tokenCheckResult['code'])->withJson(['errors' => $tokenCheckResult['errors']]);
+            return $response->withStatus($tokenCheckResult['code'])->withJson([
+                'errors' => $tokenCheckResult['errors']
+            ]);
         }
 
         $document = CollaboraOnlineController::getDocument([

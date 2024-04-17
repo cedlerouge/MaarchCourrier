@@ -1,16 +1,16 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Link Controller
-* @author dev@maarch.org
-*/
+ * @brief Link Controller
+ * @author dev@maarch.org
+ */
 
 namespace Resource\controllers;
 
@@ -19,6 +19,7 @@ use Contact\models\ContactModel;
 use Convert\controllers\ConvertPdfController;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Resource\models\ResModel;
@@ -31,9 +32,19 @@ use User\models\UserModel;
 
 class LinkController
 {
-    public function getLinkedResources(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getLinkedResources(Request $request, Response $response, array $args): Response
     {
-        if (!Validator::intVal()->validate($args['resId']) || !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($args['resId']) ||
+            !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Resource out of perimeter']);
         }
 
@@ -42,10 +53,25 @@ class LinkController
 
         $linkedResources = [];
         if (!empty($linkedResourcesIds)) {
-            $linkedResourcesIds = ResController::getAuthorizedResources(['resources' => $linkedResourcesIds, 'userId' => $GLOBALS['id']]);
+            $linkedResourcesIds = ResController::getAuthorizedResources([
+                'resources' => $linkedResourcesIds,
+                'userId'    => $GLOBALS['id']
+            ]);
             if (!empty($linkedResourcesIds)) {
                 $linkedResources = ResModel::get([
-                    'select' => ['res_id as "resId"', 'subject', 'doc_date as "documentDate"', 'status', 'dest_user as "destUser"', 'destination', 'alt_identifier as chrono', 'category_id as "categoryId"', 'filename', 'format', 'confidentiality'],
+                    'select' => [
+                        'res_id as "resId"',
+                        'subject',
+                        'doc_date as "documentDate"',
+                        'status',
+                        'dest_user as "destUser"',
+                        'destination',
+                        'alt_identifier as chrono',
+                        'category_id as "categoryId"',
+                        'filename',
+                        'format',
+                        'confidentiality'
+                    ],
                     'where'  => ['res_id in (?)'],
                     'data'   => [$linkedResourcesIds]
                 ]);
@@ -55,22 +81,30 @@ class LinkController
                 $linkedResources[$key]['hasDocument'] = !empty($value['filename']);
                 $linkedResources[$key]['confidentiality'] = $value['confidentiality'] == 'Y';
                 if (!empty($value['status'])) {
-                    $status = StatusModel::getById(['id' => $value['status'], 'select' => ['label_status', 'img_filename']]);
+                    $status = StatusModel::getById([
+                        'id'     => $value['status'],
+                        'select' => ['label_status', 'img_filename']
+                    ]);
                     $linkedResources[$key]['statusLabel'] = $status['label_status'];
                     $linkedResources[$key]['statusImage'] = $status['img_filename'];
                 }
 
                 if (!empty($value['destUser'])) {
-                    $linkedResources[$key]['destUserLabel'] = UserModel::getLabelledUserById(['id' => $value['destUser']]);
+                    $linkedResources[$key]['destUserLabel'] = UserModel::getLabelledUserById([
+                        'id' => $value['destUser']
+                    ]);
                 }
                 if (!empty($value['destination'])) {
-                    $linkedResources[$key]['destinationLabel'] = EntityModel::getByEntityId(['entityId' => $value['destination'], 'select' => ['short_label']])['short_label'];
+                    $linkedResources[$key]['destinationLabel'] = EntityModel::getByEntityId([
+                        'entityId' => $value['destination'],
+                        'select'   => ['short_label']
+                    ])['short_label'];
                 }
 
                 $correspondents = ResourceContactModel::get([
-                    'select'    => ['res_id', 'item_id', 'type', 'mode'],
-                    'where'     => ['res_id = ?'],
-                    'data'      => [$value['resId']]
+                    'select' => ['res_id', 'item_id', 'type', 'mode'],
+                    'where'  => ['res_id = ?'],
+                    'data'   => [$value['resId']]
                 ]);
 
                 $linkedResources[$key]['senders'] = [];
@@ -78,13 +112,21 @@ class LinkController
                 foreach ($correspondents as $correspondent) {
                     if ($correspondent['res_id'] == $resource['res_id']) {
                         if ($correspondent['type'] == 'contact') {
-                            $contactRaw = ContactModel::getById(['select' => ['firstname', 'lastname', 'company'], 'id' => $correspondent['item_id']]);
+                            $contactRaw = ContactModel::getById([
+                                'select' => ['firstname', 'lastname', 'company'],
+                                'id'     => $correspondent['item_id']
+                            ]);
                             $contactToDisplay = ContactController::getFormattedOnlyContact(['contact' => $contactRaw]);
                             $formattedCorrespondent = $contactToDisplay['contact']['otherInfo'];
                         } elseif ($correspondent['type'] == 'user') {
-                            $formattedCorrespondent = UserModel::getLabelledUserById(['id' => $correspondent['item_id']]);
+                            $formattedCorrespondent = UserModel::getLabelledUserById([
+                                'id' => $correspondent['item_id']
+                            ]);
                         } else {
-                            $entity = EntityModel::getById(['id' => $correspondent['item_id'], 'select' => ['entity_label']]);
+                            $entity = EntityModel::getById([
+                                'id'     => $correspondent['item_id'],
+                                'select' => ['entity_label']
+                            ]);
                             $formattedCorrespondent = $entity['entity_label'];
                         }
 
@@ -92,14 +134,21 @@ class LinkController
                     }
                 }
 
-                $linkedResources[$key]['visaCircuit'] = ListInstanceModel::get(['select' => ['item_id', 'item_mode'], 'where' => ['res_id = ?', 'difflist_type = ?'], 'data' => [$value['resId'], 'VISA_CIRCUIT']]);
+                $linkedResources[$key]['visaCircuit'] = ListInstanceModel::get([
+                    'select' => ['item_id', 'item_mode'],
+                    'where'  => ['res_id = ?', 'difflist_type = ?'],
+                    'data'   => [$value['resId'], 'VISA_CIRCUIT']
+                ]);
                 foreach ($linkedResources[$key]['visaCircuit'] as $keyCircuit => $valueCircuit) {
-                    $linkedResources[$key]['visaCircuit'][$keyCircuit]['userLabel'] = UserModel::getLabelledUserById(['id' => $valueCircuit['item_id']]);
+                    $linkedResources[$key]['visaCircuit'][$keyCircuit]['userLabel'] =
+                        UserModel::getLabelledUserById(['id' => $valueCircuit['item_id']]);
                 }
 
                 $linkedResources[$key]['canConvert'] = false;
                 if (!empty($value['format'])) {
-                    $linkedResources[$key]['canConvert'] = ConvertPdfController::canConvert(['extension' => $value['format']]);
+                    $linkedResources[$key]['canConvert'] = ConvertPdfController::canConvert([
+                        'extension' => $value['format']
+                    ]);
                 }
             }
         }
@@ -107,13 +156,23 @@ class LinkController
         return $response->withJson(['linkedResources' => $linkedResources]);
     }
 
-    public function linkResources(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return mixed
+     * @throws Exception
+     */
+    public function linkResources(Request $request, Response $response, array $args): mixed
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'add_links', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!Validator::intVal()->validate($args['resId']) || !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($args['resId']) ||
+            !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Resource out of perimeter']);
         }
 
@@ -136,14 +195,14 @@ class LinkController
         }
 
         ResModel::update([
-            'set'       => ['linked_resources' => json_encode($linkedResources)],
-            'where'     => ['res_id = ?'],
-            'data'      => [$args['resId']]
+            'set'   => ['linked_resources' => json_encode($linkedResources)],
+            'where' => ['res_id = ?'],
+            'data'  => [$args['resId']]
         ]);
         ResModel::update([
-            'postSet'   => ['linked_resources' => "jsonb_insert(linked_resources, '{0}', '\"{$args['resId']}\"')"],
-            'where'     => ['res_id in (?)', "(linked_resources @> ?) = false"],
-            'data'      => [$body['linkedResources'], "\"{$args['resId']}\""]
+            'postSet' => ['linked_resources' => "jsonb_insert(linked_resources, '{0}', '\"{$args['resId']}\"')"],
+            'where'   => ['res_id in (?)', "(linked_resources @> ?) = false"],
+            'data'    => [$body['linkedResources'], "\"{$args['resId']}\""]
         ]);
 
         $linkedResourcesInfo = ResModel::get([
@@ -151,7 +210,11 @@ class LinkController
             'where'  => ['res_id in (?)'],
             'data'   => [$body['linkedResources']]
         ]);
-        $linkedResourcesAltIdentifier = array_column($linkedResourcesInfo, 'alt_identifier', 'res_id');
+        $linkedResourcesAltIdentifier = array_column(
+            $linkedResourcesInfo,
+            'alt_identifier',
+            'res_id'
+        );
 
         foreach ($body['linkedResources'] as $value) {
             HistoryController::add([
@@ -175,29 +238,42 @@ class LinkController
         return $response->withStatus(204);
     }
 
-    public function unlinkResources(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return mixed
+     * @throws Exception
+     */
+    public function unlinkResources(Request $request, Response $response, array $args): mixed
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'add_links', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!Validator::intVal()->validate($args['resId']) || !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($args['resId']) ||
+            !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Resource out of perimeter']);
         }
 
-        if (!Validator::intVal()->validate($args['id']) || !ResController::hasRightByResId(['resId' => [$args['id']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($args['id']) ||
+            !ResController::hasRightByResId(['resId' => [$args['id']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Resource to unlink out of perimeter']);
         }
 
         ResModel::update([
-            'postSet'   => ['linked_resources' => "linked_resources - '{$args['id']}'"],
-            'where'     => ['res_id = ?'],
-            'data'      => [$args['resId']]
+            'postSet' => ['linked_resources' => "linked_resources - '{$args['id']}'"],
+            'where'   => ['res_id = ?'],
+            'data'    => [$args['resId']]
         ]);
         ResModel::update([
-            'postSet'   => ['linked_resources' => "linked_resources - '{$args['resId']}'"],
-            'where'     => ['res_id = ?'],
-            'data'      => [$args['id']]
+            'postSet' => ['linked_resources' => "linked_resources - '{$args['resId']}'"],
+            'where'   => ['res_id = ?'],
+            'data'    => [$args['id']]
         ]);
 
         $linkedResourcesInfo = ResModel::get([
@@ -205,7 +281,11 @@ class LinkController
             'where'  => ['res_id in (?)'],
             'data'   => [[$args['resId'], $args['id']]]
         ]);
-        $linkedResourcesAltIdentifier = array_column($linkedResourcesInfo, 'alt_identifier', 'res_id');
+        $linkedResourcesAltIdentifier = array_column(
+            $linkedResourcesInfo,
+            'alt_identifier',
+            'res_id'
+        );
 
         HistoryController::add([
             'tableName' => 'res_letterbox',

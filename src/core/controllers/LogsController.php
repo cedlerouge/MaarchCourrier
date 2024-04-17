@@ -30,15 +30,17 @@ use Monolog\Processor\MemoryUsageProcessor;
 
 class LogsController
 {
-    public const DEFAULT_LOG_FORMAT = "[%datetime%] %level_name% [%extra.process_id%] [%channel%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]\n";
-    public const DEFAULT_SQL_LOG_FORMAT = "[%datetime%] %level_name% [%extra.process_id%] [%channel%][%QUERY%][%DATA%][%EXCEPTION%]\n";
+    public const DEFAULT_LOG_FORMAT = "[%datetime%] %level_name% [%extra.process_id%]" .
+    " [%channel%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]\n";
+    public const DEFAULT_SQL_LOG_FORMAT = "[%datetime%] %level_name% [%extra.process_id%]" .
+    " [%channel%][%QUERY%][%DATA%][%EXCEPTION%]\n";
 
     /**
      * @param array $logConfig
      * @param array $loggerConfig
      * @return Logger|array $logger
      */
-    public static function initMonologLogger(array $logConfig, array $loggerConfig)
+    public static function initMonologLogger(array $logConfig, array $loggerConfig): Logger|array
     {
         if (empty($logConfig)) {
             return ['code' => 400, 'errors' => "Log config is empty !"];
@@ -78,7 +80,7 @@ class LogsController
     /**
      * @description Get log config by type
      * @param string $logType logFonctionnel | logTechnique | queries
-     * @return  array
+     * @return array
      * @throws Exception
      */
     public static function getLogType(string $logType): array
@@ -94,7 +96,7 @@ class LogsController
 
     /**
      * @description Get log config
-     * @return  array
+     * @return array|null
      * @throws Exception
      */
     public static function getLogConfig(): ?array
@@ -111,10 +113,10 @@ class LogsController
     /**
      * @description Add log line
      * @param array $args
-     * @return  array|bool
+     * @return array|bool
      * @throws Exception
      */
-    public static function add(array $args)
+    public static function add(array $args): bool|array
     {
         $logConfig = LogsController::getLogConfig();
         if (empty($logConfig)) {
@@ -159,12 +161,12 @@ class LogsController
     }
 
     /**
-     * @description     Write prepare log line with monolog
+     * @description   Write prepare log line with monolog
      * @param array $log
-     * @return  void
+     * @return void
      * @throws Exception
      */
-    private static function logWithMonolog(array $log)
+    private static function logWithMonolog(array $log): void
     {
         ValidatorModel::notEmpty($log, ['lineFormat', 'dateTimeFormat', 'path', 'level']);
         ValidatorModel::stringType($log, ['lineFormat', 'dateTimeFormat', 'path']);
@@ -192,7 +194,8 @@ class LogsController
                 $logger->notice($log['line']);
                 break;
             case 'WARNING':
-                // Use for exceptional occurrences that are not errors. Examples: Use of deprecated APIs, poor use of an API, undesirable things that are not necessarily wrong.
+                // Use for exceptional occurrences that are not errors. Examples: Use of deprecated APIs,
+                // poor use of an API, undesirable things that are not necessarily wrong.
                 $logger->warning($log['line']);
                 break;
             case 'ERROR':
@@ -204,7 +207,8 @@ class LogsController
                 $logger->critical($log['line']);
                 break;
             case 'ALERT':
-                // Use for actions that must be taken immediately. Example: Entire website down, database unavailable, etc.
+                // Use for actions that must be taken immediately.
+                // Example: Entire website down, database unavailable, etc.
                 $logger->alert($log['line']);
                 break;
             case 'EMERGENCY':
@@ -219,16 +223,19 @@ class LogsController
     /**
      * @description Create new log file based on size and number of files to keep, when file size is exceeded
      * @param array $file
-     * @return  void
+     * @return void
      * @throws Exception
      */
-    public static function rotateLogFileBySize(array $file)
+    public static function rotateLogFileBySize(array $file): void
     {
         ValidatorModel::notEmpty($file, ['path']);
         ValidatorModel::intVal($file, ['maxSize', 'maxFiles']);
         ValidatorModel::stringType($file, ['path']);
 
-        if (file_exists($file['path']) && !empty($file['maxSize']) && $file['maxSize'] > 0 && filesize($file['path']) > $file['maxSize']) {
+        if (
+            file_exists($file['path']) && !empty($file['maxSize']) &&
+            $file['maxSize'] > 0 && filesize($file['path']) > $file['maxSize']
+        ) {
             $path_parts = pathinfo($file['path']);
             $pattern = $path_parts['dirname'] . '/' . $path_parts['filename'] . "-%d." . $path_parts['extension'];
 
@@ -254,7 +261,7 @@ class LogsController
     /**
      * @description Convert File size to KB
      * @param string $value The size + prefix (of 2 characters)
-     * @return  int
+     * @return int|null
      */
     public static function calculateFileSizeToBytes(string $value): ?int
     {

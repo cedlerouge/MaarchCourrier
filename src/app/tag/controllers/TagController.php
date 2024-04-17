@@ -1,10 +1,10 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ */
 
 /**
  * @brief Tag Controller
@@ -13,6 +13,7 @@
 
 namespace Tag\controllers;
 
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Respect\Validation\Validator;
@@ -24,7 +25,12 @@ use Tag\models\ResourceTagModel;
 
 class TagController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
         $tags = TagModel::get(['orderBy' => ['label']]);
 
@@ -54,7 +60,13 @@ class TagController
         return $response->withJson(['tags' => $tags]);
     }
 
-    public function getById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function getById(Request $request, Response $response, array $args): Response
     {
         if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id must be an integer val']);
@@ -66,9 +78,9 @@ class TagController
         }
 
         $countResources = ResourceTagModel::get([
-           'select' => ['count(1)'],
-           'where'  => ['tag_id = ?'],
-           'data'   => [$args['id']]
+            'select' => ['count(1)'],
+            'where'  => ['tag_id = ?'],
+            'data'   => [$args['id']]
         ]);
         $tag['countResources'] = $countResources[0]['count'];
         $tag['links'] = json_decode($tag['links'], true);
@@ -89,11 +101,19 @@ class TagController
         return $response->withJson($tag);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         if (
-            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_tag', 'userId' => $GLOBALS['id']])
-            && !PrivilegeController::hasPrivilege(['privilegeId' => 'manage_tags_application', 'userId' => $GLOBALS['id']])
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_tag', 'userId' => $GLOBALS['id']]) &&
+            !PrivilegeController::hasPrivilege(
+                ['privilegeId' => 'manage_tags_application', 'userId' => $GLOBALS['id']]
+            )
         ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
@@ -128,7 +148,9 @@ class TagController
             $listTags = [];
             foreach ($body['links'] as $link) {
                 if (!Validator::intVal()->validate($link)) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Body links element is not an integer']);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => 'Body links element is not an integer']
+                    );
                 }
                 $listTags[] = (string)$link;
             }
@@ -164,14 +186,21 @@ class TagController
             'tableName' => 'tags',
             'recordId'  => $id,
             'eventType' => 'ADD',
-            'info'      =>  _TAG_ADDED . " : {$body['label']}",
+            'info'      => _TAG_ADDED . " : {$body['label']}",
             'eventId'   => 'tagCreation',
         ]);
 
         return $response->withJson(['id' => $id]);
     }
 
-    public function update(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_tag', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -269,18 +298,27 @@ class TagController
             'tableName' => 'tags',
             'recordId'  => $args['id'],
             'eventType' => 'UP',
-            'info'      =>  _TAG_UPDATED . " : {$body['label']}",
+            'info'      => _TAG_UPDATED . " : {$body['label']}",
             'eventId'   => 'tagModification',
         ]);
 
         return $response->withStatus(204);
     }
 
-    public function delete(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $args): Response
     {
         if (
-            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_tag', 'userId' => $GLOBALS['id']])
-            && !PrivilegeController::hasPrivilege(['privilegeId' => 'manage_tags_application', 'userId' => $GLOBALS['id']])
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_tag', 'userId' => $GLOBALS['id']]) &&
+            !PrivilegeController::hasPrivilege(
+                ['privilegeId' => 'manage_tags_application', 'userId' => $GLOBALS['id']]
+            )
         ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
@@ -293,7 +331,10 @@ class TagController
             'where' => ['tag_id = ?'],
             'data'  => [$args['id']]
         ]);
-        if (!empty($resourcesTags) && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_tag', 'userId' => $GLOBALS['id']])) {
+        if (
+            !empty($resourcesTags) &&
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_tag', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -303,9 +344,9 @@ class TagController
         }
 
         $children = TagModel::get([
-           'select' => ['count(1)'],
-           'where'  => ['parent_id = ?'],
-           'data'   => [$args['id']]
+            'select' => ['count(1)'],
+            'where'  => ['parent_id = ?'],
+            'data'   => [$args['id']]
         ]);
         if ($children[0]['count'] > 0) {
             return $response->withStatus(400)->withJson(['errors' => 'Tag has children']);
@@ -315,9 +356,9 @@ class TagController
         if (!empty($links)) {
             foreach ($links as $link) {
                 TagModel::update([
-                    'postSet'   => ['links' => "links - '{$args['id']}'"],
-                    'where'     => ['id = ?'],
-                    'data'      => [$link]
+                    'postSet' => ['links' => "links - '{$args['id']}'"],
+                    'where'   => ['id = ?'],
+                    'data'    => [$link]
                 ]);
             }
         }
@@ -336,14 +377,20 @@ class TagController
             'tableName' => 'tags',
             'recordId'  => $args['id'],
             'eventType' => 'DEL',
-            'info'      =>  _TAG_DELETED . " : {$tag['label']}",
+            'info'      => _TAG_DELETED . " : {$tag['label']}",
             'eventId'   => 'tagSuppression',
         ]);
 
         return $response->withStatus(204);
     }
 
-    public function merge(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function merge(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_tag', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -402,10 +449,9 @@ class TagController
             'data'  => [$tagMerge['id'], $tagResMaster]
         ]);
 
-
         ResourceTagModel::delete([
-           'where'  => ['tag_id = ?'],
-           'data'   => [$tagMerge['id']]
+            'where' => ['tag_id = ?'],
+            'data'  => [$tagMerge['id']]
         ]);
 
         TagModel::delete([
@@ -417,14 +463,19 @@ class TagController
             'tableName' => 'tags',
             'recordId'  => $tagMaster['id'],
             'eventType' => 'DEL',
-            'info'      =>  _TAG_MERGED . " : {$tagMerge['label']} vers {$tagMaster['label']}",
+            'info'      => _TAG_MERGED . " : {$tagMerge['label']} vers {$tagMaster['label']}",
             'eventId'   => 'tagSuppression',
         ]);
 
         return $response->withStatus(204);
     }
 
-    private static function tagIsInChildren(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    private static function tagIsInChildren(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['idToFind', 'parentId']);
         ValidatorModel::intVal($args, ['idToFind', 'parentId']);

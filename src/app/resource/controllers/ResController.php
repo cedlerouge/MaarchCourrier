@@ -117,7 +117,8 @@ class ResController extends ResourceControlController
             $customId = CoreConfigModel::getCustomId();
             $customId = empty($customId) ? 'null' : $customId;
             exec(
-                "php src/app/convert/scripts/FullTextScript.php --customId {$customId} --resId {$resId} --collId letterbox_coll --userId {$GLOBALS['id']} > /dev/null &"
+                "php src/app/convert/scripts/FullTextScript.php --customId {$customId} --resId {$resId} " .
+                "--collId letterbox_coll --userId {$GLOBALS['id']} > /dev/null &"
             );
         }
 
@@ -541,7 +542,8 @@ class ResController extends ResourceControlController
             $customId = CoreConfigModel::getCustomId();
             $customId = empty($customId) ? 'null' : $customId;
             exec(
-                "php src/app/convert/scripts/FullTextScript.php --customId {$customId} --resId {$args['resId']} --collId letterbox_coll --userId {$GLOBALS['id']} > /dev/null &"
+                "php src/app/convert/scripts/FullTextScript.php --customId {$customId} " .
+                "--resId {$args['resId']} --collId letterbox_coll --userId {$GLOBALS['id']} > /dev/null &"
             );
 
             HistoryController::add([
@@ -1080,7 +1082,10 @@ class ResController extends ResourceControlController
             $formattedData[$type] = $item['count'];
         }
 
-        $formattedData['notes'] = NoteModel::countByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])[$args['resId']];
+        $formattedData['notes'] = NoteModel::countByResId([
+            'resId'  => [$args['resId']],
+            'userId' => $GLOBALS['id']
+        ])[$args['resId']];
 
         $emails = EmailModel::get(
             [
@@ -1248,7 +1253,9 @@ class ResController extends ResourceControlController
                 'data'    => [$body['resources']]
             ]);
 
-            $info = $body['integrations']['inSignatureBook'] ? _DOC_ADD_TO_SIGNATORY_BOOK : _DOC_REMOVE_FROM_SIGNATORY_BOOK;
+            $info = $body['integrations']['inSignatureBook']
+                ? _DOC_ADD_TO_SIGNATORY_BOOK
+                : _DOC_REMOVE_FROM_SIGNATORY_BOOK;
             foreach ($body['resources'] as $resId) {
                 HistoryController::add([
                     'tableName' => 'res_letterbox',
@@ -1368,11 +1375,8 @@ class ResController extends ResourceControlController
             return ['errors' => 'Docserver does not exist'];
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace(
-            '#',
-            DIRECTORY_SEPARATOR,
-            $document['path']
-        ) .
+        $pathToDocument = $docserver['path_template'] .
+            str_replace('#', DIRECTORY_SEPARATOR, $document['path']) .
             $document['filename'];
         if (!file_exists($pathToDocument)) {
             return ['errors' => 'Document not found on docserver'];
@@ -1762,11 +1766,11 @@ class ResController extends ResourceControlController
         if (
             !PreparedClauseController::isRequestValid(
                 [
-                'select'  => $select,
-                'clause'  => $data['clause'],
-                'orderBy' => $data['orderBy'],
-                'limit'   => $data['limit'],
-                'userId'  => $GLOBALS['login']
+                    'select'  => $select,
+                    'clause'  => $data['clause'],
+                    'orderBy' => $data['orderBy'],
+                    'limit'   => $data['limit'],
+                    'userId'  => $GLOBALS['login']
                 ]
             )
         ) {
@@ -1775,7 +1779,10 @@ class ResController extends ResourceControlController
 
         $where = [$data['clause']];
         if (!UserController::isRoot(['id' => $GLOBALS['id']])) {
-            $groupsClause = GroupController::getGroupsClause(['userId' => $GLOBALS['id'], 'login' => $GLOBALS['login']]);
+            $groupsClause = GroupController::getGroupsClause([
+                'userId' => $GLOBALS['id'],
+                'login'  => $GLOBALS['login']
+            ]);
             if (empty($groupsClause)) {
                 return $response->withStatus(400)->withJson(['errors' => 'User has no groups']);
             }

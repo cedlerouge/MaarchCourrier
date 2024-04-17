@@ -14,6 +14,7 @@
 
 namespace Priority\controllers;
 
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Priority\models\PriorityModel;
@@ -23,23 +24,40 @@ use SrcCore\http\Response;
 
 class PriorityController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
         return $response->withJson(['priorities' => PriorityModel::get(['orderBy' => ['"order"']])]);
     }
 
-    public function getById(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     */
+    public function getById(Request $request, Response $response, array $aArgs): Response
     {
-        $priotity = PriorityModel::getById(['id' => $aArgs['id']]);
+        $priority = PriorityModel::getById(['id' => $aArgs['id']]);
 
-        if (empty($priotity)) {
+        if (empty($priority)) {
             return $response->withStatus(400)->withJson(['errors' => 'Priority not found']);
         }
 
-        return $response->withJson(['priority'  => $priotity]);
+        return $response->withJson(['priority' => $priority]);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_priorities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -51,10 +69,16 @@ class PriorityController
         $check = $check && (Validator::notEmpty()->intVal()->validate($data['delays']) || $data['delays'] == 0);
 
         if (!$check) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body (label, color or delays) is empty or type is incorrect']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body (label, color or delays) is empty or type is incorrect'
+            ]);
         }
 
-        $delayAlreadySet = PriorityModel::get(['select' => [1], 'where' => ['delays = ?'], 'data' => [(int)$data['delays']]]);
+        $delayAlreadySet = PriorityModel::get([
+            'select' => [1],
+            'where'  => ['delays = ?'],
+            'data'   => [(int)$data['delays']]
+        ]);
         if (!empty($delayAlreadySet)) {
             return $response->withStatus(400)->withJson(['errors' => _PRIORITY_DELAY_ALREADY_SET]);
         }
@@ -69,10 +93,17 @@ class PriorityController
             'eventId'   => 'priorityCreation',
         ]);
 
-        return $response->withJson(['priority'  => $id]);
+        return $response->withJson(['priority' => $id]);
     }
 
-    public function update(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_priorities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -84,7 +115,9 @@ class PriorityController
         $check = $check && (Validator::notEmpty()->intVal()->validate($data['delays']) || $data['delays'] == 0);
 
         if (!$check) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body (label, color or delays) is empty or type is incorrect']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body (label, color or delays) is empty or type is incorrect'
+            ]);
         }
 
         $delayAlreadySet = PriorityModel::get([
@@ -111,7 +144,14 @@ class PriorityController
         return $response->withJson(['success' => 'success']);
     }
 
-    public function delete(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_priorities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -130,21 +170,32 @@ class PriorityController
         return $response->withJson(['priorities' => PriorityModel::get()]);
     }
 
-    public function getSorted(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getSorted(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_priorities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
         $priorities = PriorityModel::get([
-            'select'    => ['id', 'label', '"order"'],
-            'orderBy'   => ['"order" NULLS LAST']
+            'select'  => ['id', 'label', '"order"'],
+            'orderBy' => ['"order" NULLS LAST']
         ]);
 
         return $response->withJson(['priorities' => $priorities]);
     }
 
-    public function updateSort(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function updateSort(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_priorities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -166,8 +217,8 @@ class PriorityController
         ]);
 
         $priorities = PriorityModel::get([
-            'select'    => ['id', 'label', '"order"'],
-            'orderBy'   => ['"order" NULLS LAST']
+            'select'  => ['id', 'label', '"order"'],
+            'orderBy' => ['"order" NULLS LAST']
         ]);
 
         return $response->withJson(['priorities' => $priorities]);

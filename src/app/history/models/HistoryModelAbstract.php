@@ -1,46 +1,58 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief History Model
-* @author dev@maarch.org
-*/
+ * @brief History Model
+ * @author dev@maarch.org
+ */
 
 namespace History\models;
 
+use Exception;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\DatabaseModel;
 
 abstract class HistoryModelAbstract
 {
-    public static function get(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function get(array $args): array
     {
         ValidatorModel::notEmpty($args, ['select']);
         ValidatorModel::arrayType($args, ['select', 'where', 'data', 'orderBy']);
         ValidatorModel::intVal($args, ['offset', 'limit']);
 
-        $aHistories = DatabaseModel::select([
-            'select'    => $args['select'],
-            'table'     => ['history'],
-            'where'     => $args['where'] ?? [],
-            'data'      => $args['data'] ?? [],
-            'order_by'  => $args['orderBy'] ?? [],
-            'offset'    => $args['offset'] ?? 0,
-            'limit'     => $args['limit'] ?? 0
+        return DatabaseModel::select([
+            'select'   => $args['select'],
+            'table'    => ['history'],
+            'where'    => $args['where'] ?? [],
+            'data'     => $args['data'] ?? [],
+            'order_by' => $args['orderBy'] ?? [],
+            'offset'   => $args['offset'] ?? 0,
+            'limit'    => $args['limit'] ?? 0
         ]);
-
-        return $aHistories;
     }
 
-    public static function create(array $args)
+    /**
+     * @param array $args
+     * @return true
+     * @throws Exception
+     */
+    public static function create(array $args): bool
     {
-        ValidatorModel::notEmpty($args, ['tableName', 'recordId', 'eventType', 'userId', 'info', 'moduleId', 'eventId']);
+        ValidatorModel::notEmpty(
+            $args,
+            ['tableName', 'recordId', 'eventType', 'userId', 'info', 'moduleId', 'eventId']
+        );
         ValidatorModel::stringType($args, ['tableName', 'eventType', 'info', 'moduleId', 'eventId']);
         ValidatorModel::intVal($args, ['userId']);
 

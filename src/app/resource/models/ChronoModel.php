@@ -14,13 +14,19 @@
 
 namespace Resource\models;
 
+use Exception;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
 
 class ChronoModel
 {
-    public static function getChrono(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return string
+     * @throws Exception
+     */
+    public static function getChrono(array $aArgs): string
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::stringType($aArgs, ['id', 'entityId']);
@@ -83,35 +89,55 @@ class ChronoModel
 
     /**
      * @codeCoverageIgnore
+     * @throws Exception
      */
-    public static function getChronoGlobal()
+    public static function getChronoGlobal(): int
     {
-        $chronoIdName  = 'chrono_global_' . date('Y');
+        $chronoIdName = 'chrono_global_' . date('Y');
         $chronoSeqName = $chronoIdName . "_seq";
-        $chrono = DatabaseModel::createOrIncreaseChrono(['chronoIdName' => $chronoIdName, 'chronoSeqName' => $chronoSeqName]);
+        $chrono = DatabaseModel::createOrIncreaseChrono([
+            'chronoIdName'  => $chronoIdName,
+            'chronoSeqName' => $chronoSeqName
+        ]);
         return $chrono;
     }
 
     /**
      * @codeCoverageIgnore
+     * @throws Exception
      */
-    public static function getChronoEntity($entityId)
+    public static function getChronoEntity($entityId): string
     {
-        $chronoIdName  = "chrono_{$entityId}_" . date('Y');
+        $chronoIdName = "chrono_{$entityId}_" . date('Y');
         $chronoSeqName = $chronoIdName . "_seq";
-        $chrono = DatabaseModel::createOrIncreaseChrono(['chronoIdName' => $chronoIdName, 'chronoSeqName' => $chronoSeqName]);
+        $chrono = DatabaseModel::createOrIncreaseChrono([
+            'chronoIdName'  => $chronoIdName,
+            'chronoSeqName' => $chronoSeqName
+        ]);
         return $entityId . "/" . $chrono;
     }
 
-    public static function getChronoCategory($categoryId)
+    /**
+     * @param $categoryId
+     * @return string
+     * @throws Exception
+     */
+    public static function getChronoCategory($categoryId): string
     {
-        $chronoIdName  = "chrono_{$categoryId}_" . date('Y');
+        $chronoIdName = "chrono_{$categoryId}_" . date('Y');
         $chronoSeqName = $chronoIdName . "_seq";
-        $chrono = DatabaseModel::createOrIncreaseChrono(['chronoIdName' => $chronoIdName, 'chronoSeqName' => $chronoSeqName]);
+        $chrono = DatabaseModel::createOrIncreaseChrono([
+            'chronoIdName'  => $chronoIdName,
+            'chronoSeqName' => $chronoSeqName
+        ]);
         return "/" . $chrono;
     }
 
-    public static function getChronoCategoryChar($categoryId)
+    /**
+     * @param $categoryId
+     * @return string
+     */
+    public static function getChronoCategoryChar($categoryId): string
     {
         if ($categoryId == 'incoming') {
             return 'A';
