@@ -81,7 +81,7 @@ class ContinueCircuitAction
                     'resId' => $document['resId']
                 ];
 
-                if ($document['isAttachment']) {
+                if (isset($document['isAttachment']) && $document['isAttachment']) {
                     $resourceToSign['resIdMaster'] = $resId;
                 }
 

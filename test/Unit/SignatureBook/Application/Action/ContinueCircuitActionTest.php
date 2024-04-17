@@ -86,7 +86,7 @@ class ContinueCircuitActionTest extends TestCase
      */
     public function testTheNewInternalParapheurIsEnabled(): void
     {
-        $result = $this->continueCircuitAction->execute(1, ["documents" => $this->dataMainDocument], []);
+        $result = $this->continueCircuitAction->execute(1, ["documents" => [$this->dataMainDocument]], []);
         self::assertTrue($result);
     }
 
@@ -95,21 +95,21 @@ class ContinueCircuitActionTest extends TestCase
     {
         $this->configLoaderMock->signatureServiceConfigLoader = null;
         $this->expectException(SignatureBookNoConfigFoundProblem::class);
-        $this->continueCircuitAction->execute(1, ["documents" => $this->dataMainDocument], []);
+        $this->continueCircuitAction->execute(1, ["documents" => [$this->dataMainDocument]], []);
     }
 
     public function testCannotSignIfNoTokenIsFound(): void
     {
         $this->currentUserRepositoryMock->token = '';
         $this->expectException(CurrentTokenIsNotFoundProblem::class);
-        $this->continueCircuitAction->execute(1, ["documents" => $this->dataMainDocument], []);
+        $this->continueCircuitAction->execute(1, ["documents" => [$this->dataMainDocument]], []);
     }
 
     public function testCannotSignIfDuringTheApplicationOfTheSignatureAnErrorOccurred(): void
     {
         $this->signatureServiceMock->applySignature = ['errors' => 'An error has occurred'];
         $this->expectException(SignatureNotAppliedProblem::class);
-        $this->continueCircuitAction->execute(1, ["documents" => $this->dataMainDocument], []);
+        $this->continueCircuitAction->execute(1, ["documents" => [$this->dataMainDocument]], []);
     }
 
     public function testCannotSignIfMandatoryDataIsEmpty(): void
@@ -130,6 +130,6 @@ class ContinueCircuitActionTest extends TestCase
                 ['resId', 'hashSignature, signatureContentLength, signatureFieldName']
             )
         );
-        $this->continueCircuitAction->execute(1, ["documents" => $dataMainDocument], []);
+        $this->continueCircuitAction->execute(1, ["documents" => [$dataMainDocument]], []);
     }
 }
