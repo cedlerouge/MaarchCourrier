@@ -121,7 +121,6 @@
 
     &-reject {
         color: white;
-        border: solid 2px var(--maarch-color-danger);
         border-radius: 40px;
         background-color: var(--maarch-color-danger);
         border: 1px solid white;
@@ -132,7 +131,6 @@
 
     &-valid {
         color: white;
-        border: solid 2px var(--maarch-color-success);
         background-color: var(--maarch-color-success);
         border: 1px solid white;
         border-radius: 40px;
