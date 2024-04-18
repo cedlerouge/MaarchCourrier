@@ -28,8 +28,8 @@
 
 .book-footer-stamps {
     position: fixed;
-    bottom: 1%;
-    right: 40.5%;
+    bottom: 0vw;
+    right: 41vw;
 }
 
 .sign-button {
@@ -59,8 +59,6 @@
 .open-sign-list-button {
     color: black;
     font-size: 19px;
-    height: 50%;
-    width: 30%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -125,8 +123,8 @@
         background-color: var(--maarch-color-danger);
         border: 1px solid white;
         position: fixed;
-        right: 6.5%;
-        bottom: 1%;
+        right: 117px;
+        bottom: 20px;
     }
 
     &-valid {
@@ -135,8 +133,8 @@
         border: 1px solid white;
         border-radius: 40px;
         position: fixed;
-        right: 6.5%;
-        bottom: 11%;
+        right: 117px;
+        bottom: 103px;
         margin-bottom: 5px;
     }
 }
@@ -146,7 +144,6 @@
     justify-content: center;
     align-items: center;
     position: fixed;
-    right: 6%;
     font-size: 18px;
     border: 1px solid white;
     background-color: white;
@@ -159,13 +156,15 @@
     }
 
     &-valid {
-        bottom: 16%;
+        bottom: 150px;
+        right: 110px;
         color: var(--maarch-color-success);
 
     }
 
     &-reject {
-        bottom: 5%;
+        bottom: 60px;
+        right: 110px;
         color: var(--maarch-color-danger);
     }
 }
