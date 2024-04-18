@@ -68,12 +68,20 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    width: auto;
+    width: 50px;
+    max-width: 60px;
+    transition: max-width 2s;
 
     outline: none; /* Added for keyboard focus indication */
 
     &:focus {
         outline: 2px solid white;
+    }
+
+    &:hover {
+        max-width: 100%;
+        width: max-content;
+        transition: max-width 2s;
     }
 
     ::ng-deep .mat-button-wrapper {
