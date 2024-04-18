@@ -136,7 +136,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
                     role: item?.role ?? item.item_mode
                 }));
                 users.forEach((item: UserWorkflow) => {
-                    if (!this.visaWorkflow.items.some((user: UserWorkflow) => user?.item_id === item?.item_id && JSON.stringify(user?.externalId) === JSON.stringify(item?.externalId))) {
+                    if (!this.visaWorkflow.items.find((user: UserWorkflow) => user?.item_id === item?.item_id && user?.role === item?.role)) {
                         this.visaWorkflow.items.push(item);
                     }
                 })

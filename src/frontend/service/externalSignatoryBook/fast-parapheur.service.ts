@@ -192,7 +192,7 @@ export class FastParapheurService {
         delete item.labelToDisplay;
         const objeToSend: any = {
             ... item,
-            id: item.email ?? item?.externalId?.fastParapheur ?? null,
+            item_id: item.email ?? item?.externalId?.fastParapheur ?? null,
             labelToDisplay: !this.functions.empty(item.externalId?.fastParapheur) ? `${label} (${item.externalId.fastParapheur})` : label,
             role: item.role ?? this.userWorkflow.signatureModes[this.userWorkflow.signatureModes.length - 1],
             isValid: true,
