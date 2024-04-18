@@ -61,7 +61,7 @@ class ContinueCircuitAction
             'cookieSession'
         ];
 
-        if ($data['documents']) {
+        if (isset($data['documents'])) {
             foreach ($data['documents'] as $document) {
                 $missingData = [];
 
@@ -103,6 +103,8 @@ class ContinueCircuitAction
                     throw new SignatureNotAppliedProblem($applySuccess['errors']);
                 }
             }
+        } else {
+            throw new DataToBeSentToTheParapheurAreEmptyProblem(["documents"]);
         }
 
         return true;

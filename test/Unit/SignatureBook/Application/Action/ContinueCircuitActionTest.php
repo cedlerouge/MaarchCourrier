@@ -90,6 +90,30 @@ class ContinueCircuitActionTest extends TestCase
         self::assertTrue($result);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function testCanSignMainDocumentAndAttachmentIfAllDataAreSet(): void
+    {
+        $result = $this->continueCircuitAction->execute(
+            1,
+            ["documents" => [$this->dataMainDocument, $this->dataAttachment]],
+            []
+        );
+        self::assertTrue($result);
+    }
+
+    public function testCannotSignIfDocumentsNotExists(): void
+    {
+        $this->expectException(DataToBeSentToTheParapheurAreEmptyProblem::class);
+        $this->expectExceptionObject(
+            new DataToBeSentToTheParapheurAreEmptyProblem(
+                ['documents']
+            )
+        );
+        $this->continueCircuitAction->execute(1, $this->dataMainDocument, []);
+    }
+
 
     public function testCannotSignIfTheSignatureBookConfigIsNotFound(): void
     {
