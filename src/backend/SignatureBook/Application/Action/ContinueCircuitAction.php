@@ -20,6 +20,7 @@ use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterfa
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\DataToBeSentToTheParapheurAreEmptyProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\NoDocumentsInSignatureBookForThisId;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureNotAppliedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 
@@ -61,8 +62,9 @@ class ContinueCircuitAction
             'cookieSession'
         ];
 
-        if (isset($data['documents'])) {
-            foreach ($data['documents'] as $document) {
+
+        if (isset($data[$resId])) {
+            foreach ($data[$resId] as $document) {
                 $missingData = [];
 
                 foreach ($requiredData as $requiredDatum) {
@@ -104,7 +106,7 @@ class ContinueCircuitAction
                 }
             }
         } else {
-            throw new DataToBeSentToTheParapheurAreEmptyProblem(["documents"]);
+            throw new NoDocumentsInSignatureBookForThisId();
         }
 
         return true;

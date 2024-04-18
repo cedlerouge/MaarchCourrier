@@ -17,6 +17,7 @@ namespace MaarchCourrier\Tests\Unit\SignatureBook\Application\Action;
 use Exception;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\DataToBeSentToTheParapheurAreEmptyProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\NoDocumentsInSignatureBookForThisId;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureNotAppliedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\CurrentUserInformationsMock;
@@ -36,7 +37,7 @@ class ContinueCircuitActionTest extends TestCase
     private MaarchParapheurSignatureServiceMock $signatureServiceMock;
 
     private array $dataMainDocument = [
-        "resId"                  => 100,
+        "resId"                  => 1,
         "documentId"             => 4,
         "certificate"            => 'certifciate',
         "signatures"             => [
@@ -86,7 +87,7 @@ class ContinueCircuitActionTest extends TestCase
      */
     public function testTheNewInternalParapheurIsEnabled(): void
     {
-        $result = $this->continueCircuitAction->execute(1, ["documents" => [$this->dataMainDocument]], []);
+        $result = $this->continueCircuitAction->execute(1, ["1" => [$this->dataMainDocument]], []);
         self::assertTrue($result);
     }
 
@@ -97,43 +98,37 @@ class ContinueCircuitActionTest extends TestCase
     {
         $result = $this->continueCircuitAction->execute(
             1,
-            ["documents" => [$this->dataMainDocument, $this->dataAttachment]],
+            ["1" => [$this->dataMainDocument, $this->dataAttachment]],
             []
         );
         self::assertTrue($result);
     }
 
-    public function testCannotSignIfDocumentsNotExists(): void
+    public function testCannotSignIfThereIsNotDocumentInDataForSelectedResId(): void
     {
-        $this->expectException(DataToBeSentToTheParapheurAreEmptyProblem::class);
-        $this->expectExceptionObject(
-            new DataToBeSentToTheParapheurAreEmptyProblem(
-                ['documents']
-            )
-        );
-        $this->continueCircuitAction->execute(1, $this->dataMainDocument, []);
+        $this->expectException(NoDocumentsInSignatureBookForThisId::class);
+        $this->continueCircuitAction->execute(2, ["1" => [$this->dataMainDocument]], []);
     }
-
 
     public function testCannotSignIfTheSignatureBookConfigIsNotFound(): void
     {
         $this->configLoaderMock->signatureServiceConfigLoader = null;
         $this->expectException(SignatureBookNoConfigFoundProblem::class);
-        $this->continueCircuitAction->execute(1, ["documents" => [$this->dataMainDocument]], []);
+        $this->continueCircuitAction->execute(1, ["1" => [$this->dataMainDocument]], []);
     }
 
     public function testCannotSignIfNoTokenIsFound(): void
     {
         $this->currentUserRepositoryMock->token = '';
         $this->expectException(CurrentTokenIsNotFoundProblem::class);
-        $this->continueCircuitAction->execute(1, ["documents" => [$this->dataMainDocument]], []);
+        $this->continueCircuitAction->execute(1, ["1" => [$this->dataMainDocument]], []);
     }
 
     public function testCannotSignIfDuringTheApplicationOfTheSignatureAnErrorOccurred(): void
     {
         $this->signatureServiceMock->applySignature = ['errors' => 'An error has occurred'];
         $this->expectException(SignatureNotAppliedProblem::class);
-        $this->continueCircuitAction->execute(1, ["documents" => [$this->dataMainDocument]], []);
+        $this->continueCircuitAction->execute(1, ["1" => [$this->dataMainDocument]], []);
     }
 
     public function testCannotSignIfMandatoryDataIsEmpty(): void
@@ -154,6 +149,6 @@ class ContinueCircuitActionTest extends TestCase
                 ['resId', 'hashSignature, signatureContentLength, signatureFieldName']
             )
         );
-        $this->continueCircuitAction->execute(1, ["documents" => [$dataMainDocument]], []);
+        $this->continueCircuitAction->execute(1, ["1" => [$dataMainDocument]], []);
     }
 }
