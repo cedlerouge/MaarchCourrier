@@ -1641,8 +1641,8 @@ class FastParapheurController
                 'appendices' => $appendices,
                 'pictograms' => FastParapheurController::generateXmlPictogramme(
                     FastParapheurController::convertCoordinatesToMillimeter(
-                        $attachments['path'],
-                        $stampsSteps[$attachments['resId']] ?? []
+                        $attachment['filePath'],
+                        $stampsSteps[$attachment['resId']] ?? []
                     )
                 ),
                 'comment'    => $comment
@@ -1675,8 +1675,8 @@ class FastParapheurController
                 'appendices' => $appendices,
                 'pictograms' => FastParapheurController::generateXmlPictogramme(
                     FastParapheurController::convertCoordinatesToMillimeter(
-                        $mainResource['path'],
-                        $stampsSteps[$args['resIdMaster']] ?? []
+                        $mainResource['filePath'],
+                        $stampsSteps[$mainResource['resId']] ?? []
                     )
                 ),
                 'comment'    => $comment
@@ -1933,7 +1933,7 @@ class FastParapheurController
                 $stampsPositions[$step['resId']][$type][$step['sequence']] = [
                     'index'     => $step['sequence'],   // the step to which the pictogram will be associated
                     'border'    => 'true',
-                    'opacite'   => 'false',
+                    'opacite'   => 'true',
                     'font-size' => '6',
                     // Position allows you to define the position of the pictogram in the document. Sizes are in mm.
                     // The 0.0 point corresponds to the bottom left corner of the document.
@@ -1961,7 +1961,6 @@ class FastParapheurController
 
         return $stampsPositions;
     }
-
 
     /**
      * Convert percentage-based coordinates to millimeters within a PDF file.
@@ -1992,8 +1991,8 @@ class FastParapheurController
 
                 // Convert coordinates to millimeters
                 $position['position']['x'] = (int)($dimensions['width'] * $position['position']['x'] / 100);
-                $position['position']['y'] = (int)$dimensions['height'] -
-                    ($dimensions['height'] * $position['position']['y'] / 100) - $height;
+                $position['position']['y'] = (int)($dimensions['height'] -
+                    ($dimensions['height'] * $position['position']['y'] / 100) - $height);
             }
         }
 
