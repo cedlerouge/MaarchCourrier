@@ -7,12 +7,15 @@
 *
 */
 
-namespace MaarchCourrier\Tests\app\folder;
+namespace MaarchCourrier\Tests\app\external\signatoryBook;
 
+use DOMDocument;
+use DOMException;
+use Exception;
 use ExternalSignatoryBook\controllers\FastParapheurController;
 use MaarchCourrier\Tests\CourrierTestCase;
 
-class FastParapheurTest extends CourrierTestCase
+class FastParapheurControllerTest extends CourrierTestCase
 {
     private static $remoteSignatoryBookPath = null;
     private static $defaultRemoteSignatoryBookPath = "modules/visa/xml/remoteSignatoryBooks.xml.default";
@@ -25,7 +28,37 @@ class FastParapheurTest extends CourrierTestCase
         file_put_contents(self::$remoteSignatoryBookPath, self::$generalFileConfigOriginalXml);
     }
 
-    public function testCheckSignatoryBookFileIsMissing()
+    protected function tearDown(): void
+    {
+        if (!empty(self::$remoteSignatoryBookPath) && file_exists(self::$remoteSignatoryBookPath)) {
+            unlink(self::$remoteSignatoryBookPath);
+        }
+    }
+
+    private function enableFastParapheurSignatoryBook(): void
+    {
+        $content = file_get_contents(self::$remoteSignatoryBookPath);
+        $search = "<signatoryBookEnabled>maarchParapheur</signatoryBookEnabled>";
+        $replace = "<signatoryBookEnabled>fastParapheur</signatoryBookEnabled>";
+        $content = str_replace($search, $replace, $content);
+        file_put_contents(self::$remoteSignatoryBookPath, $content);
+    }
+
+    private function enableOptionOtp(): void
+    {
+        $content = file_get_contents(self::$remoteSignatoryBookPath);
+        $search = "<optionOtp>false</optionOtp>";
+        $replace = "<optionOtp>true</optionOtp>";
+        $content = str_replace($search, $replace, $content);
+        file_put_contents(self::$remoteSignatoryBookPath, $content);
+    }
+
+
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testCheckSignatoryBookFileIsMissing(): void
     {
         // Arrange
         unlink(self::$remoteSignatoryBookPath);
@@ -42,9 +75,13 @@ class FastParapheurTest extends CourrierTestCase
         $this->assertSame($fastConfig['errors'], "SignatoryBooks configuration file missing or empty");
     }
 
-    public function provideConfigFileWithoutFastParapheurConfig()
+    /**
+     * @return array[]
+     * @throws DOMException
+     */
+    public function provideConfigFileWithoutFastParapheurConfig(): array
     {
-        $xml = new \DOMDocument("1.0", "utf-8");
+        $xml = new DOMDocument("1.0", "utf-8");
         $xmlRoot = $xml->createElement("root");
         $xmlSignatoryBookEnabled = $xml->createElement('signatoryBookEnabled', 'fastParapheur');
         $xmlSignatoryBook = $xml->createElement('signatoryBook');
@@ -67,7 +104,7 @@ class FastParapheurTest extends CourrierTestCase
     /**
      * @dataProvider provideConfigFileWithoutFastParapheurConfig
      */
-    public function testCheckFastParapheurConfigIsMissing($input, $expectedOutput)
+    public function testCheckFastParapheurConfigIsMissing($input, $expectedOutput): void
     {
         // Arrange
         unlink(self::$remoteSignatoryBookPath);
@@ -86,9 +123,12 @@ class FastParapheurTest extends CourrierTestCase
         $this->assertSame($fastConfig['errors'], $expectedOutput['errors']);
     }
 
-    public function provideAnMissingKeysFromConfig()
+    /**
+     * @return array
+     */
+    public function provideAnMissingKeysFromConfig(): array
     {
-        $doc = new \DOMDocument();
+        $doc = new DOMDocument();
         $xmlStr = simplexml_load_file(self::$defaultRemoteSignatoryBookPath)->asXML();
         $doc->loadXML($xmlStr);
 
@@ -210,7 +250,7 @@ class FastParapheurTest extends CourrierTestCase
     /**
      * @dataProvider provideAnMissingKeysFromConfig
      */
-    public function testCheckFastParapheurMissingConfigKeys($input, $expectedOutput)
+    public function testCheckFastParapheurMissingConfigKeys($input, $expectedOutput): void
     {
         // Arrange
         unlink(self::$remoteSignatoryBookPath);
@@ -233,7 +273,11 @@ class FastParapheurTest extends CourrierTestCase
         $this->assertSame($fastConfig['errors'], $expectedOutput['errors']);
     }
 
-    public function testGetOptionOtp()
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testGetOptionOtp(): void
     {
         $fastConfig = FastParapheurController::getConfig();
         $this->assertNotEmpty($fastConfig);
@@ -242,10 +286,132 @@ class FastParapheurTest extends CourrierTestCase
         $this->assertSame($fastConfig['optionOtp'], 'false', "La configuration OTP n'est pas désactivé par défault");
     }
 
-    protected function tearDown(): void
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testCannotPrepareIntegratedWorkflowStepsWhenStepsAreEmpty(): void
     {
-        if (!empty(self::$remoteSignatoryBookPath) && file_exists(self::$remoteSignatoryBookPath)) {
-            unlink(self::$remoteSignatoryBookPath);
-        }
+        $steps = FastParapheurController::prepareSteps([]);
+        $this->assertIsArray($steps);
+        $this->assertArrayHasKey('error', $steps);
+        $this->assertNotEmpty($steps['error']);
+        $this->assertSame("steps is empty", $steps['error']);
+    }
+
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testCannotPrepareIntegratedWorkflowStepsWhenResIdNotFoundInSteps(): void
+    {
+        $steps = [
+            [
+                "externalId"    => "signataire@maarch.org",
+                "sequence"      => 0,
+                "action"        => "sign",
+                "signatureMode" => "sign"
+            ]
+        ];
+
+        $preparedSteps = FastParapheurController::prepareSteps($steps);
+
+        $this->assertIsArray($preparedSteps);
+        $this->assertArrayHasKey('error', $preparedSteps);
+        $this->assertNotEmpty($preparedSteps['error']);
+        $this->assertSame("no resId found in steps", $preparedSteps['error']);
+    }
+
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public function testCannotPrepareIntegratedWorkflowStepsWhenExternalUserFoundAndOtpOptionIsDisable(): void
+    {
+        $steps = [
+            [
+                "resId"                => 100,
+                "mainDocument"         => true,
+                "sequence"             => 0,
+                "action"               => "sign",
+                "signatureMode"        => "sign",
+                "signaturePositions"   => [],
+                "datePositions"        => [],
+                "externalInformations" => [
+                    "firstname"      => "Jenny",
+                    "lastname"       => "JANE",
+                    "email"          => "jjane@maarch.test",
+                    "phone"          => "+9900000000",
+                    "sourceId"       => 1,
+                    "type"           => "fast",
+                    "role"           => "sign",
+                    "availableRoles" => [
+                        "sign"
+                    ]
+                ]
+            ]
+        ];
+
+        $preparedSteps = FastParapheurController::prepareSteps($steps);
+
+        $this->assertIsArray($preparedSteps);
+        $this->assertArrayHasKey('error', $preparedSteps);
+        $this->assertNotEmpty($preparedSteps['error']);
+        $this->assertSame(_EXTERNAL_USER_FOUND_BUT_OPTION_OTP_DISABLE, $preparedSteps['error']);
+    }
+
+    public function testGetThePreparedSteps(): void
+    {
+        $this->enableFastParapheurSignatoryBook();
+        $this->enableOptionOtp();
+        $steps = [
+            [
+                "resId"                => 100,
+                "mainDocument"         => true,
+                "sequence"             => 0,
+                "action"               => "sign",
+                "signatureMode"        => "sign",
+                "signaturePositions"   => [],
+                "datePositions"        => [],
+                "externalInformations" => [
+                    "firstname"      => "Jenny",
+                    "lastname"       => "JANE",
+                    "email"          => "jjane@maarch.test",
+                    "phone"          => "+9900000000",
+                    "sourceId"       => 1,
+                    "type"           => "fast",
+                    "role"           => "sign",
+                    "availableRoles" => [
+                        "sign"
+                    ]
+                ]
+            ],
+            [
+                "resId"                => 100,
+                "mainDocument"         => true,
+                "externalId"           => "signataire@maarch.org",
+                "sequence"             => 1,
+                "action"               => "sign",
+                "signatureMode"        => "sign",
+                "signaturePositions"   => [],
+                "datePositions"        => [],
+                "externalInformations" => null
+            ]
+        ];
+
+        $preparedSteps = FastParapheurController::prepareSteps($steps);
+
+        $this->assertIsArray($preparedSteps);
+        $this->assertNotEmpty($preparedSteps[0]);
+        $this->assertSame("sign", $preparedSteps[0]['mode']);
+        $this->assertSame("externalOTP", $preparedSteps[0]['type']);
+        $this->assertSame("+9900000000", $preparedSteps[0]['phone']);
+        $this->assertSame("jjane@maarch.test", $preparedSteps[0]['email']);
+        $this->assertSame("Jenny", $preparedSteps[0]['firstname']);
+        $this->assertSame("JANE", $preparedSteps[0]['lastname']);
+        $this->assertNotEmpty($preparedSteps[1]);
+        $this->assertSame("signataire@maarch.org", $preparedSteps[1]['id']);
+        $this->assertSame("fastParapheurUserEmail", $preparedSteps[1]['type']);
+        $this->assertSame("sign", $preparedSteps[1]['mode']);
     }
 }
