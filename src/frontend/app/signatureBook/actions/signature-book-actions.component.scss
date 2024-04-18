@@ -9,27 +9,14 @@
     }
 }
 
-.book-footer {
-    justify-content: center;
-    display: flex;
-    gap: 22px;
-    padding: 10px;
-    background-color: transparent !important;
-    align-items: center;
-    position: absolute;
-    flex-direction: column;
-    right: 0;
-    bottom: 0;
-}
-
 .book-footer-actions {
-    display: flex;
+    display: contents;
 }
 
 .book-footer-stamps {
-    position: fixed;
-    bottom: 10px;
-    right: 41vw;
+    position: absolute;
+    bottom: 20px;
+    left: 40px;
 }
 
 .sign-button {
@@ -121,8 +108,8 @@
         border-radius: 40px;
         background-color: var(--maarch-color-danger);
         border: 1px solid white;
-        position: fixed;
-        right: 117px;
+        position: absolute;
+        right: 40px;
         bottom: 20px;
     }
 
@@ -131,10 +118,9 @@
         background-color: var(--maarch-color-success);
         border: 1px solid white;
         border-radius: 40px;
-        position: fixed;
-        right: 117px;
+        position: absolute;
+        right: 40px;
         bottom: 103px;
-        margin-bottom: 5px;
     }
 }
 
@@ -142,29 +128,24 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    position: fixed;
+    position: absolute;
     font-size: 18px;
     border: 1px solid white;
-    background-color: white;
+    color: white;
     width: 32px;
     height: 36px;
     z-index: 1;
 
-    &:hover, &:focus {
-        background-color: #dfdfdffc !important;
-    }
-
     &-valid {
-        bottom: 150px;
-        right: 110px;
-        color: var(--maarch-color-success);
-
+        bottom: 140px;
+        right: 30px;
+        background-color: var(--maarch-color-success);
     }
 
     &-reject {
-        bottom: 60px;
-        right: 110px;
-        color: var(--maarch-color-danger);
+        bottom: 50px;
+        right: 30px;
+        background-color: var(--maarch-color-danger);
     }
 }
 
