@@ -1938,8 +1938,8 @@ class FastParapheurController
                     // Position allows you to define the position of the pictogram in the document. Sizes are in mm.
                     // The 0.0 point corresponds to the bottom left corner of the document.
                     'position'  => [
-                        'height' => '40',
-                        'width'  => '60',
+                        'height' => '20',
+                        'width'  => '50',
                         'page'   => $step['signaturePositions'][0]['page'], // $ corresponds the last page
                         // coordinates of the pictogram frame corresponding to the bottom left corner
                         'x'      => $step['signaturePositions'][0]['positionX'],
@@ -1974,22 +1974,26 @@ class FastParapheurController
      * @return array The updated stamp positions array with coordinates converted to millimeters.
      * @throws Exception From FPDI library if it can't load pdf file or can't find the page.
      */
-    public static function convertCoordinatesToMillimeter(string $filePath, array $stampPositionsArray): array {
+    public static function convertCoordinatesToMillimeter(string $filePath, array $stampPositionsArray): array
+    {
         $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
         if (file_exists($libPath)) {
             require_once $libPath;
         }
 
+        $height = 20;   // height of pictogram, from prepareStampsSteps
+
         foreach ($stampPositionsArray as &$stampPosition) {
             foreach ($stampPosition as &$position) {
-                $pdf = new Fpdi('P', 'pt');
+                $pdf = new Fpdi('P', 'mm');
                 $pdf->setSourceFile($filePath);
                 $pageId = $pdf->importPage($position['position']['page']);
                 $dimensions = $pdf->getTemplateSize($pageId);
 
                 // Convert coordinates to millimeters
-                $position['position']['x'] = $dimensions['width'] * $position['position']['x'] / 100;
-                $position['position']['y'] = $dimensions['height'] - ($dimensions['height'] * $position['position']['y'] / 100);
+                $position['position']['x'] = (int)($dimensions['width'] * $position['position']['x'] / 100);
+                $position['position']['y'] = (int)$dimensions['height'] -
+                    ($dimensions['height'] * $position['position']['y'] / 100) - $height;
             }
         }
 
