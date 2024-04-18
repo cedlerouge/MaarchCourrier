@@ -28,7 +28,7 @@
 
 .book-footer-stamps {
     position: fixed;
-    bottom: 0vw;
+    bottom: 10px;
     right: 41vw;
 }
 
@@ -86,7 +86,6 @@
     outline: none; /* Added for keyboard focus indication */
 
     &:focus {
-        /* Enhanced focus style for better visibility */
         outline: 2px solid white;
     }
 
