@@ -1858,6 +1858,14 @@ class FastParapheurController
         }
     }
 
+    /**
+     * Prepare the workflow steps for each user
+     *
+     * @param array $steps An array containing steps data
+     *
+     * @return array
+     * @throws Exception
+     */
     public static function prepareSteps(array $steps): array
     {
         $mappedSteps = [];
@@ -1903,7 +1911,7 @@ class FastParapheurController
     }
 
     /**
-     * Prepare stamp steps based on the provided steps data.
+     * Prepare the stamp steps for each document to be signed, if there are signature positions.
      *
      * @param array $steps An array containing steps data.
      *                     Each element should represent a step with signature positions information.
@@ -2668,7 +2676,7 @@ class FastParapheurController
     }
 
     /**
-     * Generate a xml configuration from an array
+     * Generate a xml configuration from {@see FastParapheurController::prepareStampsSteps}
      *
      * @param array $pictogrammes
      *
