@@ -1937,7 +1937,12 @@ class FastParapheurController
                     $role = 'SIGNATAIRE';
                     $validActionByRole = "Signé par: \${{$role}}";
                     $roleDate = 'DATE_SIGNATURE';
+
+                    if (!empty($step['externalInformations'])) {
+                        $validActionByRole = "Signé par: \${OTP_INFOS[firstname,lastname]}";
+                    }
                 }
+
                 $stampsPositions[$step['resId']][$type][$step['sequence']] = [
                     'index'     => ($step['sequence'] + 1), // the step to which the pictogram will be associated
                     'border'    => 'true',
