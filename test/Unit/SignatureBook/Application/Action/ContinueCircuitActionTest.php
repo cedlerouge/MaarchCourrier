@@ -39,7 +39,7 @@ class ContinueCircuitActionTest extends TestCase
     private array $dataMainDocument = [
         "resId"                  => 1,
         "documentId"             => 4,
-        "certificate"            => 'certifciate',
+        "certificate"            => 'certificate',
         "signatures"             => [
             'signatures1' => 'signature'
         ],
@@ -56,7 +56,7 @@ class ContinueCircuitActionTest extends TestCase
         "resId"                  => 1,
         "isAttachment"           => true,
         "documentId"             => 5,
-        "certificate"            => 'certifciate',
+        "certificate"            => 'certificate',
         "signatures"             => [
             'signatures1' => 'signature'
         ],
@@ -104,12 +104,18 @@ class ContinueCircuitActionTest extends TestCase
         self::assertTrue($result);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testCannotSignIfThereIsNotDocumentInDataForSelectedResId(): void
     {
         $this->expectException(NoDocumentsInSignatureBookForThisId::class);
         $this->continueCircuitAction->execute(2, ["1" => [$this->dataMainDocument]], []);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testCannotSignIfTheSignatureBookConfigIsNotFound(): void
     {
         $this->configLoaderMock->signatureServiceConfigLoader = null;
@@ -117,6 +123,9 @@ class ContinueCircuitActionTest extends TestCase
         $this->continueCircuitAction->execute(1, ["1" => [$this->dataMainDocument]], []);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testCannotSignIfNoTokenIsFound(): void
     {
         $this->currentUserRepositoryMock->token = '';
@@ -124,6 +133,9 @@ class ContinueCircuitActionTest extends TestCase
         $this->continueCircuitAction->execute(1, ["1" => [$this->dataMainDocument]], []);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testCannotSignIfDuringTheApplicationOfTheSignatureAnErrorOccurred(): void
     {
         $this->signatureServiceMock->applySignature = ['errors' => 'An error has occurred'];
@@ -131,11 +143,14 @@ class ContinueCircuitActionTest extends TestCase
         $this->continueCircuitAction->execute(1, ["1" => [$this->dataMainDocument]], []);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testCannotSignIfMandatoryDataIsEmpty(): void
     {
         $dataMainDocument = [
             "documentId"             => 4,
-            "certificate"            => 'certifciate',
+            "certificate"            => 'certificate',
             "signatures"             => [],
             "hashSignature"          => "",
             "signatureContentLength" => 0,
