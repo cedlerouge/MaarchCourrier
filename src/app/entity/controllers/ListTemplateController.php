@@ -137,7 +137,7 @@ class ListTemplateController
      * @return Response
      * @throws Exception
      */
-    public function create(Request $request, Response $response)
+    public function create(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
@@ -201,7 +201,7 @@ class ListTemplateController
             }
             $entities = EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']]);
             foreach ($entities as $entity) {
-                if ($entity['serialId'] == $body['entityId'] && $entity['allowed'] == false) {
+                if ($entity['serialId'] == $body['entityId'] && !$entity['allowed']) {
                     return $response->withStatus(403)->withJson(['errors' => 'Entity out of perimeter']);
                 }
             }
@@ -357,7 +357,7 @@ class ListTemplateController
         if (!empty($listTemplate['entityId'])) {
             $entities = EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']]);
             foreach ($entities as $entity) {
-                if ($entity['serialId'] == $listTemplate['entityId'] && $entity['allowed'] == false) {
+                if ($entity['serialId'] == $listTemplate['entityId'] && !$entity['allowed']) {
                     return $response->withStatus(403)->withJson(['errors' => 'Entity out of perimeter']);
                 }
             }
