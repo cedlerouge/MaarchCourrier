@@ -588,6 +588,57 @@ class FastParapheurControllerTest extends CourrierTestCase
     /**
      * @return void
      */
+    public function testCanPrepareStampStepsWithOtpStampPosition(): void
+    {
+        $step = self::$signStep;
+        $step[] = [
+            "resId"                => 100,
+            "mainDocument"         => true,
+            "sequence"             => 1,
+            "action"               => "sign",
+            "signatureMode"        => "sign",
+            "signaturePositions"   => [
+                [
+                    "sequence"     => 1,
+                    "page"         => 1,
+                    "positionX"    => 10,
+                    "positionY"    => 20,
+                    "mainDocument" => false,
+                    "resId"        => 100
+                ]
+            ],
+            "datePositions"        => [],
+            "externalInformations" => [
+                "firstname"      => "Jenny",
+                "lastname"       => "JANE",
+                "email"          => "jjane@maarch.test",
+                "phone"          => "+9900000000",
+                "sourceId"       => 1,
+                "type"           => "fast",
+                "role"           => "sign",
+                "availableRoles" => [
+                    "sign"
+                ]
+            ]
+        ];
+
+        $preparedSteps = FastParapheurController::prepareStampsSteps($step);
+
+        $this->assertIsArray($preparedSteps);
+        $this->assertNotEmpty($preparedSteps);
+        $this->assertArrayHasKey(100, $preparedSteps);
+        $this->assertSame(1, count($preparedSteps[100]));
+        $this->assertArrayHasKey('pictogramme-signature', $preparedSteps[100]);
+        $this->assertSame(2, count($preparedSteps[100]['pictogramme-signature']));
+        $this->assertSame(
+            "Signé par: \${OTP_INFOS[firstname,lastname]}",
+            $preparedSteps[100]['pictogramme-signature'][1]['bottom'][0]['value']
+        );
+    }
+
+    /**
+     * @return void
+     */
     public function testCanGetVisaAndSignStampsStepsForTheSameDocument(): void
     {
         self::$signStep[0]['sequence'] = 1;
@@ -610,6 +661,9 @@ class FastParapheurControllerTest extends CourrierTestCase
         $this->assertSame(1, count($preparedSteps[100]['pictogramme-signature']));
     }
 
+    /**
+     * @return void
+     */
     public function testCannotGenerateXmlPictogrammeWithEmptyPictogrammeArrayInput(): void
     {
         $pictogrammes = [];
@@ -619,6 +673,9 @@ class FastParapheurControllerTest extends CourrierTestCase
         $this->assertEmpty($xml);
     }
 
+    /**
+     * @return void
+     */
     public function testGeneratesCorrectXmlOfPictograms(): void
     {
         $pictogrammes = [
