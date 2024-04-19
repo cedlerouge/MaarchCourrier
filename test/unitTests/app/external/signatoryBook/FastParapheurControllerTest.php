@@ -610,5 +610,47 @@ class FastParapheurControllerTest extends CourrierTestCase
         $this->assertSame(1, count($preparedSteps[100]['pictogramme-signature']));
     }
 
+    public function testCannotGenerateXmlPictogrammeWithEmptyPictogrammeArrayInput(): void
+    {
+        $pictogrammes = [];
 
+        $xml = FastParapheurController::generateXmlPictogramme($pictogrammes);
+
+        $this->assertEmpty($xml);
+    }
+
+    public function testGeneratesCorrectXmlOfPictograms(): void
+    {
+        $pictogrammes = [
+            'pictogram-type' => [
+                [
+                    'index'     => '1',
+                    'border'    => 'true',
+                    'opacite'   => 'true',
+                    'font-size' => '12',
+                    'position'  => ['height' => '40', 'width' => '60', 'x' => '100', 'y' => '200', 'page' => 1],
+                    'top'       => [['name' => 'info', 'value' => 'top side']],
+                    'center'    => [['name' => 'info', 'value' => 'center']],
+                    'bottom'    => [
+                        ['name' => 'info-line1', 'value' => 'bottom side, line 1'],
+                        ['name' => 'info-line2']
+                    ],
+                    'left'      => [['name' => 'info', 'value' => 'left side']],
+                    'right'     => [['name' => 'info', 'value' => 'right side']]
+                ]
+            ]
+        ];
+        $expectedXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+        $expectedXml .= '<pictogrammes><pictogram-type><pictogramme border="true" font-size="12" index="1" opacite="true">';
+        $expectedXml .= '<position height="40" width="60" x="100" y="200" page="1"/><top><metadata name="info">top side</metadata></top>';
+        $expectedXml .= '<center><metadata name="info">center</metadata></center>';
+        $expectedXml .= '<bottom><metadata name="info-line1">bottom side, line 1</metadata><metadata name="info-line2"/></bottom>';
+        $expectedXml .= '<left><metadata name="info">left side</metadata></left>';
+        $expectedXml .= '<right><metadata name="info">right side</metadata></right>';
+        $expectedXml .= '</pictogramme></pictogram-type></pictogrammes>';
+
+        $result = FastParapheurController::generateXmlPictogramme($pictogrammes);
+
+        $this->assertXmlStringEqualsXmlString($expectedXml, $result);
+    }
 }

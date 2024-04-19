@@ -2709,7 +2709,7 @@ class FastParapheurController
                     }
                 }
 
-                foreach (['left', 'center', 'bottom'] as $position) {
+                foreach (['top', 'center', 'bottom', 'left', 'right'] as $position) {
                     if (isset($config[$position])) {
                         $posElement = $pictogramme->addChild($position);
                         foreach ($config[$position] as $metadata) {
