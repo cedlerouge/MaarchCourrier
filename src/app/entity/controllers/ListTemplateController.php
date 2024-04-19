@@ -478,6 +478,7 @@ class ListTemplateController
                     } elseif (!empty($queryParams['fastParapheur']) && !empty($externalId['fastParapheur'])) {
                         $listTemplateItems[$itemKey] = [
                             'externalId'           => ['fastParapheur' => $externalId['fastParapheur']],
+                            'id'                   => $listTemplateItems[$itemKey]['id'],
                             'descriptionToDisplay' => $externalId['fastParapheur'],
                             'labelToDisplay'       => trim($user['firstname'] . ' ' . $user['lastname']),
                             'availableRoles'       => ['visa', 'sign'],
