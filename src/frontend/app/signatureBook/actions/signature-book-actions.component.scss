@@ -78,7 +78,7 @@
         outline: 2px solid white;
     }
 
-    &:hover {
+    &:hover, &:focus {
         max-width: 100%;
         width: max-content;
         transition: max-width 2s;
