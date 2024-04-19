@@ -85,7 +85,7 @@ export class MaarchSbContentComponent implements OnDestroy {
     async initPlugin() {
         const data: any = {
             file: {
-                filename: this.documentData.title,
+                fileName: this.documentData.title,
                 content: this.documentContent,
             },
             email: this.headerService.user.mail,
