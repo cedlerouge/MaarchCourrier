@@ -1939,7 +1939,7 @@ class FastParapheurController
                     $roleDate = 'DATE_SIGNATURE';
                 }
                 $stampsPositions[$step['resId']][$type][$step['sequence']] = [
-                    'index'     => $step['sequence'],   // the step to which the pictogram will be associated
+                    'index'     => ($step['sequence'] + 1), // the step to which the pictogram will be associated
                     'border'    => 'true',
                     'opacite'   => 'true',
                     'font-size' => '6',
@@ -2713,8 +2713,11 @@ class FastParapheurController
                     if (isset($config[$position])) {
                         $posElement = $pictogramme->addChild($position);
                         foreach ($config[$position] as $metadata) {
-                            $meta = $posElement->addChild('metadata', $metadata['value'] ?? '');
+                            $meta = $posElement->addChild('metadata');
                             $meta->addAttribute('name', $metadata['name']);
+                            if (!empty($metadata['value'])) {
+                                $meta->addAttribute('value', $metadata['value']);
+                            }
                         }
                     }
                 }

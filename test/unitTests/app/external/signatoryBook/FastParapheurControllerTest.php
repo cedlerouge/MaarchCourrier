@@ -642,11 +642,11 @@ class FastParapheurControllerTest extends CourrierTestCase
         ];
         $expectedXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
         $expectedXml .= '<pictogrammes><pictogram-type><pictogramme border="true" font-size="12" index="1" opacite="true">';
-        $expectedXml .= '<position height="40" width="60" x="100" y="200" page="1"/><top><metadata name="info">top side</metadata></top>';
-        $expectedXml .= '<center><metadata name="info">center</metadata></center>';
-        $expectedXml .= '<bottom><metadata name="info-line1">bottom side, line 1</metadata><metadata name="info-line2"/></bottom>';
-        $expectedXml .= '<left><metadata name="info">left side</metadata></left>';
-        $expectedXml .= '<right><metadata name="info">right side</metadata></right>';
+        $expectedXml .= '<position height="40" width="60" x="100" y="200" page="1"/><top><metadata name="info" value="top side"/></top>';
+        $expectedXml .= '<center><metadata name="info" value="center"/></center>';
+        $expectedXml .= '<bottom><metadata name="info-line1" value="bottom side, line 1"/><metadata name="info-line2"/></bottom>';
+        $expectedXml .= '<left><metadata name="info" value="left side"/></left>';
+        $expectedXml .= '<right><metadata name="info" value="right side"/></right>';
         $expectedXml .= '</pictogramme></pictogram-type></pictogrammes>';
 
         $result = FastParapheurController::generateXmlPictogramme($pictogrammes);
