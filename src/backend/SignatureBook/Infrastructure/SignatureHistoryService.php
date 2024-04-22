@@ -37,7 +37,6 @@ class SignatureHistoryService implements SignatureHistoryServiceInterface
                 'eventId'   => 'attachmentSign',
                 'info'      => _ATTACHMENT_SIGNED
             ]);
-
         } else {
             HistoryController::add([
                 'tableName' => 'res_letterbox',
@@ -67,7 +66,6 @@ class SignatureHistoryService implements SignatureHistoryServiceInterface
                 'eventId'   => 'attachmentSign',
                 'info'      => _ATTACHMENT_SIGN_REFUSED
             ]);
-
         } else {
             HistoryController::add([
                 'tableName' => 'res_letterbox',
