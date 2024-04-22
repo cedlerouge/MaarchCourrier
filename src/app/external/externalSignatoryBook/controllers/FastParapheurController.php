@@ -1715,7 +1715,7 @@ class FastParapheurController
                 'content'  => file_get_contents($args['document']['doc']['path'])
             ],
             'annexes' => ['subvalues' => $args['document']['appendices']],
-            'circuit' => json_encode($args['circuit'])
+            'circuit' => json_encode($args['circuit'], true)
         ];
 
         if (!empty($args['document']['pictograms'] ?? null)) {
