@@ -1647,6 +1647,17 @@ class FastParapheurController
                 ),
                 'comment'    => $comment
             ];
+
+            $externalState = json_decode($attachment['external_state'] ?? '{}', true);
+            $externalState['signatureBookWorkflow']['workflow'] = $workflowSteps;
+            AttachmentModel::update([
+                'where'   => ['res_id = ?'],
+                'data'    => [$attachment['resId']],
+                'postSet' => [
+                    'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' .
+                        json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
+                ]
+            ]);
         }
 
         // Send main document if in signature book
