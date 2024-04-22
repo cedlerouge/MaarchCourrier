@@ -20,6 +20,7 @@ export class MaarchParapheurService {
     canCreateTile: boolean = true;
     canAddExternalUser: boolean = true;
     canManageSignaturesPositions: boolean = true;
+    canAddDateBlock: boolean = true;
 
     otpConnectors: any [] = [];
 

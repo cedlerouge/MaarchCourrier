@@ -20,6 +20,7 @@ export class FastParapheurService {
     canCreateTile: boolean = false;
     canAddExternalUser: boolean = true;
     canManageSignaturesPositions: boolean = true;
+    canAddDateBlock: boolean = false;
 
     userWorkflow = new UserWorkflow();
     signatureModes: string[] = [];

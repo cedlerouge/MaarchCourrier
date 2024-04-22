@@ -214,4 +214,8 @@ export class ExternalSignatoryBookManagerService {
     canAttachSummarySheet(visaWorkflow: any[]): boolean {
         return this.serviceInjected?.canAttachSummarySheet(visaWorkflow);
     }
+
+    canAddDateBlock(): boolean {
+        return this.serviceInjected.canAddDateBlock;
+    }
 }
