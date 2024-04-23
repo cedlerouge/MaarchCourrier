@@ -37,6 +37,7 @@ use Group\controllers\PrivilegeController;
 use Group\models\GroupModel;
 use History\controllers\HistoryController;
 use History\models\HistoryModel;
+use MaarchCourrier\SignatureBook\Application\User\CreateAndUpdateUserInSignatoryBook;
 use Notification\controllers\NotificationsEventsController;
 use Parameter\models\ParameterModel;
 use Resource\controllers\ResController;
@@ -386,7 +387,8 @@ class UserController
             $preferences = ['documentEdition' => 'onlyoffice'];
         }
         $body['preferences'] = json_encode($preferences);
-
+        $test = new CreateAndUpdateUserInSignatoryBook();
+        $test->createAndUpdateUser(['user' => $body]);
         $id = UserModel::create(['user' => $body]);
 
         $userQuota = ParameterModel::getById(['id' => 'user_quota', 'select' => ['param_value_int']]);
