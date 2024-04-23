@@ -21,10 +21,10 @@ use Resource\models\ResModel;
 
 class SignatureHistoryService implements SignatureHistoryServiceInterface
 {
-    public function historySignatureValidation(int $resId, ?int $resIdMaster = null): void
+    public function historySignatureValidation(int $resId, ?int $resIdMaster): void
     {
-        if (!is_null($resIdMaster)) {
-            $attachment = AttachmentModel::getById(['resId' => $resId, 'select' => ['title']]);
+        if (!empty($resIdMaster)) {
+            $attachment = AttachmentModel::getById(['id' => $resId, 'select' => ['title']]);
 
             HistoryController::add([
                 'tableName' => 'res_letterbox',
@@ -53,9 +53,9 @@ class SignatureHistoryService implements SignatureHistoryServiceInterface
         }
     }
 
-    public function historySignatureRefus(int $resId, ?int $resIdMaster = null): void
+    public function historySignatureRefus(int $resId, ?int $resIdMaster): void
     {
-        if (!is_null($resIdMaster)) {
+        if (!empty($resIdMaster)) {
             $attachment = AttachmentModel::getById(['resId' => $resId, 'select' => ['title']]);
             HistoryController::add([
                 'tableName' => 'res_letterbox',
@@ -84,13 +84,13 @@ class SignatureHistoryService implements SignatureHistoryServiceInterface
         }
     }
 
-    public function historySignatureError(int $resId, ?int $resIdMaster = null): void
+    public function historySignatureError(int $resId, ?int $resIdMaster): void
     {
         HistoryController::add([
-            'tableName' => (is_null($resIdMaster)) ? 'res_letterbox' : 'res_attachments',
+            'tableName' => (empty($resIdMaster)) ? 'res_letterbox' : 'res_attachments',
             'recordId'  => $resId,
             'eventType' => 'SIGN',
-            'eventId'   => (is_null($resIdMaster)) ? 'resourceSign' : 'attachmentSign',
+            'eventId'   => (empty($resIdMaster)) ? 'resourceSign' : 'attachmentSign',
             'info'      => 'Error during signature process'
         ]);
     }
