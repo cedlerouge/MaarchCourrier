@@ -14,20 +14,24 @@
 
 namespace MaarchCourrier\SignatureBook\Infrastructure;
 
+use Attachment\models\AttachmentModel;
 use History\controllers\HistoryController;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureHistoryServiceInterface;
+use Resource\models\ResModel;
 
 class SignatureHistoryService implements SignatureHistoryServiceInterface
 {
     public function historySignatureValidation(int $resId, ?int $resIdMaster = null): void
     {
         if (!is_null($resIdMaster)) {
+            $attachment = AttachmentModel::getById(['resId' => $resId, 'select' => ['title']]);
+
             HistoryController::add([
                 'tableName' => 'res_letterbox',
                 'recordId'  => $resIdMaster,
                 'eventType' => 'SIGN',
                 'eventId'   => 'resourceSign',
-                'info'      => _ATTACHMENT_SIGNED
+                'info'      => _ATTACHMENT_SIGNED . " : " . $attachment['title']
             ]);
 
             HistoryController::add([
@@ -35,15 +39,16 @@ class SignatureHistoryService implements SignatureHistoryServiceInterface
                 'recordId'  => $resId,
                 'eventType' => 'SIGN',
                 'eventId'   => 'attachmentSign',
-                'info'      => _ATTACHMENT_SIGNED
+                'info'      => _ATTACHMENT_SIGNED . " : " . $attachment['title']
             ]);
         } else {
+            $mainResource = ResModel::getById(['resId' => $resId, 'select' => ['subject']]);
             HistoryController::add([
                 'tableName' => 'res_letterbox',
                 'recordId'  => $resId,
                 'eventType' => 'SIGN',
                 'eventId'   => 'resourceSign',
-                'info'      => _MAIN_RESOURCE_SIGNED
+                'info'      => _MAIN_RESOURCE_SIGNED . " : " . $mainResource['subject']
             ]);
         }
     }
@@ -51,12 +56,13 @@ class SignatureHistoryService implements SignatureHistoryServiceInterface
     public function historySignatureRefus(int $resId, ?int $resIdMaster = null): void
     {
         if (!is_null($resIdMaster)) {
+            $attachment = AttachmentModel::getById(['resId' => $resId, 'select' => ['title']]);
             HistoryController::add([
                 'tableName' => 'res_letterbox',
                 'recordId'  => $resIdMaster,
                 'eventType' => 'SIGN',
                 'eventId'   => 'resourceSign',
-                'info'      => _ATTACHMENT_SIGN_REFUSED
+                'info'      => _ATTACHMENT_SIGN_REFUSED . " : " . $attachment['title']
             ]);
 
             HistoryController::add([
@@ -64,15 +70,16 @@ class SignatureHistoryService implements SignatureHistoryServiceInterface
                 'recordId'  => $resId,
                 'eventType' => 'SIGN',
                 'eventId'   => 'attachmentSign',
-                'info'      => _ATTACHMENT_SIGN_REFUSED
+                'info'      => _ATTACHMENT_SIGN_REFUSED . " : " . $attachment['title']
             ]);
         } else {
+            $mainResource = ResModel::getById(['resId' => $resId, 'select' => ['subject']]);
             HistoryController::add([
                 'tableName' => 'res_letterbox',
                 'recordId'  => $resId,
                 'eventType' => 'SIGN',
                 'eventId'   => 'resourceSign',
-                'info'      => _MAIN_RESOURCE_SIGN_REFUSED
+                'info'      => _MAIN_RESOURCE_SIGN_REFUSED . " : " . $mainResource['subject']
             ]);
         }
     }
