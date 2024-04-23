@@ -81,7 +81,6 @@ export class MaarchSbContentComponent implements OnDestroy {
 
     ngOnDestroy() {
         // unsubscribe to ensure no memory leaks
-        this.documentData = null;
         this.subscription.unsubscribe();
         this.subscriptionDocument?.unsubscribe();
     }
