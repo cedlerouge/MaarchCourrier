@@ -159,6 +159,7 @@ class FastParapheurController
      * @param Response $response
      * @param array $args
      * @return Response
+     * @throws Exception
      */
     public function unlinkUserToFastParapheur(Request $request, Response $response, array $args): Response
     {
@@ -568,7 +569,8 @@ class FastParapheurController
             $validatedVisaState = $args['config']['data']['validatedVisaState'] ?? null;
             $refusedState = $args['config']['data']['refusedState'] ?? null;
             $refusedVisaState = $args['config']['data']['refusedVisaState'] ?? null;
-            foreach ($historyResponse['response'] as $valueResponse) {    // Loop on all steps of the documents (prepared, send to signature, signed etc...)
+            // Loop on all steps of the documents (prepared, send to signature, signed etc...)
+            foreach ($historyResponse['response'] as $valueResponse) {
                 $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
                     'config'        => $args['config'],
                     'valueResponse' => $valueResponse,
@@ -736,7 +738,6 @@ class FastParapheurController
 
     /**
      * Create proof from history data, get proof from fast (Fiche de Circulation)
-     *
      * @param array $args documentId, config, historyData, filename, signEncodedFile
      * @return array|string[]
      * @throws Exception
@@ -1207,12 +1208,11 @@ class FastParapheurController
 
     /**
      * Function to send files to FastParapheur only
-     *
      * @param array $args :
      *                      - config
      *                      - circuitId
      *                      - fileName
-     *                      - circuib64AttachmentId
+     *                      - circuitB64AttachmentId
      *                      - label
      * @throws Exception
      */
@@ -1276,7 +1276,7 @@ class FastParapheurController
      *   ]
      * @throws Exception
      */
-    public static function uploadWithSteps(array $args): array
+    public static function uploadWithSteps(array $args): array|bool
     {
         ValidatorModel::notEmpty($args, ['resIdMaster', 'steps', 'config', 'workflowType']);
         ValidatorModel::intType($args, ['resIdMaster']);
@@ -2402,7 +2402,8 @@ class FastParapheurController
             if (in_array($historyStep['stateName'], [$config['validatedState'], $config['validatedVisaState']])) {
                 $current++;
 
-                // If we have as many steps in history as the workflow, then the workflow is over and the last step is the last sign/visa
+                // If we have as many steps in history as the workflow,
+                // then the workflow is over and the last step is the last sign/visa
                 if ($current === $totalStepsInWorkflow) {
                     $lastStep = $historyStep;
                     break;
@@ -2449,10 +2450,10 @@ class FastParapheurController
     }
 
     /**
-     * @return array|false[]|true[]
+     * @return array|bool
      * @throws Exception
      */
-    public static function isOtpActive(): array
+    public static function isOtpActive(): array|bool
     {
         $config = FastParapheurController::getConfig();
         if (!empty($config['errors'])) {

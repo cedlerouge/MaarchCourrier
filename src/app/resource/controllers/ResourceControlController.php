@@ -530,10 +530,15 @@ class ResourceControlController
                         !empty($indexingModelField['allowed_values']) &&
                         !in_array($body['customFields'][$customFieldId], $indexingModelField['allowed_values'])
                     ) {
-                        if (!empty($args['oldDoctypeId']) && $body['customFields'][$customFieldId] == $args['oldDoctypeId']) {
+                        if (
+                            !empty($args['oldDoctypeId']) &&
+                            $body['customFields'][$customFieldId] == $args['oldDoctypeId']
+                        ) {
                             continue;
                         }
-                        return ['errors' => "Body {$indexingModelField['identifier']} is not one of the allowed values"];
+                        return [
+                            'errors' => "Body {$indexingModelField['identifier']} is not one of the allowed values"
+                        ];
                     }
                 }
             } elseif ($indexingModelField['identifier'] == 'destination' && !empty($args['isUpdating'])) {

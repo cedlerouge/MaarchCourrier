@@ -21,6 +21,7 @@ use ContentManagement\controllers\MergeController;
 use CustomField\models\CustomFieldModel;
 use Docserver\controllers\DocserverController;
 use Entity\models\EntityModel;
+use Exception;
 use IndexingModel\models\IndexingModelFieldModel;
 use IndexingModel\models\IndexingModelModel;
 use Resource\models\ChronoModel;
@@ -33,7 +34,11 @@ use Respect\Validation\Validator;
 
 class StoreController
 {
-    public static function storeResource(array $args)
+    /**
+     * @param array $args
+     * @return array|string[]
+     */
+    public static function storeResource(array $args): array
     {
         try {
             if (empty($args['resId'])) {
@@ -50,32 +55,42 @@ class StoreController
             if (!empty($args['encodedFile'])) {
                 $fileContent = base64_decode(str_replace(['-', '_'], ['+', '/'], $args['encodedFile']));
 
-                if (empty($args['resId']) && in_array($args['format'], MergeController::OFFICE_EXTENSIONS) && empty($args['integrations']['inMailing']) && $args['format'] != 'doc') {
-                    $tmpPath     = CoreConfigModel::getTmpPath();
-                    $uniqueId    = CoreConfigModel::uniqueId();
+                if (empty($args['resId']) && in_array($args['format'], MergeController::OFFICE_EXTENSIONS) &&
+                    empty($args['integrations']['inMailing']) && $args['format'] != 'doc') {
+                    $tmpPath = CoreConfigModel::getTmpPath();
+                    $uniqueId = CoreConfigModel::uniqueId();
                     $tmpFilename = "storeTmp_{$GLOBALS['id']}_{$uniqueId}.{$args['format']}";
                     file_put_contents($tmpPath . $tmpFilename, $fileContent);
-                    $fileContent = MergeController::mergeChronoDocument(['chrono' => $data['alt_identifier'], 'path' => $tmpPath . $tmpFilename, 'type' => 'resource', 'resIdMaster' => $resId, 'resId' => null, 'title' => $data['subject']]);
+                    $fileContent = MergeController::mergeChronoDocument(
+                        [
+                            'chrono'      => $data['alt_identifier'],
+                            'path'        => $tmpPath . $tmpFilename,
+                            'type'        => 'resource',
+                            'resIdMaster' => $resId,
+                            'resId'       => null,
+                            'title'       => $data['subject']
+                        ]
+                    );
                     $fileContent = base64_decode($fileContent['encodedDocument']);
                     unlink($tmpPath . $tmpFilename);
                 }
 
                 $storeResult = DocserverController::storeResourceOnDocServer([
-                    'collId'            => 'letterbox_coll',
-                    'docserverTypeId'   => 'DOC',
-                    'encodedResource'   => base64_encode($fileContent),
-                    'format'            => strtolower($args['format'])
+                    'collId'          => 'letterbox_coll',
+                    'docserverTypeId' => 'DOC',
+                    'encodedResource' => base64_encode($fileContent),
+                    'format'          => strtolower($args['format'])
                 ]);
                 if (!empty($storeResult['errors'])) {
                     return ['errors' => '[storeResource] ' . $storeResult['errors']];
                 }
 
-                $data['docserver_id']   = $storeResult['docserver_id'];
-                $data['filename']       = $storeResult['file_destination_name'];
-                $data['filesize']       = $storeResult['fileSize'];
-                $data['path']           = $storeResult['directory'];
-                $data['fingerprint']    = $storeResult['fingerPrint'];
-                $data['format']         = $args['format'];
+                $data['docserver_id'] = $storeResult['docserver_id'];
+                $data['filename'] = $storeResult['file_destination_name'];
+                $data['filesize'] = $storeResult['fileSize'];
+                $data['path'] = $storeResult['directory'];
+                $data['fingerprint'] = $storeResult['fingerPrint'];
+                $data['format'] = $args['format'];
             }
 
             if (empty($args['resId'])) {
@@ -85,12 +100,16 @@ class StoreController
             }
 
             return ['resId' => $resId, 'encodedResource' => base64_encode($fileContent)];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['errors' => '[storeResource] ' . $e->getMessage()];
         }
     }
 
-    public static function storeAttachment(array $args)
+    /**
+     * @param array $args
+     * @return int|mixed|string[]
+     */
+    public static function storeAttachment(array $args): mixed
     {
         try {
             if (empty($args['id'])) {
@@ -106,36 +125,48 @@ class StoreController
             if (!empty($args['encodedFile'])) {
                 $fileContent = base64_decode(str_replace(['-', '_'], ['+', '/'], $args['encodedFile']));
 
-                if (empty($args['id']) && in_array($args['format'], MergeController::OFFICE_EXTENSIONS) && $data['status'] != 'SEND_MASS' && $args['format'] != 'doc') {
+                if (empty($args['id']) && in_array($args['format'], MergeController::OFFICE_EXTENSIONS) &&
+                    $data['status'] != 'SEND_MASS' && $args['format'] != 'doc') {
                     $tmpPath = CoreConfigModel::getTmpPath();
                     $uniqueId = CoreConfigModel::uniqueId();
                     $tmpFilename = "storeTmp_{$GLOBALS['id']}_{$uniqueId}.{$args['format']}";
                     file_put_contents($tmpPath . $tmpFilename, $fileContent);
-                    $fileContent = MergeController::mergeChronoDocument(['chrono' => $data['identifier'], 'path' => $tmpPath . $tmpFilename, 'type' => 'attachment', 'resIdMaster' => $data['res_id_master'], 'resId' => $resId, 'title' => $data['title']]);
+                    $fileContent = MergeController::mergeChronoDocument(
+                        [
+                            'chrono'      => $data['identifier'],
+                            'path'        => $tmpPath . $tmpFilename,
+                            'type'        => 'attachment',
+                            'resIdMaster' => $data['res_id_master'],
+                            'resId'       => $resId,
+                            'title'       => $data['title']
+                        ]
+                    );
                     $fileContent = base64_decode($fileContent['encodedDocument']);
                     unlink($tmpPath . $tmpFilename);
                 }
 
                 $storeResult = DocserverController::storeResourceOnDocServer([
-                    'collId'            => 'attachments_coll',
-                    'docserverTypeId'   => 'DOC',
-                    'encodedResource'   => base64_encode($fileContent),
-                    'format'            => strtolower($args['format'])
+                    'collId'          => 'attachments_coll',
+                    'docserverTypeId' => 'DOC',
+                    'encodedResource' => base64_encode($fileContent),
+                    'format'          => strtolower($args['format'])
                 ]);
                 if (!empty($storeResult['errors'])) {
                     return ['errors' => '[storeAttachment] ' . $storeResult['errors']];
                 }
 
-                $data['docserver_id']   = $storeResult['docserver_id'];
-                $data['filename']       = $storeResult['file_destination_name'];
-                $data['filesize']       = $storeResult['fileSize'];
-                $data['path']           = $storeResult['directory'];
-                $data['fingerprint']    = $storeResult['fingerPrint'];
-                $data['format']         = $args['format'];
+                $data['docserver_id'] = $storeResult['docserver_id'];
+                $data['filename'] = $storeResult['file_destination_name'];
+                $data['filesize'] = $storeResult['fileSize'];
+                $data['path'] = $storeResult['directory'];
+                $data['fingerprint'] = $storeResult['fingerPrint'];
+                $data['format'] = $args['format'];
             }
 
             if (empty($args['id'])) {
-                $signedByDefault = AttachmentTypeModel::getByTypeId(['typeId' => $data['attachment_type'], 'select' => ['signed_by_default']]);
+                $signedByDefault = AttachmentTypeModel::getByTypeId(
+                    ['typeId' => $data['attachment_type'], 'select' => ['signed_by_default']]
+                );
                 $signedByDefault = $signedByDefault['signed_by_default'] ?? false;
                 if ($signedByDefault) {
                     $data['status'] = 'SIGN';
@@ -143,10 +174,12 @@ class StoreController
                 $id = AttachmentModel::create($data);
                 if ($signedByDefault) {
                     $versionData = $data;
-                    $versionData['res_id']          = DatabaseModel::getNextSequenceValue(['sequenceId' => 'res_attachment_res_id_seq']);
-                    $versionData['status']          = 'TRA';
+                    $versionData['res_id'] = DatabaseModel::getNextSequenceValue(
+                        ['sequenceId' => 'res_attachment_res_id_seq']
+                    );
+                    $versionData['status'] = 'TRA';
                     $versionData['attachment_type'] = 'signed_response';
-                    $versionData['origin']          = "{$id},res_attachments";
+                    $versionData['origin'] = "{$id},res_attachments";
                     AttachmentModel::create($versionData);
                 }
             } else {
@@ -155,12 +188,16 @@ class StoreController
             }
 
             return $id;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['errors' => '[storeAttachment] ' . $e->getMessage()];
         }
     }
 
-    public static function setDisabledAndEmptyMandatoryFields(array $args)
+    /**
+     * @param array $args
+     * @return array
+     */
+    public static function setDisabledAndEmptyMandatoryFields(array $args): array
     {
         if (Validator::notEmpty()->intVal()->validate($args['modelId'] ?? null)) {
             $fields = IndexingModelFieldModel::get([
@@ -177,11 +214,12 @@ class StoreController
                 if ($defaultValue == "_TODAY") {
                     $defaultValue = date('d-m-Y');
                 } elseif ($defaultValue == "#myPrimaryEntity") {
-                    $entity       = UserModel::getPrimaryEntityById(['id' => $GLOBALS['id'], 'select' => ['entities.id']]);
+                    $entity = UserModel::getPrimaryEntityById(['id' => $GLOBALS['id'], 'select' => ['entities.id']]);
                     $defaultValue = $entity['id'];
                 }
-                if (empty($field['enabled']) || (!empty($field['mandatory']) && !isset($args[$field['identifier']]) && $defaultValue !== null)) {
-                    if (strpos($field['identifier'], 'indexingCustomField_') !== false) {
+                if (empty($field['enabled']) ||
+                    (!empty($field['mandatory']) && !isset($args[$field['identifier']]) && $defaultValue !== null)) {
+                    if (str_contains($field['identifier'], 'indexingCustomField_')) {
                         $idCustom = explode("_", $field['identifier']);
                         $idCustom = $idCustom[1];
                         $args['customFields'][$idCustom] = (!empty($args['customFields'][$idCustom])) ? $args['customFields'][$idCustom] : $defaultValue;
@@ -194,7 +232,12 @@ class StoreController
         return $args;
     }
 
-    public static function prepareResourceStorage(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function prepareResourceStorage(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resId', 'modelId']);
         ValidatorModel::intVal($args, ['resId', 'modelId']);
@@ -215,11 +258,20 @@ class StoreController
         }
         $chrono = null;
         if (!empty($args['chrono'])) {
-            $chrono = ChronoModel::getChrono(['id' => $indexingModel['category'], 'entityId' => $args['destination'] ?? null, 'typeId' => $args['doctype'], 'resId' => $args['resId']]);
+            $chrono = ChronoModel::getChrono(
+                [
+                    'id'       => $indexingModel['category'],
+                    'entityId' => $args['destination'] ?? null,
+                    'typeId'   => $args['doctype'],
+                    'resId'    => $args['resId']
+                ]
+            );
         }
 
         if (!empty($args['processLimitDate']) && !empty($args['priority'])) {
-            $args['priority'] = IndexingController::calculatePriorityWithProcessLimitDate(['processLimitDate' => $args['processLimitDate']]);
+            $args['priority'] = IndexingController::calculatePriorityWithProcessLimitDate(
+                ['processLimitDate' => $args['processLimitDate']]
+            );
         }
 
         $externalId = '{}';
@@ -254,36 +306,41 @@ class StoreController
         }
 
         $preparedData = [
-            'res_id'                => $args['resId'],
-            'model_id'              => $args['modelId'],
-            'category_id'           => $indexingModel['category'],
-            'type_id'               => $args['doctype'],
-            'subject'               => $args['subject'] ?? null,
-            'alt_identifier'        => $chrono,
-            'typist'                => $args['typist'],
-            'status'                => $args['status'] ?? null,
-            'destination'           => $args['destination'] ?? null,
-            'initiator'             => $args['initiator'] ?? null,
-            'confidentiality'       => empty($args['confidentiality']) ? 'N' : 'Y',
-            'doc_date'              => $args['documentDate'] ?? null,
-            'admission_date'        => $args['arrivalDate'] ?? null,
-            'departure_date'        => $args['departureDate'] ?? null,
-            'process_limit_date'    => $args['processLimitDate'] ?? null,
-            'priority'              => $args['priority'] ?? null,
-            'version'               => 1,
-            'barcode'               => $args['barcode'] ?? null,
-            'origin'                => $args['origin'] ?? null,
-            'custom_fields'         => !empty($args['customFields']) ? json_encode($args['customFields']) : null,
-            'integrations'          => json_encode($integrations),
-            'linked_resources'      => !empty($args['linkedResources']) ? json_encode($args['linkedResources']) : '[]',
-            'external_id'           => $externalId,
-            'creation_date'         => 'CURRENT_TIMESTAMP'
+            'res_id'             => $args['resId'],
+            'model_id'           => $args['modelId'],
+            'category_id'        => $indexingModel['category'],
+            'type_id'            => $args['doctype'],
+            'subject'            => $args['subject'] ?? null,
+            'alt_identifier'     => $chrono,
+            'typist'             => $args['typist'],
+            'status'             => $args['status'] ?? null,
+            'destination'        => $args['destination'] ?? null,
+            'initiator'          => $args['initiator'] ?? null,
+            'confidentiality'    => empty($args['confidentiality']) ? 'N' : 'Y',
+            'doc_date'           => $args['documentDate'] ?? null,
+            'admission_date'     => $args['arrivalDate'] ?? null,
+            'departure_date'     => $args['departureDate'] ?? null,
+            'process_limit_date' => $args['processLimitDate'] ?? null,
+            'priority'           => $args['priority'] ?? null,
+            'version'            => 1,
+            'barcode'            => $args['barcode'] ?? null,
+            'origin'             => $args['origin'] ?? null,
+            'custom_fields'      => !empty($args['customFields']) ? json_encode($args['customFields']) : null,
+            'integrations'       => json_encode($integrations),
+            'linked_resources'   => !empty($args['linkedResources']) ? json_encode($args['linkedResources']) : '[]',
+            'external_id'        => $externalId,
+            'creation_date'      => 'CURRENT_TIMESTAMP'
         ];
 
         return $preparedData;
     }
 
-    public static function prepareUpdateResourceStorage(array $args)
+    /**
+     * @param array $args
+     * @return string[]
+     * @throws Exception
+     */
+    public static function prepareUpdateResourceStorage(array $args): array
     {
         $definedVars = get_defined_vars();
 
@@ -291,19 +348,40 @@ class StoreController
             'modification_date' => 'CURRENT_TIMESTAMP'
         ];
 
-        $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['version', 'alt_identifier', 'external_id', 'category_id', 'type_id', 'destination', 'custom_fields']]);
+        $resource = ResModel::getById(
+            [
+                'resId'  => $args['resId'],
+                'select' => [
+                    'version',
+                    'alt_identifier',
+                    'external_id',
+                    'category_id',
+                    'type_id',
+                    'destination',
+                    'custom_fields'
+                ]
+            ]
+        );
 
         if (!empty($args['modelId'])) {
-            $preparedData['model_id']    = $args['modelId'];
-            $indexingModel               = IndexingModelModel::getById(['id' => $args['modelId'], 'select' => ['category']]);
+            $preparedData['model_id'] = $args['modelId'];
+            $indexingModel = IndexingModelModel::getById(['id' => $args['modelId'], 'select' => ['category']]);
             $preparedData['category_id'] = $indexingModel['category'];
-            $resource['category_id']     = $indexingModel['category'];
+            $resource['category_id'] = $indexingModel['category'];
 
-            $indexingModelField = IndexingModelFieldModel::get(['select' => ['default_value'], 'where' => ['model_id = ?', 'identifier = ?'], 'data' => [$args['modelId'], 'destination']]);
-            $newDestination     = json_decode($indexingModelField[0]['default_value']);
+            $indexingModelField = IndexingModelFieldModel::get(
+                [
+                    'select' => ['default_value'],
+                    'where'  => ['model_id = ?', 'identifier = ?'],
+                    'data'   => [$args['modelId'], 'destination']
+                ]
+            );
+            $newDestination = json_decode($indexingModelField[0]['default_value']);
             if (empty($resource['destination']) && !empty($newDestination)) {
                 if ($newDestination == "#myPrimaryEntity") {
-                    $entity = UserModel::getPrimaryEntityById(['id' => $GLOBALS['id'], 'select' => ['entities.entity_id']]);
+                    $entity = UserModel::getPrimaryEntityById(
+                        ['id' => $GLOBALS['id'], 'select' => ['entities.entity_id']]
+                    );
                     $preparedData['destination'] = $entity['entity_id'];
                 } else {
                     $entity = EntityModel::getById(['id' => $newDestination, 'select' => ['entity_id']]);
@@ -312,7 +390,14 @@ class StoreController
             }
         }
         if (empty($resource['alt_identifier'])) {
-            $chrono = ChronoModel::getChrono(['id' => $resource['category_id'], 'entityId' => $resource['destination'], 'typeId' => $resource['type_id'], 'resId' => $args['resId']]);
+            $chrono = ChronoModel::getChrono(
+                [
+                    'id'       => $resource['category_id'],
+                    'entityId' => $resource['destination'],
+                    'typeId'   => $resource['type_id'],
+                    'resId'    => $args['resId']
+                ]
+            );
             $preparedData['alt_identifier'] = $chrono;
         }
         if (!empty($args['doctype'])) {
@@ -356,7 +441,9 @@ class StoreController
             $preparedData['priority'] = null;
         }
         if (!empty($args['processLimitDate']) && !empty($args['priority'])) {
-            $preparedData['priority'] = IndexingController::calculatePriorityWithProcessLimitDate(['processLimitDate' => $args['processLimitDate']]);
+            $preparedData['priority'] = IndexingController::calculatePriorityWithProcessLimitDate(
+                ['processLimitDate' => $args['processLimitDate']]
+            );
         }
         if (!empty($args['encodedFile'])) {
             $preparedData['version'] = $resource['version'] + 1;
@@ -386,7 +473,9 @@ class StoreController
                 }
             }
             $customFields = json_decode($resource['custom_fields'], true);
-            $technicalCustoms = CustomFieldModel::get(['select' => ['id'], 'where' => ['mode in (?)'], 'data' => [['technical']]]);
+            $technicalCustoms = CustomFieldModel::get(
+                ['select' => ['id'], 'where' => ['mode in (?)'], 'data' => [['technical']]]
+            );
             $technicalCustoms = array_column($technicalCustoms, 'id');
             foreach ($technicalCustoms as $technicalCustom) {
                 if (!empty($customFields[$technicalCustom])) {
@@ -399,28 +488,56 @@ class StoreController
         return $preparedData;
     }
 
-    public static function prepareAttachmentStorage(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function prepareAttachmentStorage(array $args): array
     {
         $attachmentsTypes = AttachmentTypeModel::get(['select' => ['type_id', 'chrono', 'signable']]);
         $attachmentsTypes = array_column($attachmentsTypes, null, 'type_id');
         if ($attachmentsTypes[$args['type']]['chrono'] && empty($args['chrono'])) {
             $resource = ResModel::getById(['select' => ['destination', 'type_id'], 'resId' => $args['resIdMaster']]);
-            $args['chrono'] = ChronoModel::getChrono(['id' => 'outgoing', 'entityId' => $resource['destination'], 'typeId' => $resource['type_id'], 'resId' => $args['resIdMaster']]);
+            $args['chrono'] = ChronoModel::getChrono(
+                [
+                    'id'       => 'outgoing',
+                    'entityId' => $resource['destination'],
+                    'typeId'   => $resource['type_id'],
+                    'resId'    => $args['resIdMaster']
+                ]
+            );
         }
         $shouldBeInSignatureBook = $attachmentsTypes[$args['type']]['signable'];
 
         if ($args['type'] == 'signed_response') {
             $origin = AttachmentModel::getLastVersionByOriginId($args['resIdMaster'], $args['originId']);
             $linkSign = "{$origin['res_id']},res_attachments";
-            AttachmentModel::update(['set' => ['status' => 'SIGN'], 'where' => ['res_id = ?'], 'data' => [$origin['res_id']]]);
+            AttachmentModel::update(
+                ['set' => ['status' => 'SIGN'], 'where' => ['res_id = ?'], 'data' => [$origin['res_id']]]
+            );
             unset($args['originId']);
         }
 
         $relation = 1;
         if (!empty($args['originId'])) {
-            $relations = AttachmentModel::get(['select' => ['relation', 'in_signature_book'], 'where' => ['(origin_id = ? or res_id = ?)'], 'data' => [$args['originId'], $args['originId']], 'orderBy' => ['relation DESC'], 'limit' => 1]);
+            $relations = AttachmentModel::get(
+                [
+                    'select'  => ['relation', 'in_signature_book'],
+                    'where'   => ['(origin_id = ? or res_id = ?)'],
+                    'data'    => [$args['originId'], $args['originId']],
+                    'orderBy' => ['relation DESC'],
+                    'limit'   => 1
+                ]
+            );
             $relation = $relations[0]['relation'] + 1;
-            AttachmentModel::update(['set' => ['status' => 'OBS'], 'where' => ['(origin_id = ? OR res_id = ?)'], 'data' => [$args['originId'], $args['originId']]]);
+            AttachmentModel::update(
+                [
+                    'set'   => ['status' => 'OBS'],
+                    'where' => ['(origin_id = ? OR res_id = ?)'],
+                    'data'  => [$args['originId'], $args['originId']]
+                ]
+            );
             $shouldBeInSignatureBook = $relations[0]['in_signature_book'];
         }
         $typist = $GLOBALS['id'];
@@ -433,7 +550,7 @@ class StoreController
             $externalId = json_encode($args['externalId']);
         }
 
-        $inSignatureBook = isset($args['inSignatureBook']) ? $args['inSignatureBook'] : $shouldBeInSignatureBook;
+        $inSignatureBook = $args['inSignatureBook'] ?? $shouldBeInSignatureBook;
         $preparedData = [
             'res_id'                   => $args['resId'] ?? null,
             'title'                    => $args['title'] ?? null,
@@ -458,25 +575,39 @@ class StoreController
         return $preparedData;
     }
 
-    public static function prepareUpdateAttachmentStorage(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function prepareUpdateAttachmentStorage(array $args): array
     {
         $attachment = AttachmentModel::getById(['id' => $args['id'], 'select' => ['identifier', 'res_id_master']]);
         $attachmentsTypes = AttachmentTypeModel::get(['select' => ['type_id', 'chrono']]);
         $attachmentsTypes = array_column($attachmentsTypes, 'chrono', 'type_id');
         if ($attachmentsTypes[$args['type']] && empty($attachment['identifier'])) {
-            $resource = ResModel::getById(['select' => ['destination', 'type_id'], 'resId' => $attachment['res_id_master']]);
-            $chrono = ChronoModel::getChrono(['id' => 'outgoing', 'entityId' => $resource['destination'], 'typeId' => $resource['type_id'], 'resId' => $attachment['res_id_master']]);
+            $resource = ResModel::getById(
+                ['select' => ['destination', 'type_id'], 'resId' => $attachment['res_id_master']]
+            );
+            $chrono = ChronoModel::getChrono(
+                [
+                    'id'       => 'outgoing',
+                    'entityId' => $resource['destination'],
+                    'typeId'   => $resource['type_id'],
+                    'resId'    => $attachment['res_id_master']
+                ]
+            );
         }
 
         $preparedData = [
-            'title'                 => $args['title'] ?? null,
-            'recipient_id'          => $args['recipientId'] ?? null,
-            'recipient_type'        => $args['recipientType'] ?? null,
-            'attachment_type'       => $args['type'],
-            'validation_date'       => $args['validationDate'] ?? null,
-            'effective_date'        => $args['effectiveDate'] ?? null,
-            'modified_by'           => $GLOBALS['id'],
-            'modification_date'     => 'CURRENT_TIMESTAMP'
+            'title'             => $args['title'] ?? null,
+            'recipient_id'      => $args['recipientId'] ?? null,
+            'recipient_type'    => $args['recipientType'] ?? null,
+            'attachment_type'   => $args['type'],
+            'validation_date'   => $args['validationDate'] ?? null,
+            'effective_date'    => $args['effectiveDate'] ?? null,
+            'modified_by'       => $GLOBALS['id'],
+            'modification_date' => 'CURRENT_TIMESTAMP'
         ];
 
         if (!empty($chrono)) {
@@ -486,7 +617,12 @@ class StoreController
         return $preparedData;
     }
 
-    public static function getFingerPrint(array $args)
+    /**
+     * @param array $args
+     * @return false|string
+     * @throws Exception
+     */
+    public static function getFingerPrint(array $args): bool|string
     {
         ValidatorModel::notEmpty($args, ['filePath']);
         ValidatorModel::stringType($args, ['filePath', 'mode']);
@@ -498,7 +634,12 @@ class StoreController
         return hash_file(strtolower($args['mode']), $args['filePath']);
     }
 
-    public static function isFileAllowed(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    public static function isFileAllowed(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['extension']);
         ValidatorModel::stringType($args, ['extension', 'type']);
@@ -506,7 +647,9 @@ class StoreController
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'config/extensions.xml']);
         if ($loadedXml) {
             foreach ($loadedXml->FORMAT as $value) {
-                if (strtolower((string)$value->name) == strtolower($args['extension']) && (strtolower((string)$value->mime) == strtolower($args['type']) || (empty((string)$value->mime) && empty($args['type'])))) {
+                if (strtolower((string)$value->name) == strtolower($args['extension']) &&
+                    (strtolower((string)$value->mime) == strtolower($args['type']) ||
+                        (empty((string)$value->mime) && empty($args['type'])))) {
                     return true;
                 }
             }
@@ -515,7 +658,11 @@ class StoreController
         return false;
     }
 
-    public static function getAllowedFiles()
+    /**
+     * @return array
+     * @throws Exception
+     */
+    public static function getAllowedFiles(): array
     {
         $allowedFiles = [];
 
@@ -523,9 +670,9 @@ class StoreController
         if ($loadedXml) {
             foreach ($loadedXml->FORMAT as $value) {
                 $allowedFiles[] = [
-                    'extension'     => (string)$value->name,
-                    'mimeType'      => (string)$value->mime,
-                    'canConvert'    => filter_var((string)$value->canConvert, FILTER_VALIDATE_BOOLEAN)
+                    'extension'  => (string)$value->name,
+                    'mimeType'   => (string)$value->mime,
+                    'canConvert' => filter_var((string)$value->canConvert, FILTER_VALIDATE_BOOLEAN)
                 ];
             }
         }
@@ -533,20 +680,28 @@ class StoreController
         return $allowedFiles;
     }
 
-    public static function getBytesSizeFromPhpIni(array $args)
+    /**
+     * @param array $args
+     * @return float|int
+     */
+    public static function getBytesSizeFromPhpIni(array $args): float|int
     {
-        if (strpos($args['size'], 'K') !== false) {
+        if (str_contains($args['size'], 'K')) {
             return (int)$args['size'] * 1024;
-        } elseif (strpos($args['size'], 'M') !== false) {
+        } elseif (str_contains($args['size'], 'M')) {
             return (int)$args['size'] * 1048576;
-        } elseif (strpos($args['size'], 'G') !== false) {
+        } elseif (str_contains($args['size'], 'G')) {
             return (int)$args['size'] * 1073741824;
         }
 
         return (int)$args['size'];
     }
 
-    public static function getFormattedSizeFromBytes(array $args)
+    /**
+     * @param array $args
+     * @return string
+     */
+    public static function getFormattedSizeFromBytes(array $args): string
     {
         if ($args['size'] / 1073741824 > 1) {
             return round($args['size'] / 1073741824) . ' Go';
