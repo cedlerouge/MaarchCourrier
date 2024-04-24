@@ -64,7 +64,7 @@ trait ShippingTrait
         );
         $integrations = json_decode($resource['integrations'], true);
 
-        $subject = mb_strimwidth($resource['title'], 0, 255);
+        $subject = $resource['title'];
 
         $recipientEntity = EntityModel::getByEntityId(['select' => ['id'], 'entityId' => $resource['destination']]);
 
@@ -252,7 +252,7 @@ trait ShippingTrait
 
         $errors = [];
         foreach ($resourcesList as $key => $resource) {
-            $sendingName = $resource['chrono'] . ' - ' . $subject;
+            $sendingName = mb_strimwidth($resource['chrono'] . ' - ' . $subject, 0, 255);
             $resId = $resource['res_id'];
 
             if ($isRegisteredMail) {
