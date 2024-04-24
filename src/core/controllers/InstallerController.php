@@ -337,6 +337,8 @@ class InstallerController
         fwrite($fp, json_encode($config, JSON_PRETTY_PRINT));
         fclose($fp);
 
+        copy('config/ladConfiguration.json.default', "custom/{$body['customId']}/config/ladConfiguration.json");
+
         $cmd = 'ln -s ' . realpath('.') . "/ {$body['customId']}";
         exec($cmd);
 
