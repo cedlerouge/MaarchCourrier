@@ -16,7 +16,10 @@
                         <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
                             {{'lang.elements' | translate}}</b> ?
                     </div>
-                    <button mat-icon-button (click)="snav2.toggle()">
+                    <button mat-icon-button
+                        [attr.aria-hidden]="true"
+                        [title]="'lang.toggleVisaWorkflow' | translate"
+                        (click)="snav2.toggle()">
                         <mat-icon class="fa fa-stream material-icons"></mat-icon>
                     </button>
                 </div>
@@ -98,7 +101,7 @@
                 autoFocus="false"
                 fixedTopGap="56"
                 [mode]="'side'"
-                [opened]="true"
+                [opened]="false"
                 [ngStyle]="{'width': '600px'}"
                 style="overflow-x:hidden;">
                 <mat-toolbar color="primary" class="workflow-toolbar">
