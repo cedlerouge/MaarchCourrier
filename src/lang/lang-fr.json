@@ -2853,5 +2853,6 @@
     "moreActions": "Plus d'actions",
     "toggleResListDrawer": "Ouvrir/Fermer le panneau latéral",
     "nextParaph": "Parapheur suivant",
-    "prevParaph": "Parapheur précédent"
+    "prevParaph": "Parapheur précédent",
+    "docsToSign": "document(s) à signer"
 }

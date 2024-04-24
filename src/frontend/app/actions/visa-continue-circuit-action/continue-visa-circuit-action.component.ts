@@ -16,6 +16,7 @@ import { AuthService } from '@service/auth.service';
 import { HeaderService } from '@service/header.service';
 import { SignatureBookInterface } from '@appRoot/signatureBook/signature-book.service';
 import { Router } from '@angular/router';
+import { MatSidenav } from '@angular/material/sidenav';
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
@@ -25,6 +26,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
     @ViewChild('myPlugin', { read: ViewContainerRef, static: true }) myPlugin: ViewContainerRef;
     @ViewChild('noteEditor', { static: true }) noteEditor: NoteEditorComponent;
     @ViewChild('appVisaWorkflow', { static: false }) appVisaWorkflow: VisaWorkflowComponent;
+    @ViewChild('snav2', { static: false }) public snav2: MatSidenav;
 
     subscription: Subscription;
 
