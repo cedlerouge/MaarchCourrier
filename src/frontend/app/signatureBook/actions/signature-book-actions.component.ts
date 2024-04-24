@@ -8,6 +8,7 @@ import { FunctionsService } from '@service/functions.service';
 import { NotificationService } from '@service/notification/notification.service';
 import { Subscription, catchError, of, tap } from 'rxjs';
 import { SignatureBookConfig, SignatureBookService } from '../signature-book.service';
+import { Attachment } from '@models/attachment.model';
 
 @Component({
     selector: 'app-maarch-sb-actions',
@@ -20,6 +21,7 @@ export class SignatureBookActionsComponent implements OnInit {
     @Input() groupId: number;
     @Input() userId: number;
     @Input() stamp: StampInterface;
+    @Input() docsToSign: Attachment[] = [];
 
     @Output() openPanelSignatures = new EventEmitter<true>();
 
@@ -104,7 +106,12 @@ export class SignatureBookActionsComponent implements OnInit {
                         this.groupId,
                         this.basketId,
                         [this.resId],
-                        { ...data, documentToCreate: this.documentDatas, signatureBookConfig: this.signatureBookConfig },
+                        {
+                            ...data,
+                            documentToCreate: this.documentDatas,
+                            signatureBookConfig: this.signatureBookConfig,
+                            docsToSign: this.docsToSign
+                        },
                         false
                     );
                 }),

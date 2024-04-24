@@ -7,13 +7,18 @@
         </div>
         <mat-sidenav-container autosize style="height:100%;">
             <mat-sidenav-content style="background: white;padding:10px;">
-                <div>
-                    {{'lang.makeActionOn' | translate}}
-                    <b *ngIf="data.resIds.length === 0" color="primary"
-                        class="highlight">{{'lang.currentIndexingMail' | translate}}</b>
-                    <b *ngIf="data.resIds.length === 1" color="primary" class="highlight">{{data.resource.chrono}}</b>
-                    <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
-                        {{'lang.elements' | translate}}</b> ?
+                <div class="make-action-stream-icon">
+                    <div class="make-action">
+                        {{'lang.makeActionOn' | translate}}
+                        <b *ngIf="data.resIds.length === 0" color="primary"
+                            class="highlight">{{'lang.currentIndexingMail' | translate}}</b>
+                        <b *ngIf="data.resIds.length === 1" color="primary" class="highlight">{{data.resource.chrono}}</b>
+                        <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
+                            {{'lang.elements' | translate}}</b> ?
+                    </div>
+                    <button mat-icon-button (click)="snav2.toggle()">
+                        <mat-icon class="fa fa-stream material-icons"></mat-icon>
+                    </button>
                 </div>
                 <div class="alert-message alert-message-info"
                     *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== ''"
@@ -53,13 +58,57 @@
                         </li>
                     </ul>
                 </div>
-                <app-visa-workflow *ngIf="data.resIds.length === 1" [adminMode]="false" [resId]="data.resIds[0]"
+                <ng-container *ngIf="data.resource.docsToSign.length > 0">
+                    <div class="docs-title"
+                        [title]="data.resource.docsToSign.length + ' ' + ('lang.docsToSign' | translate)"
+                        [attr.aria-label]="data.resource.docsToSign.length + ' ' + ('lang.docsToSign' | translate)">
+                        <span> {{data.resource.docsToSign.length}} {{'lang.docsToSign' | translate}}</span>
+                    </div>
+                    <div class="docs-container">
+                        <div class="content" *ngFor="let resource of data.resource.docsToSign"
+                            [attr.aria-label]="resource.chrono + ' - ' + resource.title"
+                            [title]="resource.chrono + ' - ' + resource.title">
+                            <div class="resource-chrono"
+                                [attr.aria-label]="('lang.chrono' | translate) + ' : ' + resource.chrono">
+                                <span [title]="resource.chrono">{{resource.chrono}}</span>
+                            </div>
+                            <div class="resource-title"
+                                [attr.aria-label]="('lang.subject' | translate) + ' : ' + resource.title">
+                                <span [title]="resource.title">{{resource.title}}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <mat-divider></mat-divider>
+                </ng-container>
+                <!-- NOTE EDITOR -->
+                <mat-expansion-panel>
+                    <mat-expansion-panel-header>
+                        <mat-panel-title color="primary">
+                            {{'lang.note' | translate}}
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <ng-template matExpansionPanelContent>
+                        <app-note-editor #noteEditor [resIds]="data.resIds"></app-note-editor>
+                    </ng-template>
+                </mat-expansion-panel>
+                <!-- / END NOTE EDITOR -->
+            </mat-sidenav-content>
+            <mat-sidenav *ngIf="data.resIds.length === 1" #snav2 class="visa-workflow-sidenav"
+                position='end'
+                autoFocus="false"
+                fixedTopGap="56"
+                [mode]="'side'"
+                [opened]="true"
+                [ngStyle]="{'width': '600px'}"
+                style="overflow-x:hidden;">
+                <mat-toolbar color="primary" class="workflow-toolbar">
+                    <mat-icon class="fas fa-list-ol"></mat-icon>
+                    <span>{{'lang.visaWorkflow' | translate}}</span>
+                </mat-toolbar>
+                <app-visa-workflow [adminMode]="false" [resId]="data.resIds[0]"
                     #appVisaWorkflow [target]="'action'">
                 </app-visa-workflow>
-                <div style="padding-top: 10px;">
-                    <app-note-editor #noteEditor [resIds]="data.resIds"></app-note-editor>
-                </div>
-            </mat-sidenav-content>
+            </mat-sidenav>
         </mat-sidenav-container>
     </div>
     <span class="divider-modal"></span>

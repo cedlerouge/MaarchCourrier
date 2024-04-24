@@ -117,3 +117,90 @@
         margin: 10px;
     }
 }
+
+.docs-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0px;
+    position: relative;
+    border: 1px solid #999999;
+    border-radius:12px;
+    padding: 5px;
+    max-height: 450px;
+    overflow: auto;
+}
+
+.docs-title {
+    display: flex;
+    position: absolute;
+    z-index: 1;
+    top: 190px;
+    left: 15px;
+    background-color: white;
+    padding: 0px 10px 0px 10px;
+}
+
+.content {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    padding: 7px;
+    overflow: hidden;
+    height: 100%;
+    margin: 7px;
+}
+
+.resource-chrono {
+    font-size: 14px;
+    color: var(--maarch-color-primary);
+}
+
+.resource-title {
+    font-weight: bold;
+    width: 290px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    text-overflow: ellipsis;
+    white-space: normal;
+    display: -webkit-box;
+}
+
+.workflow-toolbar {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 14px;
+    position: sticky;
+    top: 0;
+    height: 35px;
+}
+
+.visa-workflow-sidenav {
+    ::ng-deep .mat-drawer-inner-container {
+        overflow-x: hidden !important;
+    }
+}
+
+.make-action-stream-icon {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: -6px;
+
+    .make-action {
+        flex: 1 auto;
+    }
+
+    .mat-icon-button {
+        font-size: 26px;
+        margin: -10px -10px 0px 0px;
+        color: var(--maarch-color-primary);
+    }
+}
