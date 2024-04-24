@@ -71,9 +71,10 @@
                         <div class="content" *ngFor="let resource of data.resource.docsToSign"
                             [attr.aria-label]="resource.chrono + ' - ' + resource.title"
                             [title]="resource.chrono + ' - ' + resource.title">
-                            <div class="resource-chrono"
+                            <div class="chrono-stamp"
                                 [attr.aria-label]="('lang.chrono' | translate) + ' : ' + resource.chrono">
-                                <span [title]="resource.chrono">{{resource.chrono}}</span>
+                                <span class="chrono" [title]="resource.chrono">{{resource.chrono}}</span>
+                                <span class="empty-stamp">Aucune griffe</span>
                             </div>
                             <div class="resource-title"
                                 [attr.aria-label]="('lang.subject' | translate) + ' : ' + resource.title">
@@ -81,10 +82,9 @@
                             </div>
                         </div>
                     </div>
-                    <mat-divider></mat-divider>
                 </ng-container>
                 <!-- NOTE EDITOR -->
-                <mat-expansion-panel>
+                <mat-expansion-panel style="margin-top: 10px;">
                     <mat-expansion-panel-header>
                         <mat-panel-title color="primary">
                             {{'lang.note' | translate}}
@@ -102,7 +102,7 @@
                 fixedTopGap="56"
                 [mode]="'side'"
                 [opened]="false"
-                [ngStyle]="{'width': '600px'}"
+                [ngStyle]="{'width': '600px', 'padding': '5px'}"
                 style="overflow-x:hidden;">
                 <mat-toolbar color="primary" class="workflow-toolbar">
                     <mat-icon class="fas fa-list-ol"></mat-icon>

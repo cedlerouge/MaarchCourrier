@@ -125,7 +125,7 @@
     justify-content: center;
     gap: 0px;
     position: relative;
-    border: 1px solid #999999;
+    border: 1px solid #afafaf;
     border-radius:12px;
     padding: 5px;
     max-height: 450px;
@@ -155,11 +155,24 @@
     margin: 7px;
 }
 
-.resource-chrono {
-    font-size: 14px;
-    color: var(--maarch-color-primary);
-    width: 150px;
+.chrono-stamp {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    width: 180px;
+
+    .chrono {
+        font-size: 14px;
+        color: var(--maarch-color-primary);
+    }
+    .empty-stamp {
+        color: var(--maarch-color-danger);
+        letter-spacing: 1px;
+        font-size: 13px;
+    }
 }
+
 
 .resource-title {
     font-weight: bold;
@@ -202,7 +215,7 @@
 
     .mat-icon-button {
         font-size: 26px;
-        margin: -10px -10px 0px 0px;
+        margin: -5px -10px 0px 0px;
         color: var(--maarch-color-primary);
     }
 }
