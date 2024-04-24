@@ -61,7 +61,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
             translate: this.translate,
             pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/maarch-plugins',
             additionalInfo: {
-                resource: this.data.resource.documentToCreate,
+                resources: this.data.resource.docsToSign,
                 sender: `${this.headerService.user.firstname} ${this.headerService.user.lastname}`,
                 externalUserId: this.headerService.user.externalId,
                 signatureBookConfig: (this.data.resource.signatureBookConfig as SignatureBookInterface)

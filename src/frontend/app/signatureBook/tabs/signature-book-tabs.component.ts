@@ -24,6 +24,7 @@ export class MaarchSbTabsComponent implements OnInit {
                 data: {
                     attachment: this.documents[0],
                     position: this.position,
+                    index: 0
                 },
             });
         }
@@ -36,6 +37,7 @@ export class MaarchSbTabsComponent implements OnInit {
             data: {
                 attachment: attachment,
                 position: this.position,
+                index: this.selectedId
             },
         });
     }

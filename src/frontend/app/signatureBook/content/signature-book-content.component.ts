@@ -27,6 +27,7 @@ export class MaarchSbContentComponent implements OnDestroy {
     subscriptionDocument: Subscription;
 
     documentData: Attachment;
+    currentIndexDocument: number;
 
     documentType: 'attachments' | 'resources';
 
@@ -57,6 +58,7 @@ export class MaarchSbContentComponent implements OnDestroy {
                     } else if (res.id === 'attachmentSelected' && this.position === res.data.position) {
                         this.loading = true;
                         this.subscriptionDocument?.unsubscribe();
+                        this.currentIndexDocument = res.data.index;
                         this.documentData = res.data.attachment;
                         this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
                         setTimeout(async () => {
@@ -99,7 +101,7 @@ export class MaarchSbContentComponent implements OnDestroy {
 
                 this.actionsService.emitActionWithData({
                     id: 'documentToCreate',
-                    data: { resId, title, signatures: data.signatures  },
+                    data: { resId, title, stamps: data.signatures, index: this.currentIndexDocument  },
                 });
             })
         ).subscribe();
@@ -123,14 +125,14 @@ export class MaarchSbContentComponent implements OnDestroy {
         this.documentContent = null;
         return new Promise((resolve) => {
             this.subscriptionDocument = this.http
-                .get(`../rest/${this.documentType}/${this.documentData.resId}/content`, { responseType: 'blob' })
+                .get(`../${this.documentData.resourceUrn}`, { responseType: 'blob' })
                 .pipe(
                     tap((data: Blob) => {
                         this.documentContent = data;
                         const { resId, title } = this.documentData;
                         this.actionsService.emitActionWithData({
                             id: 'documentToCreate',
-                            data: { resId, title, encodedDocument: data },
+                            data: { resId, title, encodedDocument: data, index: this.currentIndexDocument },
                         });
                     }),
                     finalize(() => {
