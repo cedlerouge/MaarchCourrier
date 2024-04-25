@@ -1,10 +1,10 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ */
 
 /**
  * @brief Registered Mail Controller
@@ -18,6 +18,7 @@ use Contact\controllers\ContactCivilityController;
 use Contact\controllers\ContactController;
 use Convert\models\AdrModel;
 use Docserver\controllers\DocserverController;
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use IndexingModel\models\IndexingModelFieldModel;
@@ -30,6 +31,11 @@ use Resource\controllers\ResController;
 use Resource\controllers\StoreController;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
+use setasign\Fpdi\PdfParser\CrossReference\CrossReferenceException;
+use setasign\Fpdi\PdfParser\Filter\FilterException;
+use setasign\Fpdi\PdfParser\PdfParserException;
+use setasign\Fpdi\PdfParser\Type\PdfTypeException;
+use setasign\Fpdi\PdfReader\PdfReaderException;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
@@ -40,17 +46,29 @@ use User\models\UserModel;
 
 class RegisteredMailController
 {
-    public function update(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $args): Response
     {
         if (!ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(400)->withJson(['errors' => 'Resource out of perimeter']);
         }
 
-        $registeredMail = RegisteredMailModel::getByResId(['select' => ['issuing_site', 'type', 'deposit_id'], 'resId' => $args['resId']]);
+        $registeredMail = RegisteredMailModel::getByResId([
+            'select' => ['issuing_site', 'type', 'deposit_id'],
+            'resId'  => $args['resId']
+        ]);
         if (empty($registeredMail)) {
             return $response->withStatus(400)->withJson(['errors' => 'No registered mail for this resource']);
         } elseif (!empty($registeredMail['deposit_id'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Registered mail can not be modified (deposit list already generated)']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Registered mail can not be modified (deposit list already generated)'
+            ]);
         }
 
         $body = $request->getParsedBody();
@@ -64,22 +82,33 @@ class RegisteredMailController
         } elseif (!in_array($body['warranty'], ['R1', 'R2', 'R3'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body warranty is not correct']);
         } elseif ($body['type'] == 'RW' && $body['warranty'] == 'R3') {
-            return $response->withStatus(400)->withJson(['errors' => 'Body warranty R3 is not allowed for type RW']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body warranty R3 is not allowed for type RW'
+            ]);
         } elseif (!Validator::notEmpty()->validate($body['recipient'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body recipient is empty']);
         }
 
         $issuingSite = IssuingSiteModel::getById([
-            'id'        => $registeredMail['issuing_site'],
-            'select'    => ['label', 'address_number', 'address_street', 'address_additional1', 'address_additional2', 'address_postcode', 'address_town', 'address_country']
+            'id'     => $registeredMail['issuing_site'],
+            'select' => [
+                'label',
+                'address_number',
+                'address_street',
+                'address_additional1',
+                'address_additional2',
+                'address_postcode',
+                'address_town',
+                'address_country'
+            ]
         ]);
         if (empty($issuingSite)) {
             return $response->withStatus(400)->withJson(['errors' => 'Issuing site does not exist']);
         }
 
         $resource = ResModel::getById(['select' => ['departure_date', 'alt_identifier'], 'resId' => $args['resId']]);
-        $date     = new \DateTime($resource['departure_date']);
-        $date     = $date->format('d/m/Y');
+        $date = new \DateTime($resource['departure_date']);
+        $date = $date->format('d/m/Y');
 
         $refPos = strpos($body['reference'], '-');
         if ($refPos !== false) {
@@ -120,7 +149,11 @@ class RegisteredMailController
 
             $set['number'] = $range[0]['current_number'];
 
-            $resource['alt_identifier'] = RegisteredMailController::getRegisteredMailNumber(['type' => $body['type'], 'rawNumber' => $range[0]['current_number'], 'countryCode' => 'FR']);
+            $resource['alt_identifier'] = RegisteredMailController::getRegisteredMailNumber([
+                'type'        => $body['type'],
+                'rawNumber'   => $range[0]['current_number'],
+                'countryCode' => 'FR'
+            ]);
             ResModel::update([
                 'set'   => ['alt_identifier' => $resource['alt_identifier']],
                 'where' => ['res_id = ?'],
@@ -149,7 +182,12 @@ class RegisteredMailController
         return $response->withStatus(204);
     }
 
-    public function getCountries(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getCountries(Request $request, Response $response): Response
     {
         $countries = [];
         $handle = fopen("referential/liste-197-etats.csv", "r");
@@ -163,16 +201,32 @@ class RegisteredMailController
         return $response->withJson(['countries' => $countries]);
     }
 
-    public function receiveAcknowledgement(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response|string[]
+     * @throws Exception
+     */
+    public function receiveAcknowledgement(Request $request, Response $response): array|Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'registered_mail_receive_ar', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege([
+                'privilegeId' => 'registered_mail_receive_ar',
+                'userId'      => $GLOBALS['id']
+            ])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
         $body = $request->getParsedBody();
 
-        if (!Validator::stringType()->notEmpty()->validate($body['type']) && !in_array($body['type'], ['distributed', 'notDistributed'])) {
-            return $response->withStatus(400)->withJson(['errors' => "Body type is empty or is not 'distributed' or 'notDistributed'"]);
+        if (
+            !Validator::stringType()->notEmpty()->validate($body['type']) &&
+            !in_array($body['type'], ['distributed', 'notDistributed'])
+        ) {
+            return $response->withStatus(400)->withJson([
+                'errors' => "Body type is empty or is not 'distributed' or 'notDistributed'"
+            ]);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['number'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body number is empty or not a string']);
         } elseif (!preg_match("/((2C|2D)( ?[0-9]){11})|(RW( ?[0-9]){9} ?[A-Z]{2})/", $body['number'])) {
@@ -186,17 +240,29 @@ class RegisteredMailController
             'data'   => [$number]
         ]);
         if (empty($registeredMail)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Registered mail number not found', 'lang' => 'registeredMailNotFound']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Registered mail number not found',
+                'lang'   => 'registeredMailNotFound'
+            ]);
         }
         $registeredMail = $registeredMail[0];
         if (empty($registeredMail['deposit_id'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Registered mail is not in a deposit list', 'lang' => 'registeredMailNotInDepositList']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Registered mail is not in a deposit list',
+                'lang'   => 'registeredMailNotInDepositList'
+            ]);
         }
 
-        $statusDistributed = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'registeredMailDistributedStatus']);
+        $statusDistributed = ParameterModel::getById([
+            'select' => ['param_value_string'],
+            'id'     => 'registeredMailDistributedStatus'
+        ]);
         $statusDistributed = $statusDistributed['param_value_string'];
 
-        $statusNotDistributed = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'registeredMailNotDistributedStatus']);
+        $statusNotDistributed = ParameterModel::getById([
+            'select' => ['param_value_string'],
+            'id'     => 'registeredMailNotDistributedStatus'
+        ]);
         $statusNotDistributed = $statusNotDistributed['param_value_string'];
 
         if (!empty($registeredMail['received_date'])) {
@@ -205,7 +271,10 @@ class RegisteredMailController
             } elseif ($registeredMail['status'] == $statusDistributed && $body['type'] == 'notDistributed') {
                 return $response->withJson(['previousStatus' => $registeredMail['status'], 'canRescan' => true]);
             }
-            return $response->withStatus(400)->withJson(['errors' => 'Registered mail was already received', 'lang' => 'arAlreadyReceived']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Registered mail was already received',
+                'lang'   => 'arAlreadyReceived'
+            ]);
         }
 
         if ($body['type'] == 'distributed') {
@@ -214,9 +283,13 @@ class RegisteredMailController
             $info = _REGISTERED_MAIL_DISTRIBUTED;
         } else {
             if (!Validator::stringType()->notEmpty()->validate($body['returnReason'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body returnReason is empty or not a string']);
+                return $response->withStatus(400)->withJson([
+                    'errors' => 'Body returnReason is empty or not a string'
+                ]);
             } elseif (!Validator::dateTime()->notEmpty()->validate($body['receivedDate'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body receivedDate is empty or not a date']);
+                return $response->withStatus(400)->withJson([
+                    'errors' => 'Body receivedDate is empty or not a date'
+                ]);
             }
             $receivedDate = new \DateTime($body['receivedDate']);
             $today = new \DateTime();
@@ -255,16 +328,32 @@ class RegisteredMailController
         return $response->withJson(['previousStatus' => $registeredMail['status'], 'canRescan' => false]);
     }
 
-    public function rollbackAcknowledgementReception(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function rollbackAcknowledgementReception(Request $request, Response $response): Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'registered_mail_receive_ar', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege([
+                'privilegeId' => 'registered_mail_receive_ar',
+                'userId'      => $GLOBALS['id']
+            ])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
         $body = $request->getParsedBody();
 
-        if (!Validator::stringType()->notEmpty()->validate($body['type']) && !in_array($body['type'], ['distributed', 'notDistributed'])) {
-            return $response->withStatus(400)->withJson(['errors' => "Body type is empty or is not 'distributed' or 'notDistributed'"]);
+        if (
+            !Validator::stringType()->notEmpty()->validate($body['type']) &&
+            !in_array($body['type'], ['distributed', 'notDistributed'])
+        ) {
+            return $response->withStatus(400)->withJson([
+                'errors' => "Body type is empty or is not 'distributed' or 'notDistributed'"
+            ]);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['number'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body number is empty or not a string']);
         } elseif (!preg_match("/((2C|2D)( ?[0-9]){11})|(RW( ?[0-9]){9} ?[A-Z]{2})/", $body['number'])) {
@@ -278,11 +367,17 @@ class RegisteredMailController
             'data'   => [$body['number']]
         ]);
         if (empty($registeredMail)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Registered mail number not found', 'lang' => 'registeredMailNotFound']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Registered mail number not found',
+                'lang'   => 'registeredMailNotFound'
+            ]);
         }
         $registeredMail = $registeredMail[0];
         if (empty($registeredMail['received_date'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Registered mail is not received', 'lang' => 'arAlreadyReceived']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Registered mail is not received',
+                'lang'   => 'arAlreadyReceived'
+            ]);
         }
 
         RegisteredMailModel::update([
@@ -301,88 +396,191 @@ class RegisteredMailController
         return $response->withStatus(204);
     }
 
-    public function setImport(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function setImport(Request $request, Response $response): Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'registered_mail_mass_import', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege([
+                'privilegeId' => 'registered_mail_mass_import',
+                'userId'      => $GLOBALS['id']
+            ])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
         $body = $request->getParsedBody();
         if (!Validator::arrayType()->validate($body['registeredMails'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body registeredMails is empty or not an array']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body registeredMails is empty or not an array'
+            ]);
         }
 
         $warnings = [];
         $errors = [];
         foreach ($body['registeredMails'] as $key => $registeredMail) {
             if (!Validator::notEmpty()->intVal()->validate($registeredMail['modelId'])) {
-                $errors[] = ['error' => "Argument modelId is empty or not an integer for registered mail {$key}", 'index' => $key, 'lang' => 'argumentModelIdEmpty'];
+                $errors[] = [
+                    'error' => "Argument modelId is empty or not an integer for registered mail {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentModelIdEmpty'
+                ];
                 continue;
             } elseif (!Validator::dateTime()->notEmpty()->validate($registeredMail['departureDate'])) {
-                $errors[] = ['error' => "Argument departureDate is empty or not a date for registered mail {$key}", 'index' => $key, 'lang' => 'argumentDepartureDateEmpty'];
+                $errors[] = [
+                    'error' => "Argument departureDate is empty or not a date for registered mail {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentDepartureDateEmpty'
+                ];
                 continue;
-            } elseif (!Validator::stringType()->notEmpty()->validate($registeredMail['registeredMail_type']) || !in_array($registeredMail['registeredMail_type'], ['2D', '2C', 'RW'])) {
-                $errors[] = ['error' => "Argument registeredMail_type is empty or not valid for registered mail {$key}", 'index' => $key, 'lang' => 'argumentRegisteredMailTypeEmpty'];
+            } elseif (
+                !Validator::stringType()->notEmpty()->validate($registeredMail['registeredMail_type']) ||
+                !in_array($registeredMail['registeredMail_type'], ['2D', '2C', 'RW'])
+            ) {
+                $errors[] = [
+                    'error' => "Argument registeredMail_type is empty or not valid for registered mail {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentRegisteredMailTypeEmpty'
+                ];
                 continue;
-            } elseif (!Validator::stringType()->notEmpty()->validate($registeredMail['registeredMail_warranty']) || !in_array($registeredMail['registeredMail_warranty'], ['R1', 'R2', 'R3'])) {
-                $errors[] = ['error' => "Argument registeredMail_warranty is empty or not valid for registered mail {$key}", 'index' => $key, 'lang' => 'argumentRegisteredMailWarrantyEmpty'];
+            } elseif (
+                !Validator::stringType()->notEmpty()->validate($registeredMail['registeredMail_warranty']) ||
+                !in_array($registeredMail['registeredMail_warranty'], ['R1', 'R2', 'R3'])
+            ) {
+                $errors[] = [
+                    'error' => "Argument registeredMail_warranty is empty or not valid for registered mail {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentRegisteredMailWarrantyEmpty'
+                ];
                 continue;
-            } elseif ($registeredMail['registeredMail_type'] == 'RW' && $registeredMail['registeredMail_warranty'] == 'R3') {
-                $errors[] = ['error' => "Argument registeredMail_warranty is not allowed for type RW for registered mail {$key}", 'index' => $key, 'lang' => 'argumentRegisteredMailWarrantyNotAllowed'];
+            } elseif (
+                $registeredMail['registeredMail_type'] == 'RW' &&
+                $registeredMail['registeredMail_warranty'] == 'R3'
+            ) {
+                $errors[] = [
+                    'error' => "Argument registeredMail_warranty is not allowed for type RW for registered mail {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentRegisteredMailWarrantyNotAllowed'
+                ];
                 continue;
             } elseif (!Validator::notEmpty()->intVal()->validate($registeredMail['registeredMail_issuingSite'])) {
-                $errors[] = ['error' => "Argument registeredMail_issuingSite is empty or not an integer for registered mail {$key}", 'index' => $key, 'lang' => 'argumentRegisteredMailIssuingSiteEmpty'];
+                $errors[] = [
+                    'error' => "Argument registeredMail_issuingSite is empty" .
+                        " or not an integer for registered mail {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentRegisteredMailIssuingSiteEmpty'
+                ];
                 continue;
-            } elseif ((empty($registeredMail['company']) && (empty($registeredMail['lastname']) || empty($registeredMail['firstname']))) || empty($registeredMail['addressStreet']) || empty($registeredMail['addressPostcode']) || empty($registeredMail['addressTown'])) {
-                $errors[] = ['error' => "Argument company and firstname/lastname, or addressStreet, addressPostcode, addressTown is empty for registered mail {$key}", 'index' => $key, 'lang' => 'argumentRegisteredMailRecipientEmpty'];
+            } elseif (
+                (
+                    empty($registeredMail['company']) &&
+                    (empty($registeredMail['lastname']) || empty($registeredMail['firstname']))
+                ) ||
+                empty($registeredMail['addressStreet']) ||
+                empty($registeredMail['addressPostcode']) ||
+                empty($registeredMail['addressTown'])
+            ) {
+                $errors[] = [
+                    'error' => "Argument company and firstname/lastname, or addressStreet, addressPostcode," .
+                        " addressTown is empty for registered mail {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentRegisteredMailRecipientEmpty'
+                ];
                 continue;
             }
 
-            $indexingModel = IndexingModelModel::getById(['id' => $registeredMail['modelId'], 'select' => ['category']]);
+            $indexingModel = IndexingModelModel::getById([
+                'id'     => $registeredMail['modelId'],
+                'select' => ['category']
+            ]);
             if (empty($indexingModel)) {
-                $errors[] = ['error' => "Argument modelId does not exist for registered mail {$key}", 'index' => $key, 'lang' => 'argumentModelIdEmpty'];
+                $errors[] = [
+                    'error' => "Argument modelId does not exist for registered mail {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentModelIdEmpty'
+                ];
                 continue;
             } elseif ($indexingModel['category'] != 'registeredMail') {
-                $errors[] = ['error' => "Argument modelId category is not valid for registered mail {$key}", 'index' => $key, 'lang' => 'argumentCategoryNotValid'];
+                $errors[] = [
+                    'error' => "Argument modelId category is not valid for registered mail {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentCategoryNotValid'
+                ];
                 continue;
             }
             $indexingModelField = IndexingModelFieldModel::get([
-                'select'    => ['default_value'],
-                'where'     => ['model_id = ?', 'identifier in (?)'],
-                'data'      => [$registeredMail['modelId'], ['doctype', 'subject']],
-                'orderBy'   => ['identifier']
+                'select'  => ['default_value'],
+                'where'   => ['model_id = ?', 'identifier in (?)'],
+                'data'    => [$registeredMail['modelId'], ['doctype', 'subject']],
+                'orderBy' => ['identifier']
             ]);
             if (empty($indexingModelField[0]['default_value'])) {
-                $errors[] = ['error' => "Argument modelId doctype default value is not valid for registered mail {$key}", 'index' => $key, 'lang' => 'argumentDoctypeEmpty'];
+                $errors[] = [
+                    'error' => "Argument modelId doctype default value is not valid for registered mail {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentDoctypeEmpty'
+                ];
                 continue;
             }
 
             $issuingSite = IssuingSiteModel::getById([
-                'id'        => $registeredMail['registeredMail_issuingSite'],
-                'select'    => ['label', 'address_number', 'address_street', 'address_additional1', 'address_additional2', 'address_postcode', 'address_town', 'address_country']
+                'id'     => $registeredMail['registeredMail_issuingSite'],
+                'select' => [
+                    'label',
+                    'address_number',
+                    'address_street',
+                    'address_additional1',
+                    'address_additional2',
+                    'address_postcode',
+                    'address_town',
+                    'address_country'
+                ]
             ]);
             if (empty($issuingSite)) {
-                $errors[] = ['error' => "Argument issuingSite does not exist for registered mail {$key}", 'index' => $key, 'lang' => 'argumentRegisteredMailIssuingSiteEmpty'];
+                $errors[] = [
+                    'error' => "Argument issuingSite does not exist for registered mail {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentRegisteredMailIssuingSiteEmpty'
+                ];
                 continue;
             }
 
             $range = RegisteredNumberRangeModel::get([
-                'select'    => ['id', 'range_end', 'current_number'],
-                'where'     => ['type = ?', 'status = ?'],
-                'data'      => [$registeredMail['registeredMail_type'], 'OK']
+                'select' => ['id', 'range_end', 'current_number'],
+                'where'  => ['type = ?', 'status = ?'],
+                'data'   => [$registeredMail['registeredMail_type'], 'OK']
             ]);
             if (empty($range)) {
-                $errors[] = ['error' => "No range available for registered mail {$key}", 'index' => $key, 'lang' => 'NoRangeAvailable'];
+                $errors[] = [
+                    'error' => "No range available for registered mail {$key}",
+                    'index' => $key,
+                    'lang'  => 'NoRangeAvailable'
+                ];
                 continue;
             }
-            $status = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'registeredMailImportedStatus']);
+            $status = ParameterModel::getById([
+                'select' => ['param_value_string'],
+                'id'     => 'registeredMailImportedStatus'
+            ]);
             if (empty($status['param_value_string'])) {
-                $errors[] = ['error' => "No status found in parameters", 'index' => $key, 'lang' => 'NoRegisteredMailImportedStatus'];
+                $errors[] = [
+                    'error' => "No status found in parameters",
+                    'index' => $key,
+                    'lang'  => 'NoRegisteredMailImportedStatus'
+                ];
                 continue;
             }
 
             $resId = DatabaseModel::getNextSequenceValue(['sequenceId' => 'res_id_mlb_seq']);
-            $registeredMailNumber = RegisteredMailController::getRegisteredMailNumber(['type' => $registeredMail['registeredMail_type'], 'rawNumber' => $range[0]['current_number'], 'countryCode' => 'FR']);
+            $registeredMailNumber = RegisteredMailController::getRegisteredMailNumber([
+                'type'        => $registeredMail['registeredMail_type'],
+                'rawNumber'   => $range[0]['current_number'],
+                'countryCode' => 'FR'
+            ]);
             $data = StoreController::prepareResourceStorage([
                 'resId'         => $resId,
                 'subject'       => json_decode($indexingModelField[1]['default_value']),
@@ -407,34 +605,34 @@ class RegisteredMailController
                 'data'  => [$range[0]['id']]
             ]);
 
-            $date      = new \DateTime($registeredMail['departureDate']);
-            $date      = $date->format('d/m/Y');
+            $date = new \DateTime($registeredMail['departureDate']);
+            $date = $date->format('d/m/Y');
             $reference = "{$date} - {$registeredMail['registeredMail_reference']}";
 
             $recipient = [
-                'company'               => $registeredMail['company'],
-                'civility'              => $registeredMail['civility'],
-                'firstname'             => $registeredMail['firstname'],
-                'lastname'              => $registeredMail['lastname'],
-                'addressNumber'         => $registeredMail['addressNumber'],
-                'addressStreet'         => $registeredMail['addressStreet'],
-                'addressAdditional1'    => $registeredMail['addressAdditional1'],
-                'addressAdditional2'    => $registeredMail['addressAdditional2'],
-                'addressPostcode'       => $registeredMail['addressPostcode'],
-                'addressTown'           => $registeredMail['addressTown'],
-                'addressCountry'        => 'FRANCE'
+                'company'            => $registeredMail['company'],
+                'civility'           => $registeredMail['civility'],
+                'firstname'          => $registeredMail['firstname'],
+                'lastname'           => $registeredMail['lastname'],
+                'addressNumber'      => $registeredMail['addressNumber'],
+                'addressStreet'      => $registeredMail['addressStreet'],
+                'addressAdditional1' => $registeredMail['addressAdditional1'],
+                'addressAdditional2' => $registeredMail['addressAdditional2'],
+                'addressPostcode'    => $registeredMail['addressPostcode'],
+                'addressTown'        => $registeredMail['addressTown'],
+                'addressCountry'     => 'FRANCE'
             ];
 
             RegisteredMailModel::create([
-                'res_id'        => $resId,
-                'type'          => $registeredMail['registeredMail_type'],
-                'issuing_site'  => $registeredMail['registeredMail_issuingSite'],
-                'warranty'      => $registeredMail['registeredMail_warranty'],
-                'letter'        => empty($registeredMail['registeredMail_letter']) ? 'false' : 'true',
-                'recipient'     => json_encode($recipient),
-                'number'        => $range[0]['current_number'],
-                'reference'     => $reference,
-                'generated'     => 'false',
+                'res_id'       => $resId,
+                'type'         => $registeredMail['registeredMail_type'],
+                'issuing_site' => $registeredMail['registeredMail_issuingSite'],
+                'warranty'     => $registeredMail['registeredMail_warranty'],
+                'letter'       => empty($registeredMail['registeredMail_letter']) ? 'false' : 'true',
+                'recipient'    => json_encode($recipient),
+                'number'       => $range[0]['current_number'],
+                'reference'    => $reference,
+                'generated'    => 'false',
             ]);
 
             RegisteredMailController::generateRegisteredMailPDF([
@@ -451,25 +649,30 @@ class RegisteredMailController
         }
 
         $return = [
-            'success'   => count($body['registeredMails']) - count($warnings) - count($errors),
-            'warnings'  => [
-                'count'     => count($warnings),
-                'details'   => $warnings
+            'success'  => count($body['registeredMails']) - count($warnings) - count($errors),
+            'warnings' => [
+                'count'   => count($warnings),
+                'details' => $warnings
             ],
-            'errors'    => [
-                'count'     => count($errors),
-                'details'   => $errors
+            'errors'   => [
+                'count'   => count($errors),
+                'details' => $errors
             ]
         ];
 
         return $response->withJson($return);
     }
 
-    public static function getRegisteredMailNumber(array $args)
+    /**
+     * @param array $args
+     * @return string
+     */
+    public static function getRegisteredMailNumber(array $args): string
     {
         $numberLength = $args['type'] == 'RW' ? 8 : 10;
         $number = str_split(str_pad($args['rawNumber'], $numberLength, "0", STR_PAD_LEFT));
-        $registeredMailNumber = "{$args['type']} {$number[0]}{$number[1]}{$number[2]} {$number[3]}{$number[4]}{$number[5]} {$number[6]}{$number[7]}";
+        $registeredMailNumber = "{$args['type']} {$number[0]}{$number[1]}{$number[2]}" .
+            " {$number[3]}{$number[4]}{$number[5]} {$number[6]}{$number[7]}";
         if ($args['type'] == 'RW') {
             // International Registered Mail Number
             // source: Universal Postal Union S10 standard
@@ -505,35 +708,41 @@ class RegisteredMailController
         return $registeredMailNumber;
     }
 
-    public static function generateRegisteredMailPDF(array $args)
+    /**
+     * @param array $args
+     * @return array|string[]
+     * @throws Exception
+     */
+    public static function generateRegisteredMailPDF(array $args): array
     {
         $resource = ResModel::getById(['select' => ['typist'], 'resId' => $args['resId']]);
         $primaryEntity = UserModel::getPrimaryEntityById(['select' => ['short_label'], 'id' => $resource['typist']]);
 
         $sender = ContactController::getContactAfnor([
-            'company'               => $args['issuingSite']['label'],
-            'firstname'             => $primaryEntity['short_label'],
-            'address_number'        => $args['issuingSite']['address_number'],
-            'address_street'        => $args['issuingSite']['address_street'],
-            'address_additional1'   => $args['issuingSite']['address_additional1'] ?? '',
-            'address_additional2'   => $args['issuingSite']['address_additional2'] ?? '',
-            'address_postcode'      => $args['issuingSite']['address_postcode'],
-            'address_town'          => $args['issuingSite']['address_town'],
-            'address_country'       => $args['issuingSite']['address_country']
+            'company'             => $args['issuingSite']['label'],
+            'firstname'           => $primaryEntity['short_label'],
+            'address_number'      => $args['issuingSite']['address_number'],
+            'address_street'      => $args['issuingSite']['address_street'],
+            'address_additional1' => $args['issuingSite']['address_additional1'] ?? '',
+            'address_additional2' => $args['issuingSite']['address_additional2'] ?? '',
+            'address_postcode'    => $args['issuingSite']['address_postcode'],
+            'address_town'        => $args['issuingSite']['address_town'],
+            'address_country'     => $args['issuingSite']['address_country']
         ]);
 
         $recipient = ContactController::getContactAfnor([
-            'company'               => $args['recipient']['company'],
-            'civility'              => !empty($args['recipient']['civility']) ? ContactCivilityController::getIdByLabel(['label' => $args['recipient']['civility']]) : '',
-            'firstname'             => $args['recipient']['firstname'],
-            'lastname'              => $args['recipient']['lastname'],
-            'address_number'        => $args['recipient']['addressNumber'],
-            'address_street'        => $args['recipient']['addressStreet'],
-            'address_additional1'   => $args['recipient']['addressAdditional1'] ?? '',
-            'address_additional2'   => $args['recipient']['addressAdditional2'] ?? '',
-            'address_postcode'      => $args['recipient']['addressPostcode'],
-            'address_town'          => $args['recipient']['addressTown'],
-            'address_country'       => $args['recipient']['addressCountry']
+            'company'             => $args['recipient']['company'],
+            'civility'            => !empty($args['recipient']['civility'])
+                ? ContactCivilityController::getIdByLabel(['label' => $args['recipient']['civility']]) : '',
+            'firstname'           => $args['recipient']['firstname'],
+            'lastname'            => $args['recipient']['lastname'],
+            'address_number'      => $args['recipient']['addressNumber'],
+            'address_street'      => $args['recipient']['addressStreet'],
+            'address_additional1' => $args['recipient']['addressAdditional1'] ?? '',
+            'address_additional2' => $args['recipient']['addressAdditional2'] ?? '',
+            'address_postcode'    => $args['recipient']['addressPostcode'],
+            'address_town'        => $args['recipient']['addressTown'],
+            'address_country'     => $args['recipient']['addressCountry']
         ]);
 
         $registeredMailPDF = RegisteredMailController::getRegisteredMailPDF([
@@ -550,7 +759,17 @@ class RegisteredMailController
         return $registeredMailPDF;
     }
 
-    public static function getRegisteredMailPDF(array $args)
+    /**
+     * @param array $args
+     * @return array|string[]
+     * @throws \Com\Tecnick\Barcode\Exception
+     * @throws CrossReferenceException
+     * @throws FilterException
+     * @throws PdfParserException
+     * @throws PdfTypeException
+     * @throws PdfReaderException
+     */
+    public static function getRegisteredMailPDF(array $args): array
     {
         $registeredMailNumber = $args['registeredMailNumber'];
 
@@ -625,7 +844,6 @@ class RegisteredMailController
             $pdf->SetXY(36, $y);
             $pdf->cell(0, 0, $args['recipient'][6]);
 
-
             // FEUILLE 1 : DROITE
             $y = 40;
             $pdf->SetXY(130, $y);
@@ -654,15 +872,35 @@ class RegisteredMailController
             $pdf->SetXY(140, 70);
             $pdf->cell(0, 0, $registeredMailNumber);
             $barcodeObj = $barcode->getBarcodeObj('C128', $registeredMailNumber, -4, -100);
-            $pdf->Image('@' . $barcodeObj->getPngData(), 140, 75, 60, 12, '', '', '', false, 300);
-
+            $pdf->Image(
+                '@' . $barcodeObj->getPngData(),
+                140,
+                75,
+                60,
+                12,
+                '',
+                '',
+                '',
+                false,
+                300
+            );
 
             // 2eme feuille
             $pdf->SetXY(63, 100);
             $pdf->cell(0, 0, $registeredMailNumber);
             $barcodeObj = $barcode->getBarcodeObj('C128', $registeredMailNumber, -4, -100);
-            $pdf->Image('@' . $barcodeObj->getPngData(), 63, 105, 60, 12, '', '', '', false, 300);
-
+            $pdf->Image(
+                '@' . $barcodeObj->getPngData(),
+                63,
+                105,
+                60,
+                12,
+                '',
+                '',
+                '',
+                false,
+                300
+            );
 
             if ($args['warranty'] == 'R1') {
                 $pdf->SetXY(98, 127);
@@ -727,13 +965,23 @@ class RegisteredMailController
             $pdf->SetXY(57, $y);
             $pdf->cell(0, 0, $args['sender'][6]);
 
-
             // 3eme feuille
             if ($args['type'] == '2C') {
                 $pdf->SetXY(37, 205);
                 $pdf->cell(0, 0, $registeredMailNumber);
                 $barcodeObj = $barcode->getBarcodeObj('C128', $registeredMailNumber, -4, -100);
-                $pdf->Image('@' . $barcodeObj->getPngData(), 37, 212, 60, 12, '', '', '', false, 300);
+                $pdf->Image(
+                    '@' . $barcodeObj->getPngData(),
+                    37,
+                    212,
+                    60,
+                    12,
+                    '',
+                    '',
+                    '',
+                    false,
+                    300
+                );
 
                 $y = 230;
                 $pdf->SetXY(57, $y);
@@ -860,12 +1108,34 @@ class RegisteredMailController
             $pdf->SetXY(52, 36.5);
             $pdf->cell(0, 0, $registeredMailNumber);
             $barcodeObj = $barcode->getBarcodeObj('C128', $registeredMailNumber, -4, -100);
-            $pdf->Image('@' . $barcodeObj->getPngData(), 38, 41, 60, 10, '', '', '', false, 300);
+            $pdf->Image(
+                '@' . $barcodeObj->getPngData(),
+                38,
+                41,
+                60,
+                10,
+                '',
+                '',
+                '',
+                false,
+                300
+            );
 
             $pdf->SetXY(52, 57);
             $pdf->cell(0, 0, $registeredMailNumber);
             $barcodeObj = $barcode->getBarcodeObj('C128', $registeredMailNumber, -4, -100);
-            $pdf->Image('@' . $barcodeObj->getPngData(), 38, 62, 60, 10, '', '', '', false, 300);
+            $pdf->Image(
+                '@' . $barcodeObj->getPngData(),
+                38,
+                62,
+                60,
+                10,
+                '',
+                '',
+                '',
+                false,
+                300
+            );
             $pdf->SetXY(52, 72);
             $pdf->cell(0, 0, $registeredMailNumber);
 
@@ -941,21 +1211,21 @@ class RegisteredMailController
         if ($args['savePdf']) {
             AdrModel::deleteDocumentAdr(['where' => ['res_id = ?'], 'data' => [$args['resId']]]);
             $storeResult = DocserverController::storeResourceOnDocServer([
-                'collId'            => 'letterbox_coll',
-                'docserverTypeId'   => 'DOC',
-                'encodedResource'   => base64_encode($fileContent),
-                'format'            => 'pdf'
+                'collId'          => 'letterbox_coll',
+                'docserverTypeId' => 'DOC',
+                'encodedResource' => base64_encode($fileContent),
+                'format'          => 'pdf'
             ]);
             if (!empty($storeResult['errors'])) {
                 return ['errors' => '[storeResource] ' . $storeResult['errors']];
             }
 
-            $data['docserver_id']   = $storeResult['docserver_id'];
-            $data['filename']       = $storeResult['file_destination_name'];
-            $data['filesize']       = $storeResult['fileSize'];
-            $data['path']           = $storeResult['directory'];
-            $data['fingerprint']    = $storeResult['fingerPrint'];
-            $data['format']         = 'pdf';
+            $data['docserver_id'] = $storeResult['docserver_id'];
+            $data['filename'] = $storeResult['file_destination_name'];
+            $data['filesize'] = $storeResult['fileSize'];
+            $data['path'] = $storeResult['directory'];
+            $data['fingerprint'] = $storeResult['fingerPrint'];
+            $data['format'] = 'pdf';
 
             ResModel::update(['set' => $data, 'where' => ['res_id = ?'], 'data' => [$args['resId']]]);
         }
@@ -963,7 +1233,12 @@ class RegisteredMailController
         return ['fileContent' => $fileContent];
     }
 
-    public static function getDepositListPdf(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getDepositListPdf(array $args): array
     {
         $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
         if (file_exists($libPath)) {
@@ -982,16 +1257,44 @@ class RegisteredMailController
         $pdf->setFont('times', 'B', 11);
         $pdf->SetXY(10, 10);
         if ($args['type'] == '2D') {
-            $pdf->MultiCell(0, 15, "DESCRIPTIF DE PLI - LETTRE RECOMMANDEE SANS AR", 'LRTB', 'C', 0);
+            $pdf->MultiCell(
+                0,
+                15,
+                "DESCRIPTIF DE PLI - LETTRE RECOMMANDEE SANS AR",
+                'LRTB',
+                'C',
+                0
+            );
         } elseif ($args['type'] == '2C') {
-            $pdf->MultiCell(0, 15, "DESCRIPTIF DE PLI - LETTRE RECOMMANDEE AVEC AR", 'LRTB', 'C', 0);
+            $pdf->MultiCell(
+                0,
+                15,
+                "DESCRIPTIF DE PLI - LETTRE RECOMMANDEE AVEC AR",
+                'LRTB',
+                'C',
+                0
+            );
         } else {
-            $pdf->MultiCell(0, 15, "DESCRIPTIF DE PLI - LETTRE RECOMMANDEE INTERNATIONALE AVEC AR", 'LRTB', 'C', 0);
+            $pdf->MultiCell(
+                0,
+                15,
+                "DESCRIPTIF DE PLI - LETTRE RECOMMANDEE INTERNATIONALE AVEC AR",
+                'LRTB',
+                'C',
+                0
+            );
         }
 
         $pdf->SetXY(10, 20);
         $pdf->setFont('times', '', 10);
-        $pdf->MultiCell(0, 15, "(Descriptif de pli faisant office de preuve de dépôt après validation de La Poste)", '', 'C', 0);
+        $pdf->MultiCell(
+            0,
+            15,
+            "(Descriptif de pli faisant office de preuve de dépôt après validation de La Poste)",
+            '',
+            'C',
+            0
+        );
 
         $pdf->SetXY(10, 30);
         $pdf->setFont('times', 'B', 11);
@@ -1065,17 +1368,18 @@ class RegisteredMailController
 
             $referenceInfo = json_decode($registeredMail['recipient'], true);
             $recipient = ContactController::getContactAfnor([
-                'company'               => $referenceInfo['company'],
-                'civility'              => !empty($referenceInfo['civility']) ? ContactCivilityController::getIdByLabel(['label' => $referenceInfo['civility']]) : '',
-                'firstname'             => $referenceInfo['firstname'],
-                'lastname'              => $referenceInfo['lastname'],
-                'address_number'        => $referenceInfo['addressNumber'],
-                'address_street'        => $referenceInfo['addressStreet'],
-                'address_additional1'   => $referenceInfo['addressAdditional1'],
-                'address_additional2'   => $referenceInfo['addressAdditional2'],
-                'address_postcode'      => $referenceInfo['addressPostcode'],
-                'address_town'          => $referenceInfo['addressTown'],
-                'address_country'       => $referenceInfo['addressCountry']
+                'company'             => $referenceInfo['company'],
+                'civility'            => !empty($referenceInfo['civility'])
+                    ? ContactCivilityController::getIdByLabel(['label' => $referenceInfo['civility']]) : '',
+                'firstname'           => $referenceInfo['firstname'],
+                'lastname'            => $referenceInfo['lastname'],
+                'address_number'      => $referenceInfo['addressNumber'],
+                'address_street'      => $referenceInfo['addressStreet'],
+                'address_additional1' => $referenceInfo['addressAdditional1'],
+                'address_additional2' => $referenceInfo['addressAdditional2'],
+                'address_postcode'    => $referenceInfo['addressPostcode'],
+                'address_town'        => $referenceInfo['addressTown'],
+                'address_country'     => $referenceInfo['addressCountry']
             ]);
 
             $pdf->setFont('times', '', 9);
@@ -1084,7 +1388,20 @@ class RegisteredMailController
             $pdf->Cell(30, 10, $registeredMail['alt_identifier'], 1, 0, 'C');
             $pdf->Cell(10, 10, $registeredMail['warranty'], 1, 0, 'C');
             $pdf->Cell(15, 10, "", 1);
-            $pdf->Cell(30, 10, mb_strimwidth($registeredMail['reference'], 0, 22, "...", "UTF-8"), 1, 0, 'C');
+            $pdf->Cell(
+                30,
+                10,
+                mb_strimwidth(
+                    $registeredMail['reference'],
+                    0,
+                    22,
+                    "...",
+                    "UTF-8"
+                ),
+                1,
+                0,
+                'C'
+            );
 
             $pdf->setFont('times', '', 6);
             $recipientLabel = $recipient[2] ?? '';
@@ -1100,7 +1417,12 @@ class RegisteredMailController
                 $pdf->Cell(95, 10, $recipient[4] . " " . $recipient[6] . " " . $recipient[7], 0);
                 $pdf->SetXY($pdf->GetX() + 95, $pdf->GetY() - 3);
             } else {
-                $pdf->Cell(95, 10, $recipientLabel . " " . $recipient[4] . " " . $recipient[6] . " " . $recipient[7], 1);
+                $pdf->Cell(
+                    95,
+                    10,
+                    $recipientLabel . " " . $recipient[4] . " " . $recipient[6] . " " . $recipient[7],
+                    1
+                );
             }
 
             $pdf->Ln();
@@ -1159,20 +1481,36 @@ class RegisteredMailController
         return ['fileContent' => $fileContent];
     }
 
-    public static function getFormattedRegisteredMail(array $args)
+    /**
+     * @param array $args
+     * @return array|mixed
+     * @throws Exception
+     */
+    public static function getFormattedRegisteredMail(array $args): mixed
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
 
         $registeredMail = RegisteredMailModel::getWithResources([
-            'select' => ['issuing_site', 'type', 'deposit_id', 'warranty', 'letter', 'recipient', 'reference', 'generated', 'number', 'alt_identifier'],
+            'select' => [
+                'issuing_site',
+                'type',
+                'deposit_id',
+                'warranty',
+                'letter',
+                'recipient',
+                'reference',
+                'generated',
+                'number',
+                'alt_identifier'
+            ],
             'where'  => ['res_letterbox.res_id = ?'],
             'data'   => [$args['resId']]
         ]);
 
         if (!empty($registeredMail)) {
-            $registeredMail[0]['recipient']   = json_decode($registeredMail[0]['recipient'], true);
-            $registeredMail[0]['number']      = $registeredMail[0]['alt_identifier'];
+            $registeredMail[0]['recipient'] = json_decode($registeredMail[0]['recipient'], true);
+            $registeredMail[0]['number'] = $registeredMail[0]['alt_identifier'];
             $registeredMail[0]['issuingSite'] = $registeredMail[0]['issuing_site'];
             unset($registeredMail[0]['issuing_site']);
 
@@ -1182,7 +1520,12 @@ class RegisteredMailController
         return [];
     }
 
-    private static function getFormattedRegisteredNumber(array $args)
+    /**
+     * @param array $args
+     * @return array|string|string[]
+     * @throws Exception
+     */
+    private static function getFormattedRegisteredNumber(array $args): array|string
     {
         ValidatorModel::notEmpty($args, ['number']);
         ValidatorModel::stringType($args, ['number']);

@@ -1,10 +1,10 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ */
 
 /**
  * @brief Registered Number Range Controller
@@ -13,6 +13,7 @@
 
 namespace RegisteredMail\controllers;
 
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use RegisteredMail\models\RegisteredNumberRangeModel;
@@ -22,7 +23,12 @@ use SrcCore\http\Response;
 
 class RegisteredNumberRangeController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
         $ranges = RegisteredNumberRangeModel::get();
 
@@ -34,16 +40,16 @@ class RegisteredNumberRangeController
             $fullness = round($fullness, 2);
 
             $ranges[$key] = [
-                'id'                    => $range['id'],
-                'registeredMailType'    => $range['type'],
-                'trackerNumber'         => $range['tracking_account_number'],
-                'rangeStart'            => $range['range_start'],
-                'rangeEnd'              => $range['range_end'],
-                'creator'               => $range['creator'],
-                'creationDate'          => $range['creation_date'],
-                'status'                => $range['status'],
-                'currentNumber'         => $range['current_number'],
-                'fullness'              => $fullness,
+                'id'                 => $range['id'],
+                'registeredMailType' => $range['type'],
+                'trackerNumber'      => $range['tracking_account_number'],
+                'rangeStart'         => $range['range_start'],
+                'rangeEnd'           => $range['range_end'],
+                'creator'            => $range['creator'],
+                'creationDate'       => $range['creation_date'],
+                'status'             => $range['status'],
+                'currentNumber'      => $range['current_number'],
+                'fullness'           => $fullness,
             ];
         }
 
@@ -52,7 +58,9 @@ class RegisteredNumberRangeController
 
     public function getById(Request $request, Response $response, array $args)
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -69,43 +77,62 @@ class RegisteredNumberRangeController
         $fullness = round($fullness, 2);
 
         $range = [
-            'id'                    => $range['id'],
-            'registeredMailType'    => $range['type'],
-            'trackerNumber'         => $range['tracking_account_number'],
-            'rangeStart'            => $range['range_start'],
-            'rangeEnd'              => $range['range_end'],
-            'creator'               => $range['creator'],
-            'creationDate'          => $range['creation_date'],
-            'status'                => $range['status'],
-            'currentNumber'         => $range['current_number'],
-            'fullness'              => $fullness
+            'id'                 => $range['id'],
+            'registeredMailType' => $range['type'],
+            'trackerNumber'      => $range['tracking_account_number'],
+            'rangeStart'         => $range['range_start'],
+            'rangeEnd'           => $range['range_end'],
+            'creator'            => $range['creator'],
+            'creationDate'       => $range['creation_date'],
+            'status'             => $range['status'],
+            'currentNumber'      => $range['current_number'],
+            'fullness'           => $fullness
         ];
 
         return $response->withJson(['range' => $range]);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
         $body = $request->getParsedBody();
 
         if (!Validator::stringType()->notEmpty()->validate($body['registeredMailType'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body registeredMailType is empty or not a string']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body registeredMailType is empty or not a string'
+            ]);
         }
         if (!Validator::stringType()->notEmpty()->validate($body['trackerNumber'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body trackerNumber is empty or not a string']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body trackerNumber is empty or not a string'
+            ]);
         }
         if (!Validator::notEmpty()->intVal()->validate($body['rangeStart'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body rangeStart is empty or not an integer']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body rangeStart is empty or not an integer'
+            ]);
         }
         if (!Validator::notEmpty()->intVal()->validate($body['rangeEnd'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body rangeEnd is empty or not an integer']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body rangeEnd is empty or not an integer'
+            ]);
         }
         if ($body['rangeStart'] >= $body['rangeEnd']) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body rangeStart cannot be larger or equal than rangeEnd', 'lang' => 'rangeStartLargerThanRangeEnd']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body rangeStart cannot be larger or equal than rangeEnd',
+                'lang'   => 'rangeStartLargerThanRangeEnd'
+            ]);
         }
 
         $ranges = RegisteredNumberRangeModel::get([
@@ -114,7 +141,10 @@ class RegisteredNumberRangeController
             'data'   => [$body['trackerNumber']]
         ]);
         if (!empty($ranges)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body trackerNumber is already used by another range', 'lang' => 'trackingNumberAlreadyUsed']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body trackerNumber is already used by another range',
+                'lang'   => 'trackingNumberAlreadyUsed'
+            ]);
         }
 
         $ranges = RegisteredNumberRangeModel::get([
@@ -129,7 +159,10 @@ class RegisteredNumberRangeController
                 $body['rangeStart'] <= $range['range_start'] && $range['range_start'] <= $body['rangeEnd']
                 || $body['rangeStart'] <= $range['range_end'] && $range['range_end'] <= $body['rangeEnd']
             ) {
-                return $response->withStatus(400)->withJson(['errors' => 'Range overlaps another range', 'lang' => 'rangeOverlaps']);
+                return $response->withStatus(400)->withJson([
+                    'errors' => 'Range overlaps another range',
+                    'lang'   => 'rangeOverlaps'
+                ]);
             }
         }
 
@@ -155,9 +188,18 @@ class RegisteredNumberRangeController
         return $response->withJson(['id' => $id]);
     }
 
-    public function update(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $args): Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -169,19 +211,30 @@ class RegisteredNumberRangeController
         $body = $request->getParsedBody();
 
         if (!Validator::stringType()->notEmpty()->validate($body['registeredMailType'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body registeredMailType is empty or not a string']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body registeredMailType is empty or not a string'
+            ]);
         }
         if (!Validator::stringType()->notEmpty()->validate($body['trackerNumber'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body trackerNumber is empty or not a string']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body trackerNumber is empty or not a string'
+            ]);
         }
         if (!Validator::notEmpty()->intVal()->validate($body['rangeStart'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body rangeStart is empty or not an integer']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body rangeStart is empty or not an integer'
+            ]);
         }
         if (!Validator::notEmpty()->intVal()->validate($body['rangeEnd'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body rangeEnd is empty or not an integer']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body rangeEnd is empty or not an integer'
+            ]);
         }
         if ($body['rangeStart'] >= $body['rangeEnd']) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body rangeStart cannot be larger or equal  than rangeEnd', 'lang' => 'rangeStartLargerThanRangeEnd']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body rangeStart cannot be larger or equal  than rangeEnd',
+                'lang'   => 'rangeStartLargerThanRangeEnd'
+            ]);
         }
 
         $ranges = RegisteredNumberRangeModel::get([
@@ -190,7 +243,10 @@ class RegisteredNumberRangeController
             'data'   => [$body['trackerNumber'], $args['id']]
         ]);
         if (!empty($ranges)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body trackerNumber is already used by another range', 'lang' => 'trackingNumberAlreadyUsed']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body trackerNumber is already used by another range',
+                'lang'   => 'trackingNumberAlreadyUsed'
+            ]);
         }
 
         $ranges = RegisteredNumberRangeModel::get([
@@ -205,14 +261,17 @@ class RegisteredNumberRangeController
                 $body['rangeStart'] <= $item['range_start'] && $item['range_start'] <= $body['rangeEnd']
                 || $body['rangeStart'] <= $item['range_end'] && $item['range_end'] <= $body['rangeEnd']
             ) {
-                return $response->withStatus(400)->withJson(['errors' => 'Range overlaps another range', 'lang' => 'rangeOverlaps']);
+                return $response->withStatus(400)->withJson([
+                    'errors' => 'Range overlaps another range',
+                    'lang'   => 'rangeOverlaps'
+                ]);
             }
         }
 
         if ($body['status'] == 'OK' && $range['status'] != 'OK') {
             RegisteredNumberRangeModel::update([
                 'set'   => [
-                    'status' => 'END',
+                    'status'         => 'END',
                     'current_number' => null
                 ],
                 'where' => ['type = ?', 'status = ?'],
@@ -265,9 +324,18 @@ class RegisteredNumberRangeController
         return $response->withStatus(204);
     }
 
-    public function delete(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $args): Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -297,9 +365,17 @@ class RegisteredNumberRangeController
         return $response->withStatus(204);
     }
 
-    public function getLastNumberByType(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function getLastNumberByType(Request $request, Response $response, array $args): Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 

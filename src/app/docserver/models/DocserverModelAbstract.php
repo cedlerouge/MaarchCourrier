@@ -43,10 +43,10 @@ class DocserverModelAbstract
 
     /**
      * @param array $aArgs
-     * @return array|mixed
+     * @return array
      * @throws Exception
      */
-    public static function getById(array $aArgs)
+    public static function getById(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -68,10 +68,10 @@ class DocserverModelAbstract
 
     /**
      * @param array $aArgs
-     * @return array|mixed
+     * @return array
      * @throws Exception
      */
-    public static function getByDocserverId(array $aArgs)
+    public static function getByDocserverId(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['docserverId']);
         ValidatorModel::stringType($aArgs, ['docserverId']);
@@ -98,8 +98,23 @@ class DocserverModelAbstract
      */
     public static function create(array $aArgs): int
     {
-        ValidatorModel::notEmpty($aArgs, ['docserver_id', 'docserver_type_id', 'device_label', 'path_template', 'coll_id', 'size_limit_number', 'is_readonly']);
-        ValidatorModel::stringType($aArgs, ['docserver_id', 'docserver_type_id', 'device_label', 'path_template', 'coll_id', 'is_readonly']);
+        ValidatorModel::notEmpty($aArgs, [
+            'docserver_id',
+            'docserver_type_id',
+            'device_label',
+            'path_template',
+            'coll_id',
+            'size_limit_number',
+            'is_readonly'
+        ]);
+        ValidatorModel::stringType($aArgs, [
+            'docserver_id',
+            'docserver_type_id',
+            'device_label',
+            'path_template',
+            'coll_id',
+            'is_readonly'
+        ]);
         ValidatorModel::intVal($aArgs, ['size_limit_number']);
         ValidatorModel::boolType($aArgs, ['is_encrypted']);
 
@@ -165,10 +180,10 @@ class DocserverModelAbstract
 
     /**
      * @param array $aArgs
-     * @return array|mixed
+     * @return array
      * @throws Exception
      */
-    public static function getCurrentDocserver(array $aArgs)
+    public static function getCurrentDocserver(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['collId', 'typeId']);
         ValidatorModel::stringType($aArgs, ['collId', 'typeId']);
