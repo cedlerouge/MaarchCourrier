@@ -32,7 +32,7 @@
                         <mat-icon class="fa fa-stream material-icons"></mat-icon>
                     </button>
                 </div>
-                <app-maarch-message *ngIf="data.resource.docsToSign.length > 0 && atLeastOneDocumentHasNoStamp()"
+                <app-maarch-message *ngIf="!loading && atLeastOneDocumentHasNoStamp()"
                     [mode]="'warning'">
                     <div class="at-least-no-one-stamp" role="alert"
                         [innerHTML]="'lang.atLeastOneDocumentHasNoStamp' | translate">
@@ -74,7 +74,7 @@
                         </li>
                     </ul>
                 </app-maarch-message>
-                <div *ngIf="data.resource.docsToSign?.length > 0" class="div-container">
+                <div *ngIf="data.resource.docsToSign?.length > 0 && !loading" class="div-container">
                     <div class="docs-title"
                         [title]="data.resource.docsToSign.length + ' ' + ('lang.docsToSign' | translate)"
                         [attr.aria-label]="data.resource.docsToSign.length + ' ' + ('lang.docsToSign' | translate)">
@@ -88,7 +88,7 @@
                                 <div class="chrono-stamp"
                                     [attr.aria-label]="('lang.chrono' | translate) + ' : ' + resource.chrono">
                                     <span class="chrono" [title]="resource.chrono">{{resource.chrono}}</span>
-                                    <div *ngIf="resource?.stamps?.length === 0"
+                                    <div *ngIf="resource.stamps.length === 0"
                                         class="empty-stamp-warn"
                                         [title]="'lang.noStampDesc' | translate">
                                         <mat-icon class="fas fa-circle-exclamation" color="warn"></mat-icon>

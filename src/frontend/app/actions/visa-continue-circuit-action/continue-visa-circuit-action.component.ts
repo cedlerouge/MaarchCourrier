@@ -185,6 +185,9 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
     }
 
     atLeastOneDocumentHasNoStamp(): boolean {
-        return (this.data.resource.docsToSign as Attachment[]).some((resource: Attachment) => resource?.stamps?.length === 0);
+        if (this.data.resource.docsToSign.length > 0) {
+            return (this.data.resource.docsToSign as Attachment[]).some((resource: Attachment) => resource.stamps.length === 0);
+        }
+        return false;
     }
 }
