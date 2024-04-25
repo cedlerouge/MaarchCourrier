@@ -55,7 +55,9 @@ export class SignatureBookActionsComponent implements OnInit {
                 tap((res: MessageActionInterface) => {
                     if (res.id === 'documentToCreate') {
                         this.documentDatas = { ...this.documentDatas, ...res.data };
-                        this.docsToSign.find((resource: Attachment) => resource.resId === res.data.resId).stamps = res.data.signatures;
+                        if (this.docsToSign.find((resource: Attachment) => resource.resId === res.data.resId) !== undefined) {
+                            this.docsToSign.find((resource: Attachment) => resource.resId === res.data.resId).stamps = res.data.signatures;
+                        }
                         if (res.data.encodedDocument) {
                             this.functions.blobToBase64(res.data.encodedDocument).then((value: any) => {
                                 this.documentDatas.encodedDocument = value.split(',')[1];
