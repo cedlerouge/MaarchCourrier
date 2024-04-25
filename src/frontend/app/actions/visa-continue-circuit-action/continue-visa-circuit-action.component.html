@@ -39,12 +39,26 @@
                     </div>
                 </app-maarch-message>
                 <app-maarch-message *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== ''"
-                    [mode]="'info'"
-                    [content]="('lang.sendToDocTo' | translate) + ' <b>' + appVisaWorkflow.getNextVisaUser().labelToDisplay + '</b>'">
+                    [mode]="'info'">
+                    <div class="workflow-info">
+                        <div [innerHTML]="('lang.sendToDocTo' | translate) + ' <b>' + appVisaWorkflow.getNextVisaUser().labelToDisplay + '</b>'"></div>
+                        <div class="show-hide-workflow"
+                            [title]="(!snav2.opened ? 'lang.showVisaWorkflow' : 'lang.hideVisaWorkflow') | translate"
+                            (click)="snav2.toggle()">
+                            <span>{{(!snav2.opened ? 'lang.showVisaWorkflow' : 'lang.hideVisaWorkflow') | translate}}</span>
+                        </div>
+                    </div>
                 </app-maarch-message>
                 <app-maarch-message *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() === '' && !noResourceToProcess"
-                    [mode]="'info'"
-                    [content]="'lang.endWorkflow' | translate">
+                    [mode]="'info'">
+                    <div class="workflow-info">
+                        <div [innerHTML]="'lang.endWorkflow' | translate"></div>
+                        <div class="show-hide-workflow"
+                            [title]="(!snav2.opened ? 'lang.showVisaWorkflow' : 'lang.hideVisaWorkflow') | translate"
+                            (click)="snav2.toggle()">
+                            <span>{{(!snav2.opened ? 'lang.showVisaWorkflow' : 'lang.hideVisaWorkflow') | translate}}</span>
+                        </div>
+                    </div>
                 </app-maarch-message>
                 <app-maarch-message *ngIf="resourcesErrors.length > 0"
                     [mode]="'danger'">
