@@ -7,6 +7,15 @@
         </div>
         <mat-sidenav-container autosize style="height:100%;">
             <mat-sidenav-content style="background: white;padding:10px;">
+                <div class="digital-certificate" [attr.aria-label]="'lang.digitalCertificate' | translate">
+                    <mat-checkbox
+                        name="digitalCertificate"
+                        color="primary"
+                        [title]="'lang.digitalCertificate' | translate"
+                        [(ngModel)]="digitalCertificate">
+                        {{'lang.digitalCertificate' | translate}}
+                    </mat-checkbox>
+                </div>
                 <div class="make-action-stream-icon">
                     <div class="make-action">
                         {{'lang.makeActionOn' | translate}}
@@ -83,18 +92,18 @@
                         </div>
                     </div>
                 </ng-container>
-                <!-- NOTE EDITOR -->
-                <mat-expansion-panel style="margin-top: 10px;">
-                    <mat-expansion-panel-header>
-                        <mat-panel-title color="primary">
-                            {{'lang.note' | translate}}
-                        </mat-panel-title>
-                    </mat-expansion-panel-header>
-                    <ng-template matExpansionPanelContent>
-                        <app-note-editor #noteEditor [resIds]="data.resIds"></app-note-editor>
-                    </ng-template>
-                </mat-expansion-panel>
-                <!-- / END NOTE EDITOR -->
+                <div style="display: flow;">
+                    <mat-expansion-panel style="margin-top: 10px;" expanded="true">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title color="primary">
+                                {{'lang.note' | translate}}
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <ng-template matExpansionPanelContent>
+                            <app-note-editor #noteEditor [resIds]="data.resIds"></app-note-editor>
+                        </ng-template>
+                    </mat-expansion-panel>
+                </div>
             </mat-sidenav-content>
             <mat-sidenav *ngIf="data.resIds.length === 1" #snav2 class="visa-workflow-sidenav"
                 position='end'

@@ -24,7 +24,7 @@ import { MatSidenav } from '@angular/material/sidenav';
 })
 export class ContinueVisaCircuitActionComponent implements OnInit {
     @ViewChild('myPlugin', { read: ViewContainerRef, static: true }) myPlugin: ViewContainerRef;
-    @ViewChild('noteEditor', { static: true }) noteEditor: NoteEditorComponent;
+    @ViewChild('noteEditor', { static: false }) noteEditor: NoteEditorComponent;
     @ViewChild('appVisaWorkflow', { static: false }) appVisaWorkflow: VisaWorkflowComponent;
     @ViewChild('snav2', { static: false }) public snav2: MatSidenav;
 
@@ -38,6 +38,8 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
 
     noResourceToProcess: boolean = null;
     componentInstance: any = null;
+
+    digitalCertificate: boolean = true;
 
     constructor(
         public translate: TranslateService,
@@ -126,7 +128,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
         const realResSelected: number[] = this.data.resIds.filter(
             (resId: any) => this.resourcesErrors.map((resErr) => resErr.res_id).indexOf(resId) === -1
         );
-        if ((this.data.resource.signatureBookConfig as SignatureBookInterface).isNewInternalParaph && this.componentInstance?.maarchFortifyService?.signatureMode === 'rgs_2stars') {
+        if ((this.data.resource.signatureBookConfig as SignatureBookInterface).isNewInternalParaph && this.digitalCertificate) {
             this.componentInstance
                 .open()
                 .pipe(

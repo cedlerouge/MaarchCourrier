@@ -136,7 +136,7 @@
     display: flex;
     position: absolute;
     z-index: 1;
-    top: 190px;
+    top: 230px;
     left: 15px;
     background-color: white;
     padding: 0px 10px 0px 10px;
@@ -217,5 +217,15 @@
         font-size: 26px;
         margin: -5px -10px 0px 0px;
         color: var(--maarch-color-primary);
+    }
+}
+
+.digital-certificate {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-size: 18px;
+    .mat-checkbox {
+        color: black;
     }
 }
