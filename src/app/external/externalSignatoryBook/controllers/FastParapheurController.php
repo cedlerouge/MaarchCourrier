@@ -455,7 +455,8 @@ class FastParapheurController
                 ['config' => $args['config'], 'documentId' => $value['external_id']]
             );
 
-            // Update external_state_fetch_date event if $historyResponse return an error. To avoid spamming the API endpoint.
+            // Update external_state_fetch_date event if $historyResponse return an error.
+            // To avoid spamming the API endpoint.
             $updateHistoryFetchDate = FastParapheurController::updateFetchHistoryDateByExternalId([
                 'type'  => ($version == 'resLetterbox' ? 'resource' : 'attachment'),
                 'resId' => $value['res_id']
@@ -1659,8 +1660,9 @@ class FastParapheurController
     /**
      * @param array $args
      * @return array|false
+     * @throws Exception
      */
-    public static function download(array $args)
+    public static function download(array $args): bool|array
     {
         $curlReturn = CurlModel::exec([
             'url'          => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/download',

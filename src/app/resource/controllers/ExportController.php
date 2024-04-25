@@ -997,6 +997,7 @@ class ExportController
     /**
      * @param array $args
      * @return string
+     * @throws Exception
      */
     private static function getFolderLabel(array $args): string
     {
@@ -1026,6 +1027,7 @@ class ExportController
     /**
      * @param array $args
      * @return string
+     * @throws Exception
      */
     private static function getParentFolderLabel(array $args): string
     {

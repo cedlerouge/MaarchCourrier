@@ -415,7 +415,7 @@ class IxbusController
             }
 
             $transmittedFolder = IxBusController::transmitFolder([
-                'config' => $aArgs['config'],
+                'config'   => $aArgs['config'],
                 'folderId' => $folderId
             ]);
             if (!empty($transmittedFolder['error'])) {

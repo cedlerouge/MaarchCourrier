@@ -46,6 +46,7 @@ class IndexingModelController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function get(Request $request, Response $response): Response
     {
@@ -641,7 +642,7 @@ class IndexingModelController
                 $field['default_value'] = $date->format('Y-m-d');
             }
             if (
-                strpos($field['identifier'], 'indexingCustomField_') !== false &&
+                str_contains($field['identifier'], 'indexingCustomField_') &&
                 !empty($field['default_value']) &&
                 $field['default_value'] != '_TODAY'
             ) {

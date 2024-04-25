@@ -306,6 +306,7 @@ class IndexingController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function getProcessLimitDate(Request $request, Response $response): Response
     {
@@ -378,6 +379,7 @@ class IndexingController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function getPriorityWithProcessLimitDate(Request $request, Response $response): Response
     {
@@ -541,13 +543,10 @@ class IndexingController
             } else {
                 $date->add(new DateInterval("P{$processDelayUpdated}D"));
             }
+        } elseif (!empty($args['sub'])) { // Calendar or empty delay
+            $date->sub(new DateInterval("P{$args['delay']}D"));
         } else {
-            // Calendar or empty delay
-            if (!empty($args['sub'])) {
-                $date->sub(new DateInterval("P{$args['delay']}D"));
-            } else {
-                $date->add(new DateInterval("P{$args['delay']}D"));
-            }
+            $date->add(new DateInterval("P{$args['delay']}D"));
         }
 
         return $date->format('Y-m-d');

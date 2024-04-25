@@ -45,6 +45,7 @@ class FullTextScript
     /**
      * @param $args
      * @return void
+     * @throws Exception
      */
     public static function initalize($args): void
     {

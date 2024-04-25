@@ -22,6 +22,12 @@ use Docserver\models\DocserverModel;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
+use Zend_Search_Lucene;
+use Zend_Search_Lucene_Analysis_Analyzer;
+use Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive;
+use Zend_Search_Lucene_Document;
+use Zend_Search_Lucene_Field;
+use Zend_Search_Lucene_Index_Term;
 
 class FullTextController
 {
@@ -96,27 +102,27 @@ class FullTextController
 
         try {
             if (FullTextController::isDirEmpty($fullTextDocserver['path_template'])) {
-                $index = \Zend_Search_Lucene::create($fullTextDocserver['path_template']);
+                $index = Zend_Search_Lucene::create($fullTextDocserver['path_template']);
             } else {
-                $index = \Zend_Search_Lucene::open($fullTextDocserver['path_template']);
+                $index = Zend_Search_Lucene::open($fullTextDocserver['path_template']);
             }
 
-            $index->setFormatVersion(\Zend_Search_Lucene::FORMAT_2_3);
-            \Zend_Search_Lucene_Analysis_Analyzer::setDefault(
-                new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive()
+            $index->setFormatVersion(Zend_Search_Lucene::FORMAT_2_3);
+            Zend_Search_Lucene_Analysis_Analyzer::setDefault(
+                new Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive()
             );
             $index->setMaxBufferedDocs(1000);
 
-            $term = new \Zend_Search_Lucene_Index_Term((int)$args['resId'], 'Id');
+            $term = new Zend_Search_Lucene_Index_Term((int)$args['resId'], 'Id');
             $terms = $index->termDocs($term);
             foreach ($terms as $value) {
                 $index->delete($value);
             }
 
-            $doc = new \Zend_Search_Lucene_Document();
+            $doc = new Zend_Search_Lucene_Document();
 
-            $doc->addField(\Zend_Search_Lucene_Field::UnIndexed('Id', (int)$args['resId']));
-            $doc->addField(\Zend_Search_Lucene_Field::UnStored('contents', $fileContent, 'utf-8'));
+            $doc->addField(Zend_Search_Lucene_Field::UnIndexed('Id', (int)$args['resId']));
+            $doc->addField(Zend_Search_Lucene_Field::UnStored('contents', $fileContent, 'utf-8'));
 
             $index->addDocument($doc);
             $index->commit();

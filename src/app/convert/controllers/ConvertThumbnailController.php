@@ -20,6 +20,7 @@ use Docserver\controllers\DocserverController;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Exception;
+use ImagickException;
 use Parameter\models\ParameterModel;
 use Resource\controllers\StoreController;
 use Resource\models\ResModel;
@@ -260,7 +261,8 @@ class ConvertThumbnailController
     /**
      * @param array $args
      * @return array|string[]|true
-     * @throws \ImagickException
+     * @throws ImagickException
+     * @throws Exception
      */
     public static function convertOnePage(array $args): array|bool
     {

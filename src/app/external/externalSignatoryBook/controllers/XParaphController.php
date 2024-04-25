@@ -267,7 +267,11 @@ class XParaphController
             $docserverInfo = DocserverModel::getByDocserverId(
                 ['docserverId' => $aArgs['attachmentInfo']['docserver_id']]
             );
-            $filePath = $docserverInfo['path_template'] . str_replace('#', '/', $aArgs['attachmentInfo']['path']) .
+            $filePath = $docserverInfo['path_template'] . str_replace(
+                '#',
+                '/',
+                $aArgs['attachmentInfo']['path']
+            ) .
                 $aArgs['attachmentInfo']['filename'];
 
             $tbs = new clsTinyButStrong();
@@ -454,6 +458,7 @@ class XParaphController
     /**
      * @param $aArgs
      * @return mixed
+     * @throws Exception
      */
     public static function retrieveSignedMails($aArgs): mixed
     {

@@ -18,6 +18,7 @@ use Attachment\models\AttachmentModel;
 use Configuration\models\ConfigurationModel;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
+use Exception;
 use Firebase\JWT\JWT;
 use Resource\controllers\ResController;
 use Resource\controllers\StoreController;
@@ -35,17 +36,62 @@ class OnlyOfficeController
 {
     // List of format convertible by OnlyOffice https://api.onlyoffice.com/editors/conversionapi
     private const CONVERTIBLE_EXTENSIONS = [
-        'doc', 'docm', 'docx', 'dot', 'dotm', 'dotx', 'epub', 'fodt', 'html', 'mht', 'odt', 'ott', 'rtf', 'txt', 'xps',
-        'csv', 'fods', 'ods', 'ots', 'xls', 'xlsm', 'xlsx', 'xlt', 'xltm', 'xltx',
-        'fodp', 'odp', 'otp', 'pot', 'potm', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx'
+        'doc',
+        'docm',
+        'docx',
+        'dot',
+        'dotm',
+        'dotx',
+        'epub',
+        'fodt',
+        'html',
+        'mht',
+        'odt',
+        'ott',
+        'rtf',
+        'txt',
+        'xps',
+        'csv',
+        'fods',
+        'ods',
+        'ots',
+        'xls',
+        'xlsm',
+        'xlsx',
+        'xlt',
+        'xltm',
+        'xltx',
+        'fodp',
+        'odp',
+        'otp',
+        'pot',
+        'potm',
+        'potx',
+        'pps',
+        'ppsm',
+        'ppsx',
+        'ppt',
+        'pptm',
+        'pptx'
     ];
 
-    public function getConfiguration(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function getConfiguration(Request $request, Response $response): Response
     {
-        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_document_editors', 'select' => ['value']]);
+        $configuration = ConfigurationModel::getByPrivilege(
+            ['privilege' => 'admin_document_editors', 'select' => ['value']]
+        );
         $configuration = !empty($configuration['value']) ? json_decode($configuration['value'], true) : [];
 
-        if (empty($configuration) || empty($configuration['onlyoffice']) || empty($configuration['onlyoffice']['uri'])) {
+        if (
+            empty($configuration) || empty($configuration['onlyoffice']) ||
+            empty($configuration['onlyoffice']['uri'])
+        ) {
             return $response->withJson(['enabled' => false]);
         }
 
@@ -66,17 +112,27 @@ class OnlyOfficeController
         return $response->withJson($configurations);
     }
 
-    public function getToken(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getToken(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
         if (!Validator::notEmpty()->validate($body['config'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body params config is empty']);
         }
 
-        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_document_editors', 'select' => ['value']]);
+        $configuration = ConfigurationModel::getByPrivilege(
+            ['privilege' => 'admin_document_editors', 'select' => ['value']]
+        );
         $configuration = !empty($configuration['value']) ? json_decode($configuration['value'], true) : [];
 
-        if (empty($configuration) || empty($configuration['onlyoffice']) || empty($configuration['onlyoffice']['uri'])) {
+        if (
+            empty($configuration) || empty($configuration['onlyoffice']) ||
+            empty($configuration['onlyoffice']['uri'])
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'OnlyOffice server is disabled']);
         }
 
@@ -94,7 +150,13 @@ class OnlyOfficeController
         return $response->withJson($jwt);
     }
 
-    public function saveMergedFile(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function saveMergedFile(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
@@ -111,36 +173,54 @@ class OnlyOfficeController
             } else {
                 $stylesPath = 'modules/templates/templates/styles/';
             }
-            if (strpos($body['objectId'], $stylesPath) !== 0 || substr_count($body['objectId'], '.') != 1) {
+            if (!str_starts_with($body['objectId'], $stylesPath) || substr_count($body['objectId'], '.') != 1) {
                 return $response->withStatus(400)->withJson(['errors' => 'Template path is not valid']);
             }
 
             $path = $body['objectId'];
 
             $fileContent = @file_get_contents($path);
-            if ($fileContent == false) {
+            if (!$fileContent) {
                 return $response->withStatus(400)->withJson(['errors' => 'No content found']);
             }
         } elseif ($body['objectType'] == 'templateModification') {
-            $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]);
-            $template = TemplateModel::getById(['id' => $body['objectId'], 'select' => ['template_path', 'template_file_name']]);
+            $docserver = DocserverModel::getCurrentDocserver(
+                ['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]
+            );
+            $template = TemplateModel::getById(
+                ['id' => $body['objectId'], 'select' => ['template_path', 'template_file_name']]
+            );
             if (empty($template)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Template does not exist']);
             }
 
-            $path = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $template['template_path']) . $template['template_file_name'];
+            $path = $docserver['path_template'] . str_replace(
+                '#',
+                DIRECTORY_SEPARATOR,
+                $template['template_path']
+            ) .
+                $template['template_file_name'];
             if (!is_file($path)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Template does not exist on docserver']);
             }
             $fileContent = file_get_contents($path);
         } elseif ($body['objectType'] == 'resourceCreation' || $body['objectType'] == 'attachmentCreation') {
-            $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]);
-            $template = TemplateModel::getById(['id' => $body['objectId'], 'select' => ['template_path', 'template_file_name']]);
+            $docserver = DocserverModel::getCurrentDocserver(
+                ['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]
+            );
+            $template = TemplateModel::getById(
+                ['id' => $body['objectId'], 'select' => ['template_path', 'template_file_name']]
+            );
             if (empty($template)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Template does not exist']);
             }
 
-            $path = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $template['template_path']) . $template['template_file_name'];
+            $path = $docserver['path_template'] . str_replace(
+                '#',
+                DIRECTORY_SEPARATOR,
+                $template['template_path']
+            ) .
+                $template['template_file_name'];
 
             $dataToMerge = ['userId' => $GLOBALS['id']];
             if (!empty($body['data']) && is_array($body['data'])) {
@@ -155,19 +235,34 @@ class OnlyOfficeController
             if (!ResController::hasRightByResId(['resId' => [$body['objectId']], 'userId' => $GLOBALS['id']])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Resource out of perimeter']);
             }
-            $resource = ResModel::getById(['resId' => $body['objectId'], 'select' => ['docserver_id', 'path', 'filename', 'fingerprint']]);
+            $resource = ResModel::getById(
+                ['resId' => $body['objectId'], 'select' => ['docserver_id', 'path', 'filename', 'fingerprint']]
+            );
             if (empty($resource['filename'])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Resource has no file']);
             }
 
-            $docserver  = DocserverModel::getByDocserverId(['docserverId' => $resource['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
+            $docserver = DocserverModel::getByDocserverId(
+                ['docserverId' => $resource['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
+            );
 
-            $path = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $resource['path']) . $resource['filename'];
+            $path = $docserver['path_template'] . str_replace(
+                '#',
+                DIRECTORY_SEPARATOR,
+                $resource['path']
+            ) .
+                $resource['filename'];
 
-            $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-            $fingerprint = StoreController::getFingerPrint(['filePath' => $path, 'mode' => $docserverType['fingerprint_mode']]);
+            $docserverType = DocserverTypeModel::getById(
+                ['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]
+            );
+            $fingerprint = StoreController::getFingerPrint(
+                ['filePath' => $path, 'mode' => $docserverType['fingerprint_mode']]
+            );
             if (empty($resource['fingerprint'])) {
-                ResModel::update(['set' => ['fingerprint' => $fingerprint], 'where' => ['res_id = ?'], 'data' => [$body['objectId']]]);
+                ResModel::update(
+                    ['set' => ['fingerprint' => $fingerprint], 'where' => ['res_id = ?'], 'data' => [$body['objectId']]]
+                );
                 $resource['fingerprint'] = $fingerprint;
             }
 
@@ -177,22 +272,42 @@ class OnlyOfficeController
 
             $fileContent = file_get_contents($path);
         } elseif ($body['objectType'] == 'attachmentModification') {
-            $attachment = AttachmentModel::getById(['id' => $body['objectId'], 'select' => ['docserver_id', 'path', 'filename', 'res_id_master', 'fingerprint']]);
+            $attachment = AttachmentModel::getById(
+                [
+                    'id'     => $body['objectId'],
+                    'select' => ['docserver_id', 'path', 'filename', 'res_id_master', 'fingerprint']
+                ]
+            );
             if (empty($attachment)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Attachment does not exist']);
             }
-            if (!ResController::hasRightByResId(['resId' => [$attachment['res_id_master']], 'userId' => $GLOBALS['id']])) {
+            if (
+                !ResController::hasRightByResId(['resId' => [$attachment['res_id_master']], 'userId' => $GLOBALS['id']])
+            ) {
                 return $response->withStatus(400)->withJson(['errors' => 'Attachment out of perimeter']);
             }
 
-            $docserver  = DocserverModel::getByDocserverId(['docserverId' => $attachment['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
+            $docserver = DocserverModel::getByDocserverId(
+                ['docserverId' => $attachment['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
+            );
 
-            $path = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $attachment['path']) . $attachment['filename'];
+            $path = $docserver['path_template'] . str_replace(
+                '#',
+                DIRECTORY_SEPARATOR,
+                $attachment['path']
+            ) .
+                $attachment['filename'];
 
-            $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-            $fingerprint = StoreController::getFingerPrint(['filePath' => $path, 'mode' => $docserverType['fingerprint_mode']]);
+            $docserverType = DocserverTypeModel::getById(
+                ['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]
+            );
+            $fingerprint = StoreController::getFingerPrint(
+                ['filePath' => $path, 'mode' => $docserverType['fingerprint_mode']]
+            );
             if (empty($attachment['fingerprint'])) {
-                AttachmentModel::update(['set' => ['fingerprint' => $fingerprint], 'where' => ['res_id = ?'], 'data' => [$body['objectId']]]);
+                AttachmentModel::update(
+                    ['set' => ['fingerprint' => $fingerprint], 'where' => ['res_id = ?'], 'data' => [$body['objectId']]]
+                );
                 $attachment['fingerprint'] = $fingerprint;
             }
 
@@ -205,9 +320,9 @@ class OnlyOfficeController
             if (empty($body['format'])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body format is empty']);
             }
-            $path        = null;
+            $path = null;
             $fileContent = base64_decode($body['objectId']);
-            $extension   = $body['format'];
+            $extension = $body['format'];
         } else {
             return $response->withStatus(400)->withJson(['errors' => 'Query param objectType does not exist']);
         }
@@ -227,36 +342,52 @@ class OnlyOfficeController
         return $response->withJson(['filename' => $halfFilename]);
     }
 
-    public function getMergedFile(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getMergedFile(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
         if (!Validator::stringType()->notEmpty()->validate($queryParams['filename'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Query params filename is empty']);
-        } elseif (substr_count($queryParams['filename'], '\\') > 0 || substr_count($queryParams['filename'], '.') != 1) {
+        } elseif (
+            substr_count($queryParams['filename'], '\\') > 0 ||
+            substr_count($queryParams['filename'], '.') != 1
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Query params filename forbidden']);
         }
 
-        $tmpPath  = CoreConfigModel::getTmpPath();
+        $tmpPath = CoreConfigModel::getTmpPath();
         $filename = "onlyOffice_{$queryParams['filename']}";
 
         $fileContent = file_get_contents($tmpPath . $filename);
-        if ($fileContent == false) {
+        if (!$fileContent) {
             return $response->withStatus(400)->withJson(['errors' => 'No content found']);
         }
 
-        $finfo     = new \finfo(FILEINFO_MIME_TYPE);
-        $mimeType  = $finfo->buffer($fileContent);
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->buffer($fileContent);
         $extension = pathinfo($tmpPath . $filename, PATHINFO_EXTENSION);
         unlink($tmpPath . $filename);
 
         $response->write($fileContent);
-        $response = $response->withAddedHeader('Content-Disposition', "attachment; filename=maarch.{$extension}");
+        $response = $response->withAddedHeader(
+            'Content-Disposition',
+            "attachment; filename=maarch.{$extension}"
+        );
 
         return $response->withHeader('Content-Type', $mimeType);
     }
 
-    public function getEncodedFileFromUrl(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getEncodedFileFromUrl(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
@@ -264,47 +395,69 @@ class OnlyOfficeController
             return $response->withStatus(400)->withJson(['errors' => 'Query params url is empty']);
         }
 
-        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_document_editors', 'select' => ['value']]);
+        $configuration = ConfigurationModel::getByPrivilege(
+            ['privilege' => 'admin_document_editors', 'select' => ['value']]
+        );
         $configuration = !empty($configuration['value']) ? json_decode($configuration['value'], true) : [];
 
-        if (empty($configuration) || empty($configuration['onlyoffice']) || empty($configuration['onlyoffice']['uri'])) {
+        if (
+            empty($configuration) || empty($configuration['onlyoffice']) ||
+            empty($configuration['onlyoffice']['uri'])
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Onlyoffice is not enabled']);
         }
 
-        $checkUrl   = str_replace('http://', '', $queryParams['url']);
-        $checkUrl   = str_replace('https://', '', $checkUrl);
-        $uri        = $configuration['onlyoffice']['uri'];
-        $uriPaths   = explode('/', $uri, 2);
+        $checkUrl = str_replace('http://', '', $queryParams['url']);
+        $checkUrl = str_replace('https://', '', $checkUrl);
+        $uri = $configuration['onlyoffice']['uri'];
+        $uriPaths = explode('/', $uri, 2);
         $masterPath = $uriPaths[0];
-        $lastPath   = !empty($uriPaths[1]) ? rtrim("/{$uriPaths[1]}", '/') : '';
-        $port       = (int)$configuration['onlyoffice']['port'];
+        $lastPath = !empty($uriPaths[1]) ? rtrim("/{$uriPaths[1]}", '/') : '';
+        $port = (int)$configuration['onlyoffice']['port'];
 
-        if (strpos($checkUrl, "{$masterPath}:{$port}{$lastPath}/cache/files/") !== 0 && (($port != 80 && $port != 443) || strpos($checkUrl, "{$masterPath}{$lastPath}/cache/files/") !== 0)) {
+        if (
+            !str_starts_with($checkUrl, "{$masterPath}:{$port}{$lastPath}/cache/files/") &&
+            (($port != 80 && $port != 443) || !str_starts_with($checkUrl, "{$masterPath}{$lastPath}/cache/files/"))
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Query params url is not allowed']);
         }
 
         $fileContent = file_get_contents($queryParams['url']);
-        if ($fileContent == false) {
+        if (!$fileContent) {
             return $response->withStatus(400)->withJson(['errors' => 'No content found']);
         }
 
         return $response->withJson(['encodedFile' => base64_encode($fileContent)]);
     }
 
-    public function isAvailable(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function isAvailable(Request $request, Response $response): Response
     {
-        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_document_editors', 'select' => ['value']]);
+        $configuration = ConfigurationModel::getByPrivilege(
+            ['privilege' => 'admin_document_editors', 'select' => ['value']]
+        );
         $configuration = !empty($configuration['value']) ? json_decode($configuration['value'], true) : [];
 
         if (empty($configuration) || empty($configuration['onlyoffice'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Onlyoffice is not enabled', 'lang' => 'onlyOfficeNotEnabled']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Onlyoffice is not enabled', 'lang' => 'onlyOfficeNotEnabled']
+            );
         } elseif (empty($configuration['onlyoffice']['uri'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Onlyoffice server_uri is empty', 'lang' => 'uriIsEmpty']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Onlyoffice server_uri is empty', 'lang' => 'uriIsEmpty']
+            );
         } elseif (empty($configuration['onlyoffice']['port'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Onlyoffice server_port is empty', 'lang' => 'portIsEmpty']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Onlyoffice server_port is empty', 'lang' => 'portIsEmpty']
+            );
         }
 
-        $uri  = $configuration['onlyoffice']['uri'];
+        $uri = $configuration['onlyoffice']['uri'];
         $port = (int)$configuration['onlyoffice']['port'];
 
         $isAvailable = DocumentEditorController::isAvailable(['uri' => $uri, 'port' => $port]);
@@ -316,19 +469,29 @@ class OnlyOfficeController
         return $response->withJson(['isAvailable' => $isAvailable]);
     }
 
-    public static function canConvert(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    public static function canConvert(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['url', 'fullFilename']);
         ValidatorModel::stringType($args, ['url', 'fullFilename']);
 
-        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_document_editors', 'select' => ['value']]);
+        $configuration = ConfigurationModel::getByPrivilege(
+            ['privilege' => 'admin_document_editors', 'select' => ['value']]
+        );
         $configuration = !empty($configuration['value']) ? json_decode($configuration['value'], true) : [];
 
-        if (empty($configuration) || empty($configuration['onlyoffice']) || empty($configuration['onlyoffice']['uri']) || empty($configuration['onlyoffice']['port'])) {
+        if (
+            empty($configuration) || empty($configuration['onlyoffice']) ||
+            empty($configuration['onlyoffice']['uri']) || empty($configuration['onlyoffice']['port'])
+        ) {
             return false;
         }
 
-        $uri  = $configuration['onlyoffice']['uri'];
+        $uri = $configuration['onlyoffice']['uri'];
         $port = (int)$configuration['onlyoffice']['port'];
 
         $isAvailable = DocumentEditorController::isAvailable(['uri' => $uri, 'port' => $port]);
@@ -341,7 +504,7 @@ class OnlyOfficeController
             return false;
         }
 
-        if (strpos($args['url'], 'localhost') !== false || strpos($args['url'], '127.0.0.1') !== false) {
+        if (str_contains($args['url'], 'localhost') || str_contains($args['url'], '127.0.0.1')) {
             return false;
         }
 
@@ -354,13 +517,20 @@ class OnlyOfficeController
         return true;
     }
 
-    public static function convert(array $args)
+    /**
+     * @param array $args
+     * @return array|string[]|true
+     * @throws Exception
+     */
+    public static function convert(array $args): array|bool
     {
         ValidatorModel::notEmpty($args, ['url', 'fullFilename', 'userId']);
         ValidatorModel::stringType($args, ['url', 'fullFilename']);
         ValidatorModel::intVal($args, ['userId']);
 
-        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_document_editors', 'select' => ['value']]);
+        $configuration = ConfigurationModel::getByPrivilege(
+            ['privilege' => 'admin_document_editors', 'select' => ['value']]
+        );
         $configuration = !empty($configuration['value']) ? json_decode($configuration['value'], true) : [];
 
         if (empty($configuration) || empty($configuration['onlyoffice'])) {
@@ -371,7 +541,7 @@ class OnlyOfficeController
             return ['errors' => 'Onlyoffice server_port is empty', 'lang' => 'portIsEmpty'];
         }
 
-        $uri  = $configuration['onlyoffice']['uri'];
+        $uri = $configuration['onlyoffice']['uri'];
         $port = (string)$configuration['onlyoffice']['port'];
 
         $tmpPath = CoreConfigModel::getTmpPath();
@@ -420,7 +590,7 @@ class OnlyOfficeController
             $convertUrl .= '/' . $path;
         }
 
-        if (substr($convertUrl, -1) != '/') {
+        if (!str_ends_with($convertUrl, '/')) {
             $convertUrl .= '/';
         }
         $convertUrl .= 'ConvertService.ashx';
@@ -441,7 +611,7 @@ class OnlyOfficeController
             $authorizationHeader = empty($serverAuthorizationHeader) ? 'Authorization' : $serverAuthorizationHeader;
             $authorizationHeader .= ': Bearer ' . $tokenOnlyOffice;
 
-            $headers[] =  $authorizationHeader;
+            $headers[] = $authorizationHeader;
         }
 
         $response = CurlModel::exec([
@@ -466,11 +636,11 @@ class OnlyOfficeController
 
         $filename = $tmpPath . $docInfo['filename'] . '.pdf';
         $saveTmp = file_put_contents($filename, $convertedFile);
-        if ($saveTmp == false) {
+        if (!$saveTmp) {
             return ['errors' => 'Cannot save converted document'];
         }
 
-        $tmpFilename =  $tmpPath . "tmp_{$GLOBALS['id']}_" . rand() . ".pdf";
+        $tmpFilename = $tmpPath . "tmp_{$GLOBALS['id']}_" . rand() . ".pdf";
         $command = "gs -dCompatibilityLevel=1.4 -q -sDEVICE=pdfwrite -dNOPAUSE -dQUIET -dBATCH -o {$tmpFilename} {$filename} 2>&1; mv {$tmpFilename} {$filename}";
         exec($command, $output, $return);
         if (!empty($output)) {
@@ -480,13 +650,18 @@ class OnlyOfficeController
         return true;
     }
 
-    public function getTmpFile(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getTmpFile(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
         try {
             $jwt = JWT::decode($queryParams['token'], CoreConfigModel::getEncryptKey(), ['HS256']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $response->withStatus(401)->withJson(['errors' => 'Token is invalid']);
         }
 
@@ -499,12 +674,15 @@ class OnlyOfficeController
             return $response->withStatus(404)->withJson(['errors' => 'Document not found']);
         }
 
-        $finfo    = new \finfo(FILEINFO_MIME_TYPE);
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $mimeType = $finfo->buffer($fileContent);
         $pathInfo = pathinfo($jwt->fullFilename);
 
         $response->write($fileContent);
-        $response = $response->withAddedHeader('Content-Disposition', "attachment; filename=maarch.{$pathInfo['extension']}");
+        $response = $response->withAddedHeader(
+            'Content-Disposition',
+            "attachment; filename=maarch.{$pathInfo['extension']}"
+        );
         return $response->withHeader('Content-Type', $mimeType);
     }
 }

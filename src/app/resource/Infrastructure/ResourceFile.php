@@ -20,6 +20,7 @@ use Exception;
 use Resource\Domain\Ports\ResourceFileInterface;
 use Resource\controllers\StoreController;
 use Resource\controllers\WatermarkController;
+use SetaPDF_Core_Document;
 use setasign\Fpdi\Fpdi;
 use SrcCore\controllers\PasswordController;
 use SrcCore\models\CoreConfigModel;
@@ -28,7 +29,10 @@ use Throwable;
 class ResourceFile implements ResourceFileInterface
 {
     /**
-     * @inheritDoc
+     * @param string $docserverPath
+     * @param string $documentPath
+     * @param string $documentFilename
+     * @return string
      */
     public function buildFilePath(string $docserverPath, string $documentPath, string $documentFilename): string
     {
@@ -39,6 +43,10 @@ class ResourceFile implements ResourceFileInterface
         return $docserverPath . str_replace('#', DIRECTORY_SEPARATOR, $documentPath) . $documentFilename;
     }
 
+    /**
+     * @param string $folderPath
+     * @return bool
+     */
     public function folderExists(string $folderPath): bool
     {
         if (empty($folderPath)) {
@@ -47,6 +55,10 @@ class ResourceFile implements ResourceFileInterface
         return is_dir($folderPath);
     }
 
+    /**
+     * @param string $filePath
+     * @return bool
+     */
     public function fileExists(string $filePath): bool
     {
         if (empty($filePath)) {
@@ -55,6 +67,12 @@ class ResourceFile implements ResourceFileInterface
         return file_exists($filePath);
     }
 
+    /**
+     * @param string $docserverTypeId
+     * @param string $filePath
+     * @return string
+     * @throws Exception
+     */
     public function getFingerPrint(string $docserverTypeId, string $filePath): string
     {
         if (empty($docserverTypeId)) {
@@ -73,7 +91,10 @@ class ResourceFile implements ResourceFileInterface
     }
 
     /**
-     * @inheritDoc
+     * @param string $filePath
+     * @param bool $isEncrypted
+     * @return string|null
+     * @throws Exception
      */
     public function getFileContent(string $filePath, bool $isEncrypted = false): ?string
     {
@@ -94,7 +115,10 @@ class ResourceFile implements ResourceFileInterface
     }
 
     /**
-     * @inheritDoc
+     * @param int $resId
+     * @param string|null $fileContent
+     * @return string|null
+     * @throws Exception
      */
     public function getWatermark(int $resId, ?string $fileContent): ?string
     {
@@ -107,6 +131,14 @@ class ResourceFile implements ResourceFileInterface
         return WatermarkController::watermarkResource(['resId' => $resId, 'fileContent' => $fileContent]);
     }
 
+    /**
+     * @param int $resId
+     * @param int $version
+     * @param string $fileContent
+     * @param string $extension
+     * @return true[]
+     * @throws Exception
+     */
     public function convertToThumbnail(int $resId, int $version, string $fileContent, string $extension): array
     {
         $check = ConvertThumbnailController::convert([
@@ -123,7 +155,10 @@ class ResourceFile implements ResourceFileInterface
     }
 
     /**
-     * @inheritDoc
+     * @param int $resId
+     * @param string $type
+     * @param int $page
+     * @return string
      */
     public function convertOnePageToThumbnail(int $resId, string $type, int $page): string
     {
@@ -157,7 +192,7 @@ class ResourceFile implements ResourceFileInterface
             if (!empty($libPath)) {
                 require_once($libPath);
 
-                $document = \SetaPDF_Core_Document::loadByFilename($filePath);
+                $document = SetaPDF_Core_Document::loadByFilename($filePath);
                 $pages = $document->getCatalog()->getPages();
                 $pageCount = count($pages);
             } else {

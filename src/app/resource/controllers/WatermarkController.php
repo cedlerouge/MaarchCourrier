@@ -18,6 +18,9 @@ use Attachment\models\AttachmentModel;
 use Configuration\models\ConfigurationModel;
 use Exception;
 use Resource\models\ResModel;
+use SetaPDF_Core_Document;
+use SetaPDF_Core_Writer_File;
+use SetaPDF_FormFiller;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use SrcCore\controllers\LogsController;
 use SrcCore\models\CoreConfigModel;
@@ -76,10 +79,10 @@ class WatermarkController
             require_once($libPath);
 
             $flattenedFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" . rand() . "_watermark.pdf";
-            $writer = new \SetaPDF_Core_Writer_File($flattenedFile);
-            $document = \SetaPDF_Core_Document::loadByFilename($preProcessWatermarkFile, $writer);
+            $writer = new SetaPDF_Core_Writer_File($flattenedFile);
+            $document = SetaPDF_Core_Document::loadByFilename($preProcessWatermarkFile, $writer);
 
-            $formFiller = new \SetaPDF_FormFiller($document);
+            $formFiller = new SetaPDF_FormFiller($document);
             $fields = $formFiller->getFields();
             $fields->flatten();
             $document->save()->finish();
@@ -135,6 +138,9 @@ class WatermarkController
 
     /**
      * @codeCoverageIgnore
+     * @param array $args
+     * @return string|null
+     * @throws Exception
      */
     public static function watermarkAttachment(array $args): ?string
     {
@@ -191,10 +197,10 @@ class WatermarkController
             require_once($libPath);
 
             $flattenedFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" . rand() . "_watermark.pdf";
-            $writer = new \SetaPDF_Core_Writer_File($flattenedFile);
-            $document = \SetaPDF_Core_Document::loadByFilename($args['path'], $writer);
+            $writer = new SetaPDF_Core_Writer_File($flattenedFile);
+            $document = SetaPDF_Core_Document::loadByFilename($args['path'], $writer);
 
-            $formFiller = new \SetaPDF_FormFiller($document);
+            $formFiller = new SetaPDF_FormFiller($document);
             $fields = $formFiller->getFields();
             $fields->flatten();
             $document->save()->finish();
