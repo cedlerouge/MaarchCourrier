@@ -155,7 +155,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
             .put(this.data.processActionRoute, {
                 resources: realResSelected,
                 note: this.noteEditor.getNote(),
-                data: objToSend,
+                data: { ...objToSend, digitalCertificate: this.digitalCertificate },
             })
             .pipe(
                 tap((data: any) => {
