@@ -32,18 +32,22 @@
                         <mat-icon class="fa fa-stream material-icons"></mat-icon>
                     </button>
                 </div>
-                <div class="alert-message alert-message-info"
-                    *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== ''"
-                    role="alert" style="margin-top: 30px;"
-                    [innerHTML]="('lang.sendToDocTo' | translate) + ' <b>' + appVisaWorkflow.getNextVisaUser().labelToDisplay + '</b>'">
-                </div>
-
-                <div class="alert-message alert-message-info"
-                    *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() === '' && !noResourceToProcess"
-                    role="alert" style="margin-top: 30px;" [innerHTML]="'lang.endWorkflow' | translate"></div>
-
-                <div *ngIf="resourcesErrors.length > 0" class="alert-message alert-message-danger mailList"
-                    role="alert">
+                <app-maarch-message *ngIf="data.resource.docsToSign.length > 0 && atLeastOneDocumentHasNoStamp()"
+                    [mode]="'warning'">
+                    <div class="at-least-no-one-stamp" role="alert"
+                        [innerHTML]="'lang.atLeastOneDocumentHasNoStamp' | translate">
+                    </div>
+                </app-maarch-message>
+                <app-maarch-message *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== ''"
+                    [mode]="'info'"
+                    [content]="('lang.sendToDocTo' | translate) + ' <b>' + appVisaWorkflow.getNextVisaUser().labelToDisplay + '</b>'">
+                </app-maarch-message>
+                <app-maarch-message *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() === '' && !noResourceToProcess"
+                    [mode]="'info'"
+                    [content]="'lang.endWorkflow' | translate">
+                </app-maarch-message>
+                <app-maarch-message *ngIf="resourcesErrors.length > 0"
+                    [mode]="'danger'">
                     <p>
                         {{'lang.canNotMakeAction' | translate}} :
                     </p>
@@ -52,25 +56,25 @@
                             <b>{{ressource.alt_identifier}}</b> : {{'lang.' + ressource.reason | translate}}
                         </li>
                     </ul>
-                </div>
-                <div *ngIf="resourcesWarnings.length > 0" class="alert-message alert-message-info mailList"
-                    role="alert">
+                </app-maarch-message>
+                <app-maarch-message *ngIf="resourcesWarnings.length > 0"
+                    [mode]="'info'">
                     <ul style="margin: 0;padding-bottom: 0px;">
                         <li *ngFor="let ressource of resourcesWarnings">
                             <b>{{ressource.alt_identifier}}</b> : {{'lang.' + ressource.reason | translate}}
                         </li>
                     </ul>
-                </div>
-                <div *ngIf="resourcesMailing.length > 0 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== '' && appVisaWorkflow.getNextVisaUser().requested_signature"
-                    class="alert-message alert-message-info" role="alert">
+                </app-maarch-message>
+                <app-maarch-message *ngIf="resourcesMailing.length > 0 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== '' && appVisaWorkflow.getNextVisaUser().requested_signature"
+                    [mode]="'info'">
                     <p>{{'lang.mailingActionInformations' | translate}}</p>
                     <ul>
                         <li *ngFor="let ressource of resourcesMailing">
                             <b>{{ressource.alt_identifier}}</b>
                         </li>
                     </ul>
-                </div>
-                <ng-container *ngIf="data.resource.docsToSign.length > 0">
+                </app-maarch-message>
+                <div *ngIf="data.resource.docsToSign?.length > 0" class="div-container">
                     <div class="docs-title"
                         [title]="data.resource.docsToSign.length + ' ' + ('lang.docsToSign' | translate)"
                         [attr.aria-label]="data.resource.docsToSign.length + ' ' + ('lang.docsToSign' | translate)">
@@ -84,7 +88,16 @@
                                 <div class="chrono-stamp"
                                     [attr.aria-label]="('lang.chrono' | translate) + ' : ' + resource.chrono">
                                     <span class="chrono" [title]="resource.chrono">{{resource.chrono}}</span>
-                                    <span class="empty-stamp">Aucune griffe</span>
+                                    <div *ngIf="resource?.stamps?.length === 0"
+                                        class="empty-stamp-warn"
+                                        [title]="'lang.noStampDesc' | translate">
+                                        <mat-icon class="fas fa-circle-exclamation" color="warn"></mat-icon>
+                                        <span
+                                            [attr.aria-label]="'lang.noStamp' | translate"
+                                            class="empty-stamp">
+                                            {{'lang.noStamp' | translate}}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="resource-title"
                                     [attr.aria-label]="('lang.subject' | translate) + ' : ' + resource.title">
@@ -93,7 +106,7 @@
                             </div>
                         </div>
                     </div>
-                </ng-container>
+                </div>
                 <div style="display: flow;">
                     <mat-expansion-panel style="margin-top: 10px;" expanded="true">
                         <mat-expansion-panel-header>

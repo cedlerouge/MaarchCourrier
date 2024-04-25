@@ -1,3 +1,5 @@
+import { StampInterface } from "./signature-book.model";
+
 export interface AttachmentInterface {
     /**
      * identifier for the attachment
@@ -48,6 +50,11 @@ export interface AttachmentInterface {
      * Boolean indicating whether the attachment can be updated
      */
     canUpdate: boolean;
+
+    /*
+    * attachment stamps
+     */
+    stamps?: StampInterface[];
 }
 
 export class Attachment implements AttachmentInterface {
@@ -62,6 +69,7 @@ export class Attachment implements AttachmentInterface {
     canConvert: boolean = false;
     canDelete: boolean = false;
     canUpdate: boolean = false;
+    stamps: StampInterface[] = [];
 
     constructor(json: any = null) {
         if (json) {

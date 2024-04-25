@@ -118,13 +118,18 @@
     }
 }
 
-.docs-container {
+.div-container {
     position: relative;
+    margin-top: 10px;
     border: 1px solid #afafaf;
-    border-radius:12px;
+    border-radius:15px;
     padding: 5px;
-    max-height: 450px;
+}
+
+.docs-container {
+    max-height: 240px;
     overflow: auto;
+    padding: 10px;
 }
 
 .docs-to-sign {
@@ -138,7 +143,7 @@
     display: flex;
     position: absolute;
     z-index: 1;
-    top: 230px;
+    top: -11px;
     left: 15px;
     background-color: white;
     padding: 0px 10px 0px 10px;
@@ -172,6 +177,14 @@
         letter-spacing: 1px;
         font-size: 13px;
     }
+}
+
+.empty-stamp-warn {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
 }
 
 
@@ -229,4 +242,10 @@
     .mat-checkbox {
         color: black;
     }
+}
+
+.at-least-no-one-stamp {
+    color: black !important;
+    letter-spacing: 1px;
+    font-size: 14px;
 }
