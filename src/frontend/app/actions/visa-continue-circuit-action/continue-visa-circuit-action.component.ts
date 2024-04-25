@@ -17,6 +17,7 @@ import { HeaderService } from '@service/header.service';
 import { SignatureBookInterface } from '@appRoot/signatureBook/signature-book.service';
 import { Router } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
+import { Attachment } from '@models/attachment.model';
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
@@ -181,5 +182,9 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
     backToBasket(): void {
         const path = '/basketList/users/' + this.data.userId + '/groups/' + this.data.groupId + '/baskets/' + this.data.basketId;
         this.router.navigate([path]);
+    }
+
+    atLeastOneDocumentHasNoStamp(): boolean {
+        return (this.data.resource.docsToSign as Attachment[]).some((resource: Attachment) => resource?.stamps?.length === 0);
     }
 }
