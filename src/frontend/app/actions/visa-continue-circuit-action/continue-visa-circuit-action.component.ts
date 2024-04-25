@@ -30,7 +30,7 @@ export interface ContinueVisaCircuitDataToSendInterface {
             signature: any[];
             certificate: string;
             tmpUniqueId: string;
-        }[] | Record<string, never>
+        }[]
     },
     note: {
         content: string,
