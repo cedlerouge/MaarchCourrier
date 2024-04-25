@@ -380,11 +380,8 @@ class ExportController
                         $copies = ExportController::getCopies(['chunkedResIds' => $aArgs['chunkedResIds']]);
                         $csvContent[] = empty($copies[$resource['res_id']]) ? '' : $copies[$resource['res_id']];
                     } elseif ($value['value'] == 'getDetailLink') {
-                        $csvContent[] = trim(
-                                UrlController::getCoreUrl(),
-                                '/'
-                            ) . '/dist/index.html#/resources/' .
-                            $resource['res_id'];
+                        $csvContent[] = trim(UrlController::getCoreUrl(), '/') .
+                            '/dist/index.html#/resources/' . $resource['res_id'];
                     } elseif ($value['value'] == 'getParentFolder') {
                         $csvContent[] = ExportController::getParentFolderLabel(['res_id' => $resource['res_id']]);
                     } elseif ($value['value'] == 'getFolder') {
@@ -427,14 +424,14 @@ class ExportController
                     } elseif ($value['value'] == 'getSignatories') {
                         $signatories = ExportController::getSignatories(['chunkedResIds' => $aArgs['chunkedResIds']]);
                         $csvContent[] = empty(
-                        $signatories[$resource['res_id']]
+                            $signatories[$resource['res_id']]
                         ) ? '' : $signatories[$resource['res_id']];
                     } elseif ($value['value'] == 'getSignatureDates') {
                         $signatureDates = ExportController::getSignatureDates(
                             ['chunkedResIds' => $aArgs['chunkedResIds']]
                         );
                         $csvContent[] = empty(
-                        $signatureDates[$resource['res_id']]
+                            $signatureDates[$resource['res_id']]
                         ) ? '' : $signatureDates[$resource['res_id']];
                     } elseif ($value['value'] == 'getDepartment') {
                         $department = ExportController::getDepartment(['chunkedResIds' => $aArgs['chunkedResIds']]);
@@ -444,7 +441,7 @@ class ExportController
                             ['chunkedResIds' => $aArgs['chunkedResIds']]
                         );
                         $csvContent[] = empty(
-                        $acknowledgementSendDate[$resource['res_id']]
+                            $acknowledgementSendDate[$resource['res_id']]
                         ) ? '' : $acknowledgementSendDate[$resource['res_id']];
                     } elseif (str_contains($value['value'], 'custom_')) {
                         $csvContent[] = ExportController::getCustomFieldValue(
@@ -630,7 +627,7 @@ class ExportController
                             ['chunkedResIds' => $aArgs['chunkedResIds']]
                         );
                         $content[] = empty(
-                        $signatureDates[$resource['res_id']]
+                            $signatureDates[$resource['res_id']]
                         ) ? '' : $signatureDates[$resource['res_id']];
                     } elseif ($value['value'] == 'getDepartment') {
                         $department = ExportController::getDepartment(['chunkedResIds' => $aArgs['chunkedResIds']]);
@@ -640,7 +637,7 @@ class ExportController
                             ['chunkedResIds' => $aArgs['chunkedResIds']]
                         );
                         $content[] = empty(
-                        $acknowledgementSendDate[$resource['res_id']]
+                            $acknowledgementSendDate[$resource['res_id']]
                         ) ? '' : $acknowledgementSendDate[$resource['res_id']];
                     } elseif (str_contains($value['value'], 'custom_')) {
                         $content[] = ExportController::getCustomFieldValue(
