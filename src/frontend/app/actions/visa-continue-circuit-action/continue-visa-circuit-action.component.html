@@ -77,17 +77,19 @@
                         <span> {{data.resource.docsToSign.length}} {{'lang.docsToSign' | translate}}</span>
                     </div>
                     <div class="docs-container">
-                        <div class="content" *ngFor="let resource of data.resource.docsToSign"
-                            [attr.aria-label]="resource.chrono + ' - ' + resource.title"
-                            [title]="resource.chrono + ' - ' + resource.title">
-                            <div class="chrono-stamp"
-                                [attr.aria-label]="('lang.chrono' | translate) + ' : ' + resource.chrono">
-                                <span class="chrono" [title]="resource.chrono">{{resource.chrono}}</span>
-                                <span class="empty-stamp">Aucune griffe</span>
-                            </div>
-                            <div class="resource-title"
-                                [attr.aria-label]="('lang.subject' | translate) + ' : ' + resource.title">
-                                <span [title]="resource.title">{{resource.title}}</span>
+                        <div class="docs-to-sign">
+                            <div class="content" *ngFor="let resource of data.resource.docsToSign"
+                                [attr.aria-label]="resource.chrono + ' - ' + resource.title"
+                                [title]="resource.chrono + ' - ' + resource.title">
+                                <div class="chrono-stamp"
+                                    [attr.aria-label]="('lang.chrono' | translate) + ' : ' + resource.chrono">
+                                    <span class="chrono" [title]="resource.chrono">{{resource.chrono}}</span>
+                                    <span class="empty-stamp">Aucune griffe</span>
+                                </div>
+                                <div class="resource-title"
+                                    [attr.aria-label]="('lang.subject' | translate) + ' : ' + resource.title">
+                                    <span [title]="resource.title">{{resource.title}}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
