@@ -17,6 +17,28 @@ import { HeaderService } from '@service/header.service';
 import { SignatureBookInterface } from '@appRoot/signatureBook/signature-book.service';
 import { Router } from '@angular/router';
 
+export interface ContinueVisaCircuitDataToSendInterface {
+    data: {
+        [key:string]: {
+            resId: number;
+            isAttachment: boolean;
+            documentId: number;
+            cookieSession: string;
+            hashSignature: string;
+            signatureContentLength: number;
+            signatureFieldName: string;
+            signature: any[];
+            certificate: string;
+            tmpUniqueId: string;
+        }[] | Record<string, never>
+    },
+    note: {
+        content: string,
+        entities: any[]
+    },
+    resources: any[]
+}
+
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
     styleUrls: ['continue-visa-circuit-action.component.scss'],
@@ -130,7 +152,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
                 .pipe(
                     tap((data: any) => {
                         if (!this.functions.empty(data) && typeof data === 'object') {
-                            this.executeAction(realResSelected, data);
+                            this.executeAction(realResSelected, this.formatDataToSend(data));
                         }
                     }),
                     catchError((err: any) => {
@@ -145,7 +167,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
         this.loading = false;
     }
 
-    executeAction(realResSelected: number[], objToSend: object = null) {
+    executeAction(realResSelected: number[], objToSend: ContinueVisaCircuitDataToSendInterface = null) {
         this.http
             .put(this.data.processActionRoute, {
                 resources: realResSelected,
@@ -168,6 +190,18 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
                 })
             )
             .subscribe();
+    }
+
+    formatDataToSend(data: any[]): ContinueVisaCircuitDataToSendInterface {
+        const formatedData: ContinueVisaCircuitDataToSendInterface = {} as ContinueVisaCircuitDataToSendInterface;
+
+        for (const item of data) {
+            if (!formatedData[item.resId]) {
+                formatedData[item.resId] = [];
+            }
+            formatedData[item.resId].push(item);
+        }
+        return formatedData;
     }
 
     isValidAction() {

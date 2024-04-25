@@ -56,7 +56,7 @@ export interface AttachmentInterface {
      */
     resourceUrn: string;
 
-    stamps?: StampInterface[]
+    stamps?: StampInterface[];
 }
 
 export class Attachment implements AttachmentInterface {
