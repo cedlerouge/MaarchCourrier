@@ -2855,5 +2855,6 @@
     "nextParaph": "Parapheur suivant",
     "prevParaph": "Parapheur précédent",
     "docsToSign": "document(s) à signer",
-    "toggleVisaWorkflow": "Afficher/Masquer le circuit de visa"
+    "toggleVisaWorkflow": "Afficher/Masquer le circuit de visa",
+    "digitalCertificate": "Certificat électronique"
 }
