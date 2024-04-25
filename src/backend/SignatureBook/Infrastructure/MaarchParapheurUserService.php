@@ -2,10 +2,25 @@
 
 namespace MaarchCourrier\SignatureBook\Infrastructure;
 
+use Exception;
+use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookUserServiceInterface;
+use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
+use MaarchCourrier\User\Domain\User;
+use SrcCore\models\CurlModel;
 
 class MaarchParapheurUserService implements SignatureBookUserServiceInterface
 {
+    private SignatureServiceConfig $config;
+    public int $userId;
+
+
+    public function setConfig(SignatureServiceConfig $config): MaarchParapheurUserService
+    {
+        $this->config = $config;
+        return $this;
+    }
+
     /**
      * @param int $id
      * @return bool
@@ -17,12 +32,31 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
     }
 
     /**
+     * @param UserInterface $user
+     * @param string $accessToken
      * @return array|int
+     * @throws Exception
      */
-    public function createUser(): array|int
+    public function createUser(UserInterface $user, string $accessToken): array|int
     {
-        // TODO: Implement createUser() method.
-        return [];
+        $response = CurlModel::exec([
+            'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users/',
+            'bearerAuth' => ['token' => $accessToken],
+            'headers'    => [
+                'content-type: application/json',
+                'Accept: application/json',
+            ],
+            'body'        => json_encode($body),
+        ]);
+
+        if ($response['code'] == 200) {
+            $this->userId = $response['id'];
+        } else {
+            return $response['errors'] ??
+                ['errors' => 'Error occurred during the creation of the Maarch Parapheur user.'];
+        }
+
+        return $this->userId;
     }
 
     /**

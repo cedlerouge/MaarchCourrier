@@ -19,6 +19,11 @@ use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 class User implements UserInterface
 {
     private int $id;
+    private array $externalId;
+    private string $firstname;
+    private string $lastname;
+    private string $mail;
+    private string $login;
 
     /**
      * Create User from an array
@@ -49,5 +54,60 @@ class User implements UserInterface
     public function setId(int $id): void
     {
         $this->id = $id;
+    }
+
+    public function getExternalId(): array
+    {
+        return $this->externalId;
+    }
+
+    public function setExternalId(array $externalId): User
+    {
+        $this->externalId = $externalId;
+        return $this;
+    }
+
+    public function getFirstname(): string
+    {
+        return $this->firstname;
+    }
+
+    public function setFirstname(string $firstname): UserInterface
+    {
+        $this->firstname = $firstname;
+        return $this;
+    }
+
+    public function getLastname(): string
+    {
+        return $this->lastname;
+    }
+
+    public function setLastname(string $lastname): UserInterface
+    {
+        $this->lastname = $lastname;
+        return $this;
+    }
+
+    public function getMail(): string
+    {
+        return $this->mail;
+    }
+
+    public function setMail(string $mail): UserInterface
+    {
+        $this->mail = $mail;
+        return $this;
+    }
+
+    public function getLogin(): string
+    {
+        return $this->login;
+    }
+
+    public function setLogin(string $login): UserInterface
+    {
+        $this->login = $login;
+        return $this;
     }
 }

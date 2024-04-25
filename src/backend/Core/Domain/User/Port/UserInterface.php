@@ -30,4 +30,23 @@ interface UserInterface
     public function getId(): int;
 
     public function setId(int $id): void;
+
+    public function getExternalId(): array;
+
+    public function setExternalId(array $externalId): UserInterface;
+
+    public function getFirstname(): string;
+    public function setFirstname(string $firstname): UserInterface;
+
+    public function getLastname(): string;
+
+    public function setLastname(string $lastname): UserInterface;
+
+    public function getMail(): string;
+
+    public function setMail(string $mail): UserInterface;
+
+    public function getLogin(): string;
+
+    public function setLogin(string $login): UserInterface;
 }
