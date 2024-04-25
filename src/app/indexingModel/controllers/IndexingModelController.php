@@ -1,14 +1,13 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-* @brief   ParametersController
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ * @brief   ParametersController
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 /**
  * @brief Indexing Model Controller
@@ -19,6 +18,7 @@ namespace IndexingModel\controllers;
 
 use CustomField\models\CustomFieldModel;
 use Entity\models\EntityModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use IndexingModel\models\IndexingModelsEntitiesModel;
@@ -42,19 +42,31 @@ class IndexingModelController
     public const ALLOWED_VALUES_ALL_DOCTYPES = '_ALL_DOCTYPES_';
     public const ALL_ENTITIES = 'ALL_ENTITIES';
 
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
         $query = $request->getQueryParams();
 
         $models = IndexingModelController::getIndexingModels([
-            'showDisabled' => $query['showDisabled'] ?? 'false',
+            'showDisabled'     => $query['showDisabled'] ?? 'false',
             'showInUserEntity' => $query['showInUserEntity'] ?? 'false'
         ]);
 
         return $response->withJson(['indexingModels' => $models]);
     }
 
-    public function getById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getById(Request $request, Response $response, array $args): Response
     {
         $queryParams = $request->getQueryParams();
 
@@ -71,7 +83,11 @@ class IndexingModelController
         }
         $model['entities'] = $entities['entities'];
 
-        $fields = IndexingModelFieldModel::get(['select' => ['identifier', 'mandatory', 'default_value', 'unit', 'enabled', 'allowed_values'], 'where' => ['model_id = ?'], 'data' => [$args['id']]]);
+        $fields = IndexingModelFieldModel::get([
+            'select' => ['identifier', 'mandatory', 'default_value', 'unit', 'enabled', 'allowed_values'],
+            'where'  => ['model_id = ?'],
+            'data'   => [$args['id']]
+        ]);
         $destination = '';
         foreach ($fields as $key => $value) {
             $fields[$key]['default_value'] = json_decode($value['default_value'] ?? '{}', true);
@@ -82,27 +98,44 @@ class IndexingModelController
             } elseif ($value['identifier'] == 'doctype') {
                 if ($fields[$key]['allowedValues'] == IndexingModelController::ALLOWED_VALUES_ALL_DOCTYPES) {
                     $model['allDoctypes'] = true;
-                    $fields[$key]['allowedValues'] = array_column(DoctypeModel::get(['select' => ['type_id']]), 'type_id');
+                    $fields[$key]['allowedValues'] = array_column(
+                        DoctypeModel::get(['select' => ['type_id']]),
+                        'type_id'
+                    );
                 } else {
                     $model['allDoctypes'] = false;
                 }
             } elseif ($value['identifier'] == 'diffusionList') {
                 foreach ($fields[$key]['default_value'] as $itemKey => $item) {
                     if ($item['type'] == 'entity') {
-                        $entity = EntityModel::getById(['id' => $item['id'], 'select' => ['entity_label', 'entity_id']]);
-                        $fields[$key]['default_value'][$itemKey]['labelToDisplay']       = $entity['entity_label'];
+                        $entity = EntityModel::getById([
+                            'id'     => $item['id'],
+                            'select' => ['entity_label', 'entity_id']
+                        ]);
+                        $fields[$key]['default_value'][$itemKey]['labelToDisplay'] = $entity['entity_label'];
                         $fields[$key]['default_value'][$itemKey]['descriptionToDisplay'] = null;
                     } else {
-                        $user = UserModel::getById(['id' => $item['id'], 'select' => ['firstname', 'lastname', 'status']]);
+                        $user = UserModel::getById([
+                            'id'     => $item['id'],
+                            'select' => ['firstname', 'lastname', 'status']
+                        ]);
                         $userEntities = UserModel::getEntitiesById(['id' => $item['id'], 'select' => ['entities.id']]);
                         $userEntities = array_column($userEntities, 'id');
-                        if ($item['mode'] == 'dest' && !empty($destination) && !in_array($destination, $userEntities) && $destination != '"#myPrimaryEntity"') {
+                        if (
+                            $item['mode'] == 'dest' && !empty($destination) &&
+                            !in_array($destination, $userEntities) && $destination != '"#myPrimaryEntity"'
+                        ) {
                             unset($fields[$key]['default_value'][$itemKey]);
                             continue;
                         }
                         if (!empty($user) && !in_array($user['status'], ['SPD', 'DEL'])) {
-                            $fields[$key]['default_value'][$itemKey]['labelToDisplay']       = $user['firstname'] . ' ' . $user['lastname'];
-                            $fields[$key]['default_value'][$itemKey]['descriptionToDisplay'] = UserModel::getPrimaryEntityById(['id' => $item['id'], 'select' => ['entities.entity_label']])['entity_label'];
+                            $fields[$key]['default_value'][$itemKey]['labelToDisplay'] =
+                                $user['firstname'] . ' ' . $user['lastname'];
+                            $fields[$key]['default_value'][$itemKey]['descriptionToDisplay'] =
+                                UserModel::getPrimaryEntityById([
+                                    'id'     => $item['id'],
+                                    'select' => ['entities.entity_label']
+                                ])['entity_label'];
                         } else {
                             unset($fields[$key]['default_value'][$itemKey]);
                         }
@@ -111,7 +144,7 @@ class IndexingModelController
                 $fields[$key]['default_value'] = array_values($fields[$key]['default_value']);
             }
         }
-        $model['fields']        = $fields;
+        $model['fields'] = $fields;
         $model['mandatoryFile'] = $model['mandatory_file'];
         $model['ladProcessing'] = $model['lad_processing'];
         unset($model['mandatory_file']);
@@ -130,7 +163,13 @@ class IndexingModelController
         return $response->withJson(['indexingModel' => $model]);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
@@ -138,9 +177,16 @@ class IndexingModelController
         $categories = array_column($categories, 'id');
 
         if (!Validator::stringType()->notEmpty()->length(1, 256)->validate($body['label'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body label is empty or not a string or more than 256 characters']);
-        } elseif (!Validator::stringType()->notEmpty()->validate($body['category'] ?? null) || !in_array($body['category'], $categories)) {
-            return $response->withStatus(400)->withJson(['errors' => "Body category is empty, not a string or not a valid category"]);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body label is empty or not a string or more than 256 characters'
+            ]);
+        } elseif (
+            !Validator::stringType()->notEmpty()->validate($body['category'] ?? null) ||
+            !in_array($body['category'], $categories)
+        ) {
+            return $response->withStatus(400)->withJson([
+                'errors' => "Body category is empty, not a string or not a valid category"
+            ]);
         } elseif (!Validator::arrayType()->notEmpty()->validate($body['fields'] ?? null)) {
             return $response->withStatus(400)->withJson(['errors' => "Body fields is empty or not an array"]);
         }
@@ -150,7 +196,9 @@ class IndexingModelController
 
         foreach ($body['fields'] as $key => $field) {
             if (!Validator::stringType()->notEmpty()->validate($field['identifier'])) {
-                return $response->withStatus(400)->withJson(['errors' => "Body fields[{$key}] identifier is empty or not a string"]);
+                return $response->withStatus(400)->withJson([
+                    'errors' => "Body fields[{$key}] identifier is empty or not a string"
+                ]);
             }
 
             if ($field['identifier'] == 'doctype') {
@@ -179,7 +227,11 @@ class IndexingModelController
             }
             $master = $body['master'];
 
-            $fieldsMaster = IndexingModelFieldModel::get(['select' => ['identifier', 'mandatory', 'default_value', 'unit', 'enabled'], 'where' => ['model_id = ?'], 'data' => [$body['master']]]);
+            $fieldsMaster = IndexingModelFieldModel::get([
+                'select' => ['identifier', 'mandatory', 'default_value', 'unit', 'enabled'],
+                'where'  => ['model_id = ?'],
+                'data'   => [$body['master']]
+            ]);
             foreach ($fieldsMaster as $key => $value) {
                 if (!empty($value['default_value'])) {
                     $fieldsMaster[$key]['default_value'] = json_decode($value['default_value'], true);
@@ -194,8 +246,12 @@ class IndexingModelController
                 $found = false;
                 foreach ($body['fields'] as $value) {
                     if (
-                        ($field['identifier'] == 'destination' && $value['identifier'] == 'diffusionList')
-                            || ($value['identifier'] == $field['identifier'] && $value['mandatory'] == $field['mandatory'] && $value['unit'] == $field['unit'])
+                        ($field['identifier'] == 'destination' && $value['identifier'] == 'diffusionList') ||
+                        (
+                            $value['identifier'] == $field['identifier'] &&
+                            $value['mandatory'] == $field['mandatory'] &&
+                            $value['unit'] == $field['unit']
+                        )
                     ) {
                         if (!$field['enabled'] && $field['identifier'] == $value['identifier']) {
                             $value = $field;
@@ -204,7 +260,7 @@ class IndexingModelController
                             $value['unit'] = $field['unit'];
                         }
 
-                        array_push($arrayTmp, $value);
+                        $arrayTmp[] = $value;
                         $found = true;
                         if ($field['identifier'] != 'destination') {
                             break;
@@ -213,12 +269,14 @@ class IndexingModelController
                 }
 
                 if (!$found) {
-                    return $response->withStatus(400)->withJson(['errors' => "Field '" . $field['identifier'] . "' from master model is missing"]);
+                    return $response->withStatus(400)->withJson([
+                        'errors' => "Field '" . $field['identifier'] . "' from master model is missing"
+                    ]);
                 }
             }
             $body['fields'] = $arrayTmp;
             $body['mandatoryFile'] = $masterModel['mandatory_file'];
-            $body['mandatoryFile'] = $masterModel['lad_processing'];
+            $body['ladProcessing'] = $masterModel['lad_processing'];
         }
         $body['mandatoryFile'] = empty($body['mandatoryFile']) ? 'false' : 'true';
         $body['ladProcessing'] = empty($body['ladProcessing']) ? 'false' : 'true';
@@ -226,10 +284,19 @@ class IndexingModelController
         if (PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])) {
             $body['private'] = empty($body['private']) ? 'false' : 'true';
             if (!empty($body['default'])) {
-                IndexingModelModel::update(['set' => ['"default"' => 'false'], 'where' => ['"default" = ?'], 'data' => ['true']]);
+                IndexingModelModel::update([
+                    'set'   => ['"default"' => 'false'],
+                    'where' => ['"default" = ?'],
+                    'data'  => ['true']
+                ]);
             }
             $body['default'] = empty($body['default']) ? 'false' : 'true';
-        } elseif (PrivilegeController::hasPrivilege(['privilegeId' => 'create_public_indexing_models', 'userId' => $GLOBALS['id']])) {
+        } elseif (
+            PrivilegeController::hasPrivilege([
+                'privilegeId' => 'create_public_indexing_models',
+                'userId'      => $GLOBALS['id']
+            ])
+        ) {
             $body['private'] = empty($body['private']) ? 'false' : 'true';
             $body['default'] = 'false';
         } else {
@@ -249,13 +316,26 @@ class IndexingModelController
         ]);
 
         foreach ($body['fields'] as $field) {
-            if (in_array($field['identifier'], IndexingModelController::INDEXABLE_DATES) && !empty($field['default_value']) && $field['default_value'] != '_TODAY') {
+            if (
+                in_array($field['identifier'], IndexingModelController::INDEXABLE_DATES) &&
+                !empty($field['default_value']) &&
+                $field['default_value'] != '_TODAY'
+            ) {
                 $date = new \DateTime($field['default_value']);
                 $field['default_value'] = $date->format('Y-m-d');
             }
-            if (strpos($field['identifier'], 'indexingCustomField_') !== false && !empty($field['default_value']) && $field['default_value'] != '_TODAY') {
+            if (
+                str_contains($field['identifier'], 'indexingCustomField_') &&
+                !empty($field['default_value']) &&
+                $field['default_value'] != '_TODAY'
+            ) {
                 $customFieldId = explode('_', $field['identifier'])[1];
-                $customField = CustomFieldModel::getById(['id' => $customFieldId, 'select' => ['type'], 'where' => ['mode = ?'], 'data' => ['form']]);
+                $customField = CustomFieldModel::getById([
+                    'id'     => $customFieldId,
+                    'select' => ['type'],
+                    'where'  => ['mode = ?'],
+                    'data'   => ['form']
+                ]);
                 if (empty($customField)) {
                     continue;
                 }
@@ -272,20 +352,20 @@ class IndexingModelController
                 $enabled = false;
             }
             IndexingModelFieldModel::create([
-                'model_id'      => $modelId,
-                'identifier'    => $field['identifier'],
-                'mandatory'     => empty($field['mandatory']) ? 'false' : 'true',
-                'enabled'       => !$enabled ? 'false' : 'true',
-                'default_value' => !isset($field['default_value']) ? null : json_encode($field['default_value']),
-                'unit'          => $field['unit'],
+                'model_id'       => $modelId,
+                'identifier'     => $field['identifier'],
+                'mandatory'      => empty($field['mandatory']) ? 'false' : 'true',
+                'enabled'        => !$enabled ? 'false' : 'true',
+                'default_value'  => !isset($field['default_value']) ? null : json_encode($field['default_value']),
+                'unit'           => $field['unit'],
                 'allowed_values' => !isset($field['allowedValues']) ? null : json_encode($field['allowedValues']),
             ]);
         }
 
         if (in_array(IndexingModelController::ALL_ENTITIES, $body['entities'] ?? [])) {
             IndexingModelsEntitiesModel::create([
-                'model_id'  => $modelId,
-                'keyword'   => IndexingModelController::ALL_ENTITIES,
+                'model_id' => $modelId,
+                'keyword'  => IndexingModelController::ALL_ENTITIES,
             ]);
         } elseif (!empty($body['entities'])) {
             foreach ($body['entities'] as $entity) {
@@ -308,9 +388,18 @@ class IndexingModelController
         return $response->withJson(['id' => $modelId]);
     }
 
-    public function update(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $args): Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -320,13 +409,17 @@ class IndexingModelController
             return $response->withStatus(400)->withJson(['errors' => 'Param id is empty or not an integer']);
         }
         if (!Validator::stringType()->notEmpty()->length(1, 256)->validate($body['label'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body label is empty or not a string or more than 256 characters']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body label is empty or not a string or more than 256 characters'
+            ]);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['category'])) {
             return $response->withStatus(400)->withJson(['errors' => "Body category is empty or not a string"]);
         } elseif (!Validator::boolType()->validate($body['default'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body default is empty or not a boolean']);
         } elseif (!Validator::boolType()->validate($body['mandatoryFile'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body mandatoryFile is empty or not a boolean']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body mandatoryFile is empty or not a boolean'
+            ]);
         }
 
         $foundDoctype = false;
@@ -334,7 +427,9 @@ class IndexingModelController
 
         foreach ($body['fields'] as $key => $field) {
             if (!Validator::stringType()->notEmpty()->validate($field['identifier'])) {
-                return $response->withStatus(400)->withJson(['errors' => "Body fields[{$key}] identifier is empty or not a string"]);
+                return $response->withStatus(400)->withJson([
+                    'errors' => "Body fields[{$key}] identifier is empty or not a string"
+                ]);
             }
 
             if ($field['identifier'] == 'doctype') {
@@ -361,28 +456,40 @@ class IndexingModelController
         }
 
         if ($body['default']) {
-            IndexingModelModel::update(['set' => ['"default"' => 'false'], 'where' => ['"default" = ?'], 'data' => ['true']]);
+            IndexingModelModel::update([
+                'set'   => ['"default"' => 'false'],
+                'where' => ['"default" = ?'],
+                'data'  => ['true']
+            ]);
         }
 
         IndexingModelModel::update([
             'set'   => [
-                'label'             => $body['label'],
-                'category'          => $body['category'],
-                '"default"'         => $body['default'] ? 'true' : 'false',
-                'mandatory_file'    => empty($body['mandatoryFile']) ? 'false' : 'true',
-                'lad_processing'    => empty($body['ladProcessing']) ? 'false' : 'true'
+                'label'          => $body['label'],
+                'category'       => $body['category'],
+                '"default"'      => $body['default'] ? 'true' : 'false',
+                'mandatory_file' => empty($body['mandatoryFile']) ? 'false' : 'true',
+                'lad_processing' => empty($body['ladProcessing']) ? 'false' : 'true'
             ],
             'where' => ['id = ?'],
             'data'  => [$args['id']]
         ]);
 
-        $childrenModels = IndexingModelModel::get(['select' => ['id', 'label'], 'where' => ['master = ?'], 'data' => [$args['id']]]);
+        $childrenModels = IndexingModelModel::get([
+            'select' => ['id', 'label'],
+            'where'  => ['master = ?'],
+            'data'   => [$args['id']]
+        ]);
 
         // If model has children, update the children
         if (!empty($childrenModels)) {
             // Update children models of master
             foreach ($childrenModels as $child) {
-                $childFields = IndexingModelFieldModel::get(['select' => ['identifier', 'mandatory', 'default_value', 'unit', 'enabled'], 'where' => ['model_id = ?'], 'data' => [$child['id']]]);
+                $childFields = IndexingModelFieldModel::get([
+                    'select' => ['identifier', 'mandatory', 'default_value', 'unit', 'enabled'],
+                    'where'  => ['model_id = ?'],
+                    'data'   => [$child['id']]
+                ]);
                 foreach ($childFields as $key => $value) {
                     $childFields[$key]['default_value'] = json_decode($value['default_value'], true);
                 }
@@ -393,8 +500,13 @@ class IndexingModelController
                     $found = false;
                     foreach ($childFields as $value) {
                         if (
-                            ($field['identifier'] == 'destination' && $value['identifier'] == 'diffusionList')
-                                || ($value['identifier'] == $field['identifier'] && $value['mandatory'] == $field['mandatory'] && $value['unit'] == $field['unit'] && $value['enabled'] == $field['enabled'])
+                            ($field['identifier'] == 'destination' && $value['identifier'] == 'diffusionList') ||
+                            (
+                                $value['identifier'] == $field['identifier'] &&
+                                $value['mandatory'] == $field['mandatory'] &&
+                                $value['unit'] == $field['unit'] &&
+                                $value['enabled'] == $field['enabled']
+                            )
                         ) {
                             $fieldsToKeep[] = $value;
                             if ($value['identifier'] != 'diffusionList') {
@@ -410,13 +522,26 @@ class IndexingModelController
                 IndexingModelFieldModel::delete(['where' => ['model_id = ?'], 'data' => [$child['id']]]);
 
                 foreach ($fieldsToKeep as $field) {
-                    if (in_array($field['identifier'], IndexingModelController::INDEXABLE_DATES) && !empty($field['default_value']) && $field['default_value'] != '_TODAY') {
+                    if (
+                        in_array($field['identifier'], IndexingModelController::INDEXABLE_DATES) &&
+                        !empty($field['default_value']) &&
+                        $field['default_value'] != '_TODAY'
+                    ) {
                         $date = new \DateTime($field['default_value']);
                         $field['default_value'] = $date->format('Y-m-d');
                     }
-                    if (strpos($field['identifier'], 'indexingCustomField_') !== false && !empty($field['default_value']) && $field['default_value'] != '_TODAY') {
+                    if (
+                        str_contains($field['identifier'], 'indexingCustomField_') &&
+                        !empty($field['default_value']) &&
+                        $field['default_value'] != '_TODAY'
+                    ) {
                         $customFieldId = explode('_', $field['identifier'])[1];
-                        $customField = CustomFieldModel::getById(['id' => $customFieldId, 'select' => ['type'], 'where' => ['mode = ?'], 'data' => ['form']]);
+                        $customField = CustomFieldModel::getById([
+                            'id'     => $customFieldId,
+                            'select' => ['type'],
+                            'where'  => ['mode = ?'],
+                            'data'   => ['form']
+                        ]);
                         if (empty($customField)) {
                             continue;
                         }
@@ -429,13 +554,15 @@ class IndexingModelController
                         $field['allowedValues'] = IndexingModelController::ALLOWED_VALUES_ALL_DOCTYPES;
                     }
                     IndexingModelFieldModel::create([
-                        'model_id'      => $child['id'],
-                        'identifier'    => $field['identifier'],
-                        'mandatory'     => empty($field['mandatory']) ? 'false' : 'true',
-                        'enabled'       => $field['enabled'] === false ? 'false' : 'true',
-                        'default_value' => !isset($field['default_value']) ? null : json_encode($field['default_value']),
-                        'unit'          => $field['unit'],
-                        'allowed_values' => !isset($field['allowedValues']) ? null : json_encode($field['allowedValues']),
+                        'model_id'       => $child['id'],
+                        'identifier'     => $field['identifier'],
+                        'mandatory'      => empty($field['mandatory']) ? 'false' : 'true',
+                        'enabled'        => $field['enabled'] === false ? 'false' : 'true',
+                        'default_value'  => !isset($field['default_value'])
+                            ? null : json_encode($field['default_value']),
+                        'unit'           => $field['unit'],
+                        'allowed_values' => !isset($field['allowedValues'])
+                            ? null : json_encode($field['allowedValues']),
                     ]);
                 }
 
@@ -457,38 +584,67 @@ class IndexingModelController
             ]);
         }
 
-        $allResourcesUsingModel = ResModel::get(['select' => ['res_id'], 'where' => ['model_id = ?'], 'data' => [$args['id']]]);
+        $allResourcesUsingModel = ResModel::get([
+            'select' => ['res_id'],
+            'where'  => ['model_id = ?'],
+            'data'   => [$args['id']]
+        ]);
         $allResourcesUsingModel = array_column($allResourcesUsingModel, 'res_id');
 
         if (!empty($allResourcesUsingModel)) {
-            $oldFieldList = IndexingModelFieldModel::get(['select' => ['identifier'], 'where' => ['model_id = ?'], 'data' => [$args['id']]]);
+            $oldFieldList = IndexingModelFieldModel::get([
+                'select' => ['identifier'],
+                'where'  => ['model_id = ?'],
+                'data'   => [$args['id']]
+            ]);
             $oldFieldList = array_column($oldFieldList, 'identifier');
 
             $newFieldList = array_column($body['fields'], 'identifier');
 
-            ResController::resetResourceFields(['oldFieldList' => $oldFieldList, 'newFieldList' => $newFieldList, 'modelId' => $args['id']]);
+            ResController::resetResourceFields([
+                'oldFieldList' => $oldFieldList,
+                'newFieldList' => $newFieldList,
+                'modelId'      => $args['id']
+            ]);
 
             $fieldsToDelete = array_diff($oldFieldList, $newFieldList);
 
             if (in_array('senders', $fieldsToDelete)) {
-                ResourceContactModel::delete(['where' => ['res_id in (?)',  'mode = ?'], 'data' => [$allResourcesUsingModel, 'sender']]);
+                ResourceContactModel::delete([
+                    'where' => ['res_id in (?)', 'mode = ?'],
+                    'data'  => [$allResourcesUsingModel, 'sender']
+                ]);
             }
             if (in_array('recipients', $fieldsToDelete)) {
-                ResourceContactModel::delete(['where' => ['res_id in (?)',  'mode = ?'], 'data' => [$allResourcesUsingModel, 'recipient']]);
+                ResourceContactModel::delete([
+                    'where' => ['res_id in (?)', 'mode = ?'],
+                    'data'  => [$allResourcesUsingModel, 'recipient']
+                ]);
             }
             if (in_array('tags', $fieldsToDelete)) {
-                ResourceTagModel::delete(['where' => ['res_id in (?)'], 'data' => [$allResourcesUsingModel]]);
+                ResourceTagModel::delete([
+                    'where' => ['res_id in (?)'],
+                    'data'  => [$allResourcesUsingModel]
+                ]);
             }
         }
 
         IndexingModelFieldModel::delete(['where' => ['model_id = ?'], 'data' => [$args['id']]]);
 
         foreach ($body['fields'] as $field) {
-            if (in_array($field['identifier'], IndexingModelController::INDEXABLE_DATES) && !empty($field['default_value']) && $field['default_value'] != '_TODAY') {
+            if (
+                in_array($field['identifier'], IndexingModelController::INDEXABLE_DATES) &&
+                !empty($field['default_value']) &&
+                $field['default_value'] != '_TODAY'
+            ) {
                 $date = new \DateTime($field['default_value']);
                 $field['default_value'] = $date->format('Y-m-d');
             }
-            if (strpos($field['identifier'], 'indexingCustomField_') !== false && !empty($field['default_value']) && $field['default_value'] != '_TODAY') {
+            if (
+                strpos($field['identifier'], 'indexingCustomField_') !== false &&
+                !empty($field['default_value']) &&
+                $field['default_value'] != '_TODAY'
+            ) {
                 $customFieldId = explode('_', $field['identifier'])[1];
                 $customField = CustomFieldModel::getById(['id' => $customFieldId, 'select' => ['type']]);
                 if ($customField['type'] == 'date') {
@@ -500,12 +656,12 @@ class IndexingModelController
                 $field['allowedValues'] = IndexingModelController::ALLOWED_VALUES_ALL_DOCTYPES;
             }
             IndexingModelFieldModel::create([
-                'model_id'      => $args['id'],
-                'identifier'    => $field['identifier'],
-                'mandatory'     => empty($field['mandatory']) ? 'false' : 'true',
-                'enabled'       => $field['enabled'] === false ? 'false' : 'true',
-                'default_value' => !isset($field['default_value']) ? null : json_encode($field['default_value']),
-                'unit'          => $field['unit'],
+                'model_id'       => $args['id'],
+                'identifier'     => $field['identifier'],
+                'mandatory'      => empty($field['mandatory']) ? 'false' : 'true',
+                'enabled'        => $field['enabled'] === false ? 'false' : 'true',
+                'default_value'  => !isset($field['default_value']) ? null : json_encode($field['default_value']),
+                'unit'           => $field['unit'],
                 'allowed_values' => !isset($field['allowedValues']) ? null : json_encode($field['allowedValues']),
             ]);
         }
@@ -514,8 +670,8 @@ class IndexingModelController
 
         if (in_array(IndexingModelController::ALL_ENTITIES, $body['entities'] ?? [])) {
             IndexingModelsEntitiesModel::create([
-                'model_id'  => $args['id'],
-                'keyword'   => IndexingModelController::ALL_ENTITIES,
+                'model_id' => $args['id'],
+                'keyword'  => IndexingModelController::ALL_ENTITIES,
             ]);
         } else {
             foreach ($body['entities'] as $entity) {
@@ -538,19 +694,38 @@ class IndexingModelController
         return $response->withStatus(204);
     }
 
-    public function delete(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $args): Response
     {
         if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Param id is empty or not an integer']);
         }
-        $model = IndexingModelModel::getById(['select' => ['owner', 'private', '"default"', 'label', 'master'], 'id' => $args['id']]);
+        $model = IndexingModelModel::getById([
+            'select' => ['owner', 'private', '"default"', 'label', 'master'],
+            'id'     => $args['id']
+        ]);
         if (empty($model)) {
             return $response->withStatus(400)->withJson(['errors' => 'Model not found']);
         } elseif (!empty($model['master']) && $model['private'] && $model['owner'] != $GLOBALS['id']) {
             return $response->withStatus(400)->withJson(['errors' => 'Model out of perimeter']);
-        } elseif (!empty($model['master']) && empty($model['private']) && !PrivilegeController::hasPrivilege(['privilegeId' => 'create_public_indexing_models', 'userId' => $GLOBALS['id']])) {
+        } elseif (
+            !empty($model['master']) && empty($model['private']) &&
+            !PrivilegeController::hasPrivilege([
+                'privilegeId' => 'create_public_indexing_models',
+                'userId'      => $GLOBALS['id']
+            ])
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Model out of perimeter']);
-        } elseif (empty($model['master']) && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])) {
+        } elseif (
+            empty($model['master']) &&
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Model out of perimeter']);
         } elseif ($model['default']) {
             return $response->withStatus(400)->withJson(['errors' => 'Default model can not be deleted']);
@@ -567,25 +742,46 @@ class IndexingModelController
 
             // No targetId provided, trying to delete without redirection
             if (!Validator::notEmpty()->intVal()->validate($body['targetId'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Model is used by at least one resource', 'lang' => 'modelUsedByResources']);
+                return $response->withStatus(400)->withJson([
+                    'errors' => 'Model is used by at least one resource',
+                    'lang'   => 'modelUsedByResources'
+                ]);
             }
 
             // targetId provided, redirect model before deleting
-            $oldFieldList = IndexingModelFieldModel::get(['select' => ['identifier'], 'where' => ['model_id = ?'], 'data' => [$args['id']]]);
+            $oldFieldList = IndexingModelFieldModel::get([
+                'select' => ['identifier'],
+                'where'  => ['model_id = ?'],
+                'data'   => [$args['id']]
+            ]);
             $oldFieldList = array_column($oldFieldList, 'identifier');
 
-            $newFieldList = IndexingModelFieldModel::get(['select' => ['identifier'], 'where' => ['model_id = ?'], 'data' => [$body['targetId']]]);
+            $newFieldList = IndexingModelFieldModel::get([
+                'select' => ['identifier'],
+                'where'  => ['model_id = ?'],
+                'data'   => [$body['targetId']]
+            ]);
             $newFieldList = array_column($newFieldList, 'identifier');
 
-            ResController::resetResourceFields(['oldFieldList' => $oldFieldList, 'newFieldList' => $newFieldList, 'modelId' => $args['id']]);
+            ResController::resetResourceFields([
+                'oldFieldList' => $oldFieldList,
+                'newFieldList' => $newFieldList,
+                'modelId'      => $args['id']
+            ]);
 
             $fieldsToDelete = array_diff($oldFieldList, $newFieldList);
 
             if (in_array('senders', $fieldsToDelete)) {
-                ResourceContactModel::delete(['where' => ['res_id in (?)',  'mode = ?'], 'data' => [$resources, 'sender']]);
+                ResourceContactModel::delete([
+                    'where' => ['res_id in (?)', 'mode = ?'],
+                    'data'  => [$resources, 'sender']
+                ]);
             }
             if (in_array('recipients', $fieldsToDelete)) {
-                ResourceContactModel::delete(['where' => ['res_id in (?)',  'mode = ?'], 'data' => [$resources, 'recipient']]);
+                ResourceContactModel::delete([
+                    'where' => ['res_id in (?)', 'mode = ?'],
+                    'data'  => [$resources, 'recipient']
+                ]);
             }
             if (in_array('tags', $fieldsToDelete)) {
                 ResourceTagModel::delete(['where' => ['res_id in (?)'], 'data' => [$resources]]);
@@ -598,7 +794,11 @@ class IndexingModelController
             ]);
         }
 
-        $childrenModels = IndexingModelModel::get(['select' => ['id', 'label'], 'where' => ['"master" = ?'], 'data' => [$args['id']]]);
+        $childrenModels = IndexingModelModel::get([
+            'select' => ['id', 'label'],
+            'where'  => ['"master" = ?'],
+            'data'   => [$args['id']]
+        ]);
 
         if (!empty($childrenModels)) {
             foreach ($childrenModels as $child) {
@@ -636,9 +836,17 @@ class IndexingModelController
         return $response->withStatus(204);
     }
 
-    public function disable(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function disable(Request $request, Response $response, array $args): Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -651,12 +859,14 @@ class IndexingModelController
             return $response->withStatus(400)->withJson(['errors' => 'Model not found']);
         }
         if ($model['default']) {
-            return $response->withStatus(400)->withJson(['errors' => 'Can not disable this model because this is the default model']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Can not disable this model because this is the default model'
+            ]);
         }
 
         IndexingModelModel::update([
             'set'   => [
-                'enabled'   => 'false'
+                'enabled' => 'false'
             ],
             'where' => ['id = ? or master = ?'],
             'data'  => [$args['id'], $args['id']]
@@ -665,9 +875,17 @@ class IndexingModelController
         return $response->withStatus(204);
     }
 
-    public function enable(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function enable(Request $request, Response $response, array $args): Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -682,7 +900,7 @@ class IndexingModelController
 
         IndexingModelModel::update([
             'set'   => [
-                'enabled'   => 'true'
+                'enabled' => 'true'
             ],
             'where' => ['id = ? or master = ?'],
             'data'  => [$args['id'], $args['id']]
@@ -691,7 +909,13 @@ class IndexingModelController
         return $response->withStatus(204);
     }
 
-    public function getEntities(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function getEntities(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
@@ -701,10 +925,10 @@ class IndexingModelController
         }
 
         $entitiesTmp = EntityModel::get([
-            'select'   => ['id', 'entity_label', 'entity_id'],
-            'where'    => ['enabled = ?', '(parent_entity_id is null OR parent_entity_id = \'\')'],
-            'data'     => ['Y'],
-            'orderBy'  => ['entity_label']
+            'select'  => ['id', 'entity_label', 'entity_id'],
+            'where'   => ['enabled = ?', '(parent_entity_id is null OR parent_entity_id = \'\')'],
+            'data'    => ['Y'],
+            'orderBy' => ['entity_label']
         ]);
         if (!empty($entitiesTmp)) {
             foreach ($entitiesTmp as $key => $value) {
@@ -735,12 +959,16 @@ class IndexingModelController
         return $response->withJson(['entities' => $entities]);
     }
 
-    public static function getIndexingModels(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getIndexingModels(array $args): array
     {
         ValidatorModel::notEmpty($args, ['showDisabled']);
         ValidatorModel::stringType($args, ['showDisabled']);
         ValidatorModel::stringType($args, ['showInUserEntity']);
-
 
         $showDisabled = false;
         $showInUserEntity = false;
@@ -751,18 +979,27 @@ class IndexingModelController
             $showInUserEntity = $args['showInUserEntity'] == 'true';
         }
 
-        $where = ['(owner = ? OR id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id IN (SELECT entity_id FROM users_entities WHERE user_id = ?) OR keyword = ?))'];
-        $data  = [$GLOBALS['id'], $GLOBALS['id'], IndexingModelController::ALL_ENTITIES];
+        $where = [
+            '(owner = ? OR id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities ' .
+            'WHERE entity_id IN (SELECT entity_id FROM users_entities WHERE user_id = ?) OR keyword = ?))'
+        ];
+        $data = [$GLOBALS['id'], $GLOBALS['id'], IndexingModelController::ALL_ENTITIES];
 
         if ($showInUserEntity) {
-            $where = ["(id IN (SELECT id FROM indexing_models as models WHERE models.owner = ? AND private = ?) OR id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id IN (SELECT entity_id FROM users_entities WHERE user_id = ?) OR keyword = ?))"];
-            $data  = [$GLOBALS['id'], 'true', $GLOBALS['id'], IndexingModelController::ALL_ENTITIES];
+            $where = [
+                "(id IN (SELECT id FROM indexing_models as models WHERE models.owner = ? AND private = ?) " .
+                "OR id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities " .
+                "WHERE entity_id IN (SELECT entity_id FROM users_entities WHERE user_id = ?) OR keyword = ?))"
+            ];
+            $data = [$GLOBALS['id'], 'true', $GLOBALS['id'], IndexingModelController::ALL_ENTITIES];
         }
 
         if (!$showDisabled) {
             $where[] = 'enabled = ?';
             $data[] = 'TRUE';
-        } elseif (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])) {
+        } elseif (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])
+        ) {
             $where[] = 'enabled = ?';
             $data[] = 'TRUE';
         }
@@ -776,7 +1013,12 @@ class IndexingModelController
         return $models;
     }
 
-    public static function getModelEntities(array $args)
+    /**
+     * @param array $args
+     * @return array[]|string[]
+     * @throws Exception
+     */
+    public static function getModelEntities(array $args): array
     {
         if (!Validator::notEmpty()->validate($args['id'] ?? null)) {
             return ['error' => 'Id parameter is empty'];
@@ -790,14 +1032,14 @@ class IndexingModelController
 
         if (in_array(IndexingModelController::ALL_ENTITIES, $keywords)) {
             $entities[] = [
-                'id' => 'ALL_ENTITIES',
-                'keyword' => 'ALL_ENTITIES',
+                'id'        => 'ALL_ENTITIES',
+                'keyword'   => 'ALL_ENTITIES',
                 'entity_id' => 'ALL_ENTITIES',
-                'parent' => '#',
-                'icon' => 'fa fa-hashtag',
-                'allowed' => true,
-                'text' => ALL_ENTITIES_TEXT,
-                'state' => ['selected' => true]
+                'parent'    => '#',
+                'icon'      => 'fa fa-hashtag',
+                'allowed'   => true,
+                'text'      => ALL_ENTITIES_TEXT,
+                'state'     => ['selected' => true]
             ];
         } else {
             foreach ($entities as $key => $entity) {

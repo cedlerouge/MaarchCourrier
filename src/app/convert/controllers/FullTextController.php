@@ -1,20 +1,21 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Full Text Controller
-* @author dev@maarch.org
-*/
+ * @brief Full Text Controller
+ * @author dev@maarch.org
+ */
 
 namespace Convert\controllers;
 
 use Convert\models\AdrModel;
+use Exception;
 use Resource\models\ResModel;
 use Attachment\models\AttachmentModel;
 use Docserver\models\DocserverModel;
@@ -24,7 +25,12 @@ use SrcCore\models\ValidatorModel;
 
 class FullTextController
 {
-    public static function indexDocument(array $args)
+    /**
+     * @param array $args
+     * @return string[]
+     * @throws Exception
+     */
+    public static function indexDocument(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resId', 'collId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -32,19 +38,19 @@ class FullTextController
 
         if ($args['collId'] == 'letterbox_coll') {
             $document = AdrModel::getDocuments([
-                'select'    => ['docserver_id', 'path', 'filename', 'fingerprint'],
-                'where'     => ['res_id = ?', 'type = ?'],
-                'data'      => [$args['resId'], 'PDF'],
-                'orderBy'   => ['version DESC'],
-                'limit'     => 1
+                'select'  => ['docserver_id', 'path', 'filename', 'fingerprint'],
+                'where'   => ['res_id = ?', 'type = ?'],
+                'data'    => [$args['resId'], 'PDF'],
+                'orderBy' => ['version DESC'],
+                'limit'   => 1
             ]);
             $document = $document[0] ?? null;
         } else {
             $document = AdrModel::getConvertedDocumentById([
-                'select' => ['docserver_id','path', 'filename', 'fingerprint'],
-                'resId' => $args['resId'],
+                'select' => ['docserver_id', 'path', 'filename', 'fingerprint'],
+                'resId'  => $args['resId'],
                 'collId' => 'attachment',
-                'type' => 'PDF'
+                'type'   => 'PDF'
             ]);
         }
 
@@ -52,12 +58,17 @@ class FullTextController
             return ['success' => 'success'];
         }
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
+        $docserver = DocserverModel::getByDocserverId([
+            'docserverId' => $document['docserver_id'],
+            'select'      => ['path_template', 'docserver_type_id']
+        ]);
         if (empty($docserver['path_template']) || !is_dir($docserver['path_template'])) {
             return ['errors' => 'Docserver does not exist'];
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $document['path']) . $document['filename'];
+        $pathToDocument = $docserver['path_template'] .
+            str_replace('#', DIRECTORY_SEPARATOR, $document['path']) .
+            $document['filename'];
         if (!is_file($pathToDocument)) {
             return ['errors' => 'Converted document not found on docserver'];
         } elseif (!is_readable($pathToDocument)) {
@@ -91,7 +102,9 @@ class FullTextController
             }
 
             $index->setFormatVersion(\Zend_Search_Lucene::FORMAT_2_3);
-            \Zend_Search_Lucene_Analysis_Analyzer::setDefault(new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
+            \Zend_Search_Lucene_Analysis_Analyzer::setDefault(
+                new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive()
+            );
             $index->setMaxBufferedDocs(1000);
 
             $term = new \Zend_Search_Lucene_Index_Term((int)$args['resId'], 'Id');
@@ -110,7 +123,7 @@ class FullTextController
             if ((int)$args['resId'] % 100 === 0) {
                 $index->optimize(); // Optimize every 100 documents
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['errors' => 'Full Text index failed : ' . $e];
         }
 
@@ -119,7 +132,11 @@ class FullTextController
         return ['success' => 'success'];
     }
 
-    public static function isDirEmpty($dir)
+    /**
+     * @param $dir
+     * @return bool
+     */
+    public static function isDirEmpty($dir): bool
     {
         $dir = opendir($dir);
         $isEmpty = true;
@@ -134,7 +151,11 @@ class FullTextController
         return $isEmpty;
     }
 
-    private static function cleanFileContent($fileContent)
+    /**
+     * @param $fileContent
+     * @return string
+     */
+    private static function cleanFileContent($fileContent): string
     {
         $fileContent = TextFormatModel::normalize(['string' => $fileContent]);
         $fileContent = preg_replace('/[[:punct:]]/', ' ', $fileContent);
@@ -148,29 +169,32 @@ class FullTextController
                 $cleanArrayFile[] = $value;
             }
         }
-        $fileContent = implode(' ', $cleanArrayFile);
-
-        return $fileContent;
+        return implode(' ', $cleanArrayFile);
     }
 
-    public static function getFailedAndWithoutIndexes(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getFailedAndWithoutIndexes(array $args): array
     {
         ValidatorModel::notEmpty($args, ['collId']);
         ValidatorModel::stringType($args, ['collId']);
 
         if ($args['collId'] == 'letterbox_coll') {
             $resIds = ResModel::get([
-                'select'    => ['res_id'],
-                'where'     => ['status NOT IN (?)', '(fulltext_result = ? OR fulltext_result is NULL)'],
-                'data'      => [['DEL'],'ERROR'],
-                'orderBy'   => ['res_id ASC'],
+                'select'  => ['res_id'],
+                'where'   => ['status NOT IN (?)', '(fulltext_result = ? OR fulltext_result is NULL)'],
+                'data'    => [['DEL'], 'ERROR'],
+                'orderBy' => ['res_id ASC'],
             ]);
         } else {
             $resIds = AttachmentModel::get([
-                'select'    => ['res_id'],
-                'where'     => ['status NOT IN (?)', '(fulltext_result = ? OR fulltext_result is NULL)'],
-                'data'      => [['DEL','OBS','TMP'], 'ERROR'],
-                'orderBy'   => ['res_id ASC'],
+                'select'  => ['res_id'],
+                'where'   => ['status NOT IN (?)', '(fulltext_result = ? OR fulltext_result is NULL)'],
+                'data'    => [['DEL', 'OBS', 'TMP'], 'ERROR'],
+                'orderBy' => ['res_id ASC'],
             ]);
         }
         return $resIds;

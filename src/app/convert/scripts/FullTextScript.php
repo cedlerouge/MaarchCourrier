@@ -19,6 +19,7 @@ require 'vendor/autoload.php';
 
 use Attachment\models\AttachmentModel;
 use Convert\controllers\FullTextController;
+use Exception;
 use Resource\models\ResModel;
 use SrcCore\controllers\LogsController;
 use SrcCore\models\DatabasePDO;
@@ -41,12 +42,16 @@ FullTextScript::initalize($argv);
 
 class FullTextScript
 {
-    public static function initalize($args)
+    /**
+     * @param $args
+     * @return void
+     */
+    public static function initalize($args): void
     {
         $customId = '';
-        $resId    = '';
-        $collId   = '';
-        $mode     = '';
+        $resId = '';
+        $collId = '';
+        $mode = '';
 
         if (array_search('--customId', $args) > 0) {
             $cmd = array_search('--customId', $args);
@@ -75,14 +80,29 @@ class FullTextScript
 
         if (!empty($userId)) {
             if (empty($mode)) {
-                FullTextScript::index(['customId' => $customId, 'resId' => $resId, 'collId' => $collId, 'userId' => $userId]);
+                FullTextScript::index([
+                    'customId' => $customId,
+                    'resId'    => $resId,
+                    'collId'   => $collId,
+                    'userId'   => $userId
+                ]);
             } else {
-                FullTextScript::reindex(['customId' => $customId, 'collId' => $collId, 'userId' => $userId, 'mode' => $mode]);
+                FullTextScript::reindex([
+                    'customId' => $customId,
+                    'collId'   => $collId,
+                    'userId'   => $userId,
+                    'mode'     => $mode
+                ]);
             }
         }
     }
 
-    public static function index(array $args)
+    /**
+     * @param array $args
+     * @return string[]
+     * @throws Exception
+     */
+    public static function index(array $args): array
     {
         DatabasePDO::reset();
         new DatabasePDO(['customId' => $args['customId']]);
@@ -94,15 +114,31 @@ class FullTextScript
 
         if (!empty($isIndexed['success'])) {
             if ($args['collId'] == 'letterbox_coll') {
-                ResModel::update(['set' => ['fulltext_result' => 'SUCCESS'], 'where' => ['res_id = ?'], 'data' => [$args['resId']]]);
+                ResModel::update([
+                    'set'   => ['fulltext_result' => 'SUCCESS'],
+                    'where' => ['res_id = ?'],
+                    'data'  => [$args['resId']]
+                ]);
             } else {
-                AttachmentModel::update(['set' => ['fulltext_result' => 'SUCCESS'], 'where' => ['res_id = ?'], 'data' => [$args['resId']]]);
+                AttachmentModel::update([
+                    'set'   => ['fulltext_result' => 'SUCCESS'],
+                    'where' => ['res_id = ?'],
+                    'data'  => [$args['resId']]
+                ]);
             }
         } else {
             if ($args['collId'] == 'letterbox_coll') {
-                ResModel::update(['set' => ['fulltext_result' => 'ERROR'], 'where' => ['res_id = ?'], 'data' => [$args['resId']]]);
+                ResModel::update([
+                    'set'   => ['fulltext_result' => 'ERROR'],
+                    'where' => ['res_id = ?'],
+                    'data'  => [$args['resId']]
+                ]);
             } else {
-                AttachmentModel::update(['set' => ['fulltext_result' => 'ERROR'], 'where' => ['res_id = ?'], 'data' => [$args['resId']]]);
+                AttachmentModel::update([
+                    'set'   => ['fulltext_result' => 'ERROR'],
+                    'where' => ['res_id = ?'],
+                    'data'  => [$args['resId']]
+                ]);
             }
             LogsController::add([
                 'isTech'    => true,
@@ -118,7 +154,12 @@ class FullTextScript
         return $isIndexed;
     }
 
-    public static function reindex(array $args)
+    /**
+     * @param array $args
+     * @return void
+     * @throws Exception
+     */
+    public static function reindex(array $args): void
     {
         DatabasePDO::reset();
         new DatabasePDO(['customId' => $args['customId']]);
@@ -131,17 +172,17 @@ class FullTextScript
         } else {
             if ($args['collId'] == 'letterbox_coll') {
                 $resIdsToReindex = ResModel::get([
-                    'select'    => ['res_id'],
-                    'where'     => ['status NOT IN (?)'],
-                    'data'      => [['DEL']],
-                    'orderBy'   => ['res_id ASC'],
+                    'select'  => ['res_id'],
+                    'where'   => ['status NOT IN (?)'],
+                    'data'    => [['DEL']],
+                    'orderBy' => ['res_id ASC'],
                 ]);
             } else {
                 $resIdsToReindex = AttachmentModel::get([
-                    'select'    => ['res_id'],
-                    'where'     => ['status NOT IN (?)'],
-                    'data'      => [['DEL','OBS','TMP']],
-                    'orderBy'   => ['res_id ASC'],
+                    'select'  => ['res_id'],
+                    'where'   => ['status NOT IN (?)'],
+                    'data'    => [['DEL', 'OBS', 'TMP']],
+                    'orderBy' => ['res_id ASC'],
                 ]);
             }
         }
@@ -151,7 +192,12 @@ class FullTextScript
         } else {
             foreach ($resIdsToReindex as $resId) {
                 echo "\nRe index for res_id : {$resId['res_id']} in progress...\n";
-                $result = FullTextScript::index(['customId' => $args['customId'], 'resId' => $resId['res_id'], 'collId' => $args['collId'], 'userId' => $args['userId']]);
+                $result = FullTextScript::index([
+                    'customId' => $args['customId'],
+                    'resId'    => $resId['res_id'],
+                    'collId'   => $args['collId'],
+                    'userId'   => $args['userId']
+                ]);
                 echo "Done !\n";
                 if (!empty($result['errors'])) {
                     echo "Full Text failed : {$result['errors']}\n";
