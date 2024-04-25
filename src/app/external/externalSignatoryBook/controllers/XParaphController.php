@@ -735,8 +735,10 @@ class XParaphController
             }
         }
 
-        $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['external_id', 'id', 'firstname', 'lastname']]
-        );
+        $user = UserModel::getById([
+            'id'     => $GLOBALS['id'],
+            'select' => ['external_id', 'id', 'firstname', 'lastname']
+        ]);
         if (empty($user)) {
             return $response->withStatus(400)->withJson(['errors' => 'User not found']);
         }
@@ -785,8 +787,10 @@ class XParaphController
             }
         }
 
-        $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['external_id', 'id', 'firstname', 'lastname']]
-        );
+        $user = UserModel::getById([
+            'id'     => $GLOBALS['id'],
+            'select' => ['external_id', 'id', 'firstname', 'lastname']
+        ]);
         if (empty($user)) {
             return $response->withStatus(400)->withJson(['errors' => 'User not found']);
         }

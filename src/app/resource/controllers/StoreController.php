@@ -55,8 +55,10 @@ class StoreController
             if (!empty($args['encodedFile'])) {
                 $fileContent = base64_decode(str_replace(['-', '_'], ['+', '/'], $args['encodedFile']));
 
-                if (empty($args['resId']) && in_array($args['format'], MergeController::OFFICE_EXTENSIONS) &&
-                    empty($args['integrations']['inMailing']) && $args['format'] != 'doc') {
+                if (
+                    empty($args['resId']) && in_array($args['format'], MergeController::OFFICE_EXTENSIONS) &&
+                    empty($args['integrations']['inMailing']) && $args['format'] != 'doc'
+                ) {
                     $tmpPath = CoreConfigModel::getTmpPath();
                     $uniqueId = CoreConfigModel::uniqueId();
                     $tmpFilename = "storeTmp_{$GLOBALS['id']}_{$uniqueId}.{$args['format']}";
@@ -125,8 +127,10 @@ class StoreController
             if (!empty($args['encodedFile'])) {
                 $fileContent = base64_decode(str_replace(['-', '_'], ['+', '/'], $args['encodedFile']));
 
-                if (empty($args['id']) && in_array($args['format'], MergeController::OFFICE_EXTENSIONS) &&
-                    $data['status'] != 'SEND_MASS' && $args['format'] != 'doc') {
+                if (
+                    empty($args['id']) && in_array($args['format'], MergeController::OFFICE_EXTENSIONS) &&
+                    $data['status'] != 'SEND_MASS' && $args['format'] != 'doc'
+                ) {
                     $tmpPath = CoreConfigModel::getTmpPath();
                     $uniqueId = CoreConfigModel::uniqueId();
                     $tmpFilename = "storeTmp_{$GLOBALS['id']}_{$uniqueId}.{$args['format']}";
@@ -217,12 +221,16 @@ class StoreController
                     $entity = UserModel::getPrimaryEntityById(['id' => $GLOBALS['id'], 'select' => ['entities.id']]);
                     $defaultValue = $entity['id'];
                 }
-                if (empty($field['enabled']) ||
-                    (!empty($field['mandatory']) && !isset($args[$field['identifier']]) && $defaultValue !== null)) {
+                if (
+                    empty($field['enabled']) ||
+                    (!empty($field['mandatory']) && !isset($args[$field['identifier']]) && $defaultValue !== null)
+                ) {
                     if (str_contains($field['identifier'], 'indexingCustomField_')) {
                         $idCustom = explode("_", $field['identifier']);
                         $idCustom = $idCustom[1];
-                        $args['customFields'][$idCustom] = (!empty($args['customFields'][$idCustom])) ? $args['customFields'][$idCustom] : $defaultValue;
+                        $args['customFields'][$idCustom] = (!empty($args['customFields'][$idCustom]))
+                            ? $args['customFields'][$idCustom]
+                            : $defaultValue;
                     } elseif ($field['identifier'] != 'initiator') {
                         $args[$field['identifier']] = $defaultValue;
                     }
@@ -647,9 +655,11 @@ class StoreController
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'config/extensions.xml']);
         if ($loadedXml) {
             foreach ($loadedXml->FORMAT as $value) {
-                if (strtolower((string)$value->name) == strtolower($args['extension']) &&
+                if (
+                    strtolower((string)$value->name) == strtolower($args['extension']) &&
                     (strtolower((string)$value->mime) == strtolower($args['type']) ||
-                        (empty((string)$value->mime) && empty($args['type'])))) {
+                        (empty((string)$value->mime) && empty($args['type'])))
+                ) {
                     return true;
                 }
             }

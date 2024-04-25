@@ -209,8 +209,10 @@ class IxbusController
                 $adrInfo = ConvertPdfController::getConvertedPdfById(
                     ['resId' => $value['res_id'], 'collId' => 'attachments_coll']
                 );
-                if (empty($adrInfo['docserver_id']) ||
-                    strtolower(pathinfo($adrInfo['filename'], PATHINFO_EXTENSION)) != 'pdf') {
+                if (
+                    empty($adrInfo['docserver_id']) ||
+                    strtolower(pathinfo($adrInfo['filename'], PATHINFO_EXTENSION)) != 'pdf'
+                ) {
                     return ['error' => 'Attachment ' . $value['res_id'] . ' is not converted in pdf'];
                 }
                 $docserverInfo = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id']]);
@@ -264,9 +266,10 @@ class IxbusController
             $attachmentsData = [
                 [
                     'filePath' => $mainDocumentFilePath,
-                    'fileName' => TextFormatModel::formatFilename(
-                            ['filename' => $mainResource['subject'], 'maxLength' => 250]
-                        ) . '.pdf'
+                    'fileName' => TextFormatModel::formatFilename([
+                            'filename'  => $mainResource['subject'],
+                            'maxLength' => 250
+                        ]) . '.pdf'
                 ]
             ];
         }
@@ -340,8 +343,10 @@ class IxbusController
                 }
             }
 
-            $transmittedFolder = IxBusController::transmitFolder(['config' => $aArgs['config'], 'folderId' => $folderId]
-            );
+            $transmittedFolder = IxBusController::transmitFolder([
+                'config'   => $aArgs['config'],
+                'folderId' => $folderId
+            ]);
             if (!empty($transmittedFolder['error'])) {
                 return ['error' => $transmittedFolder['error']];
             }
@@ -409,8 +414,10 @@ class IxbusController
                 }
             }
 
-            $transmittedFolder = IxBusController::transmitFolder(['config' => $aArgs['config'], 'folderId' => $folderId]
-            );
+            $transmittedFolder = IxBusController::transmitFolder([
+                'config' => $aArgs['config'],
+                'folderId' => $folderId
+            ]);
             if (!empty($transmittedFolder['error'])) {
                 return ['error' => $transmittedFolder['error']];
             }
@@ -540,7 +547,6 @@ class IxbusController
                 unset($aArgs['idsToRetrieve'][$version][$resId]);
                 continue;
             }
-
 
             if (in_array($folderData['data']['etat'], ['Refusé', 'Terminé'])) {
                 $aArgs['idsToRetrieve'][$version][$resId]['status'] = $folderData['data']['etat'] ==
