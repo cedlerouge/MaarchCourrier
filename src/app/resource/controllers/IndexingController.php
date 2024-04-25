@@ -1,24 +1,27 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Indexing Controller
-* @author dev@maarch.org
-*/
+ * @brief Indexing Controller
+ * @author dev@maarch.org
+ */
 
 namespace Resource\controllers;
 
 use Action\controllers\ActionController;
 use Action\controllers\ActionMethodController;
 use Action\models\ActionModel;
+use DateInterval;
+use DateTime;
 use Doctype\models\DoctypeModel;
 use Entity\models\EntityModel;
+use Exception;
 use Group\models\GroupModel;
 use Parameter\models\ParameterModel;
 use Priority\models\PriorityModel;
@@ -34,14 +37,14 @@ use User\models\UserGroupModel;
 class IndexingController
 {
     public const KEYWORDS = [
-        'ALL_ENTITIES'          => '@all_entities',
-        'ENTITIES_JUST_BELOW'   => '@immediate_children[@my_primary_entity]',
-        'ENTITIES_BELOW'        => '@subentities[@my_entities]',
-        'ALL_ENTITIES_BELOW'    => '@subentities[@my_primary_entity]',
-        'ENTITIES_JUST_UP'      => '@parent_entity[@my_primary_entity]',
-        'MY_ENTITIES'           => '@my_entities',
-        'MY_PRIMARY_ENTITY'     => '@my_primary_entity',
-        'SAME_LEVEL_ENTITIES'   => '@sisters_entities[@my_primary_entity]'
+        'ALL_ENTITIES'        => '@all_entities',
+        'ENTITIES_JUST_BELOW' => '@immediate_children[@my_primary_entity]',
+        'ENTITIES_BELOW'      => '@subentities[@my_entities]',
+        'ALL_ENTITIES_BELOW'  => '@subentities[@my_primary_entity]',
+        'ENTITIES_JUST_UP'    => '@parent_entity[@my_primary_entity]',
+        'MY_ENTITIES'         => '@my_entities',
+        'MY_PRIMARY_ENTITY'   => '@my_primary_entity',
+        'SAME_LEVEL_ENTITIES' => '@sisters_entities[@my_primary_entity]'
     ];
 
     public const HOLLIDAYS = [
@@ -55,7 +58,14 @@ class IndexingController
         '25-12'
     ];
 
-    public function setAction(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function setAction(Request $request, Response $response, array $args): Response
     {
         $body = $request->getParsedBody();
 
@@ -68,7 +78,11 @@ class IndexingController
             return $response->withStatus(400)->withJson(['errors' => 'Route groupId does not exist']);
         }
 
-        $isUserLinked = UserGroupModel::get(['select' => [1], 'where' => ['user_id = ?', 'group_id = ?'], 'data' => [$GLOBALS['id'], $args['groupId']]]);
+        $isUserLinked = UserGroupModel::get([
+            'select' => [1],
+            'where'  => ['user_id = ?', 'group_id = ?'],
+            'data'   => [$GLOBALS['id'], $args['groupId']]
+        ]);
         if (empty($isUserLinked)) {
             return $response->withStatus(400)->withJson(['errors' => 'Group is not linked to this user']);
         }
@@ -100,7 +114,10 @@ class IndexingController
         $body['note'] = empty($body['note']) ? [] : $body['note'];
 
         if (!empty($actionRequiredFields)) {
-            $requiredFieldsValid = ActionController::checkRequiredFields(['resId' => $body['resource'], 'actionRequiredFields' => $actionRequiredFields]);
+            $requiredFieldsValid = ActionController::checkRequiredFields([
+                'resId'                => $body['resource'],
+                'actionRequiredFields' => $actionRequiredFields
+            ]);
             if (!empty($requiredFieldsValid['errors'])) {
                 return $response->withStatus(400)->withJson($requiredFieldsValid);
             }
@@ -108,7 +125,13 @@ class IndexingController
 
         $method = ActionMethodController::COMPONENTS_ACTIONS[$action['component']];
         if (!empty($method)) {
-            $methodResponse = ActionMethodController::$method(['resId' => $body['resource'], 'data' => $body['data'], 'note' => $body['note'], 'parameters' => $parameters, 'actionId' => $args['actionId']]);
+            $methodResponse = ActionMethodController::$method([
+                'resId'      => $body['resource'],
+                'data'       => $body['data'],
+                'note'       => $body['note'],
+                'parameters' => $parameters,
+                'actionId'   => $args['actionId']
+            ]);
         }
         if (!empty($methodResponse['errors'])) {
             $return = ['errors' => $methodResponse['errors'][0]];
@@ -119,7 +142,13 @@ class IndexingController
         }
 
         $historic = empty($methodResponse['history']) ? '' : $methodResponse['history'];
-        ActionMethodController::terminateAction(['id' => $args['actionId'], 'resources' => [$body['resource']], 'note' => $body['note'], 'history' => $historic, 'finishInScript' => !empty($methodResponse['postscript'])]);
+        ActionMethodController::terminateAction([
+            'id'             => $args['actionId'],
+            'resources'      => [$body['resource']],
+            'note'           => $body['note'],
+            'history'        => $historic,
+            'finishInScript' => !empty($methodResponse['postscript'])
+        ]);
 
         if (!empty($methodResponse['postscript'])) {
             $base64Args = base64_encode(json_encode($methodResponse['args']));
@@ -134,13 +163,23 @@ class IndexingController
         return $response->withStatus(204);
     }
 
-    public function getIndexingActions(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getIndexingActions(Request $request, Response $response, array $args): Response
     {
         if (!Validator::notEmpty()->intVal()->validate($args['groupId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Param groupId must be an integer val']);
         }
 
-        $indexingParameters = IndexingController::getIndexingParameters(['userId' => $GLOBALS['id'], 'groupId' => $args['groupId']]);
+        $indexingParameters = IndexingController::getIndexingParameters([
+            'userId'  => $GLOBALS['id'],
+            'groupId' => $args['groupId']
+        ]);
         if (!empty($indexingParameters['errors'])) {
             return $response->withStatus(403)->withJson($indexingParameters);
         }
@@ -149,13 +188,18 @@ class IndexingController
         $categories = ResModel::getCategories();
 
         foreach ($indexingParameters['indexingParameters']['actions'] as $value) {
-            $action         = ActionModel::getById(['id' => $value, 'select' => ['id', 'label_action', 'component', 'id_status', 'parameters']]);
+            $action = ActionModel::getById([
+                'id'     => $value,
+                'select' => ['id', 'label_action', 'component', 'id_status', 'parameters']
+            ]);
             $categoriesList = ActionModel::getCategoriesById(['id' => $value]);
 
-            $action['label']   = $action['label_action'];
+            $action['label'] = $action['label_action'];
 
             $action['parameters'] = json_decode($action['parameters'], true);
-            $action['enabled'] = !empty($action['parameters']['successStatus']) ? $action['parameters']['successStatus'] != '_NOSTATUS_' : !empty($action['id_status']) && $action['id_status'] != '_NOSTATUS_';
+            $action['enabled'] = !empty($action['parameters']['successStatus'])
+                ? $action['parameters']['successStatus'] != '_NOSTATUS_'
+                : !empty($action['id_status']) && $action['id_status'] != '_NOSTATUS_';
             unset($action['parameters']);
 
             if (!empty($categoriesList)) {
@@ -170,13 +214,24 @@ class IndexingController
         return $response->withJson(['actions' => $actions]);
     }
 
-    public function getIndexingEntities(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function getIndexingEntities(Request $request, Response $response, array $aArgs): Response
     {
         if (!Validator::notEmpty()->intVal()->validate($aArgs['groupId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Param groupId must be an integer val']);
         }
 
-        $indexingParameters = IndexingController::getIndexingParameters(['userId' => $GLOBALS['id'], 'groupId' => $aArgs['groupId']]);
+        $indexingParameters = IndexingController::getIndexingParameters([
+            'userId'  => $GLOBALS['id'],
+            'groupId' => $aArgs['groupId']
+        ]);
+
         if (!empty($indexingParameters['errors'])) {
             return $response->withStatus(403)->withJson($indexingParameters);
         }
@@ -192,8 +247,15 @@ class IndexingController
         }
 
         if (!empty($clauseToProcess)) {
-            $preparedClause = PreparedClauseController::getPreparedClause(['clause' => $clauseToProcess, 'userId' => $GLOBALS['id']]);
-            $preparedEntities = EntityModel::get(['select' => ['id'], 'where' => ['enabled = ?', "entity_id in {$preparedClause}"], 'data' => ['Y']]);
+            $preparedClause = PreparedClauseController::getPreparedClause([
+                'clause' => $clauseToProcess,
+                'userId' => $GLOBALS['id']
+            ]);
+            $preparedEntities = EntityModel::get([
+                'select' => ['id'],
+                'where'  => ['enabled = ?', "entity_id in {$preparedClause}"],
+                'data'   => ['Y']
+            ]);
             $allowedEntities = array_column($preparedEntities, 'id');
         }
 
@@ -201,10 +263,10 @@ class IndexingController
         $allowedEntities = array_unique($allowedEntities);
 
         $entitiesTmp = EntityModel::get([
-            'select'   => ['id', 'entity_label', 'entity_id'],
-            'where'    => ['enabled = ?', '(parent_entity_id is null OR parent_entity_id = \'\')'],
-            'data'     => ['Y'],
-            'orderBy'  => ['entity_label']
+            'select'  => ['id', 'entity_label', 'entity_id'],
+            'where'   => ['enabled = ?', '(parent_entity_id is null OR parent_entity_id = \'\')'],
+            'data'    => ['Y'],
+            'orderBy' => ['entity_label']
         ]);
         if (!empty($entitiesTmp)) {
             foreach ($entitiesTmp as $key => $value) {
@@ -240,7 +302,12 @@ class IndexingController
         return $response->withJson(['entities' => $entities]);
     }
 
-    public function getProcessLimitDate(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getProcessLimitDate(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
@@ -261,7 +328,11 @@ class IndexingController
             $delay = $priority['delays'];
         }
         if (!empty($queryParams['today'])) {
-            $queryParams['today'] = filter_var($queryParams['today'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            $queryParams['today'] = filter_var(
+                $queryParams['today'],
+                FILTER_VALIDATE_BOOLEAN,
+                FILTER_NULL_ON_FAILURE
+            );
             if (!Validator::boolType()->validate($queryParams['today'])) {
                 return $response->withStatus(400)->withJson(['errors' => 'today is not a boolean']);
             }
@@ -281,17 +352,34 @@ class IndexingController
         return $response->withJson(['processLimitDate' => $processLimitDate]);
     }
 
-    public function getFileInformations(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function getFileInformations(Request $request, Response $response): Response
     {
         $allowedFiles = StoreController::getAllowedFiles();
 
         $maximumSize = CoreController::getMaximumAllowedSizeFromPhpIni();
         $maximumSizeLabel = round($maximumSize / 1048576, 3) . ' Mo';
 
-        return $response->withJson(['informations' => ['maximumSize' => $maximumSize, 'maximumSizeLabel' => $maximumSizeLabel, 'allowedFiles' => $allowedFiles]]);
+        return $response->withJson([
+            'informations' => [
+                'maximumSize'      => $maximumSize,
+                'maximumSizeLabel' => $maximumSizeLabel,
+                'allowedFiles'     => $allowedFiles
+            ]
+        ]);
     }
 
-    public function getPriorityWithProcessLimitDate(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getPriorityWithProcessLimitDate(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
@@ -299,16 +387,23 @@ class IndexingController
             return $response->withStatus(400)->withJson(['errors' => 'Query params processLimitDate is empty']);
         }
 
-        $priorityId = IndexingController::calculatePriorityWithProcessLimitDate(['processLimitDate' => $queryParams['processLimitDate']]);
+        $priorityId = IndexingController::calculatePriorityWithProcessLimitDate([
+            'processLimitDate' => $queryParams['processLimitDate']
+        ]);
 
         return $response->withJson(['priority' => $priorityId]);
     }
 
-    public static function calculatePriorityWithProcessLimitDate(array $args)
+    /**
+     * @param array $args
+     * @return mixed
+     * @throws Exception
+     */
+    public static function calculatePriorityWithProcessLimitDate(array $args): mixed
     {
-        $processLimitDate = new \DateTime($args['processLimitDate']);
+        $processLimitDate = new DateTime($args['processLimitDate']);
         $processLimitDate->setTime(23, 59, 59);
-        $now = new \DateTime();
+        $now = new DateTime();
 
         $diff = $processLimitDate->diff($now);
         $diff = $diff->format("%a");
@@ -322,9 +417,12 @@ class IndexingController
 
             $diffUpdated = 0;
             for ($i = 1; $i <= $diff; $i++) {
-                $tmpDate = new \DateTime();
-                $tmpDate->add(new \DateInterval("P{$i}D"));
-                if (in_array($tmpDate->format('N'), [6, 7]) || in_array($tmpDate->format('d-m'), $hollidays)) {
+                $tmpDate = new DateTime();
+                $tmpDate->add(new DateInterval("P{$i}D"));
+                if (
+                    in_array($tmpDate->format('N'), [6, 7]) ||
+                    in_array($tmpDate->format('d-m'), $hollidays)
+                ) {
                     continue;
                 }
                 ++$diffUpdated;
@@ -333,7 +431,13 @@ class IndexingController
             $diff = $diffUpdated;
         }
 
-        $priority = PriorityModel::get(['select' => ['id'], 'where' => ['delays >= ?'], 'data' => [$diff], 'orderBy' => ['delays'], 'limit' => 1]);
+        $priority = PriorityModel::get([
+            'select'  => ['id'],
+            'where'   => ['delays >= ?'],
+            'data'    => [$diff],
+            'orderBy' => ['delays'],
+            'limit'   => 1
+        ]);
         if (empty($priority)) {
             $priority = PriorityModel::get(['select' => ['id'], 'orderBy' => ['delays DESC'], 'limit' => 1]);
         }
@@ -341,7 +445,12 @@ class IndexingController
         return $priority[0]['id'];
     }
 
-    public static function getEntitiesChildrenLevel($aArgs = [])
+    /**
+     * @param array $aArgs
+     * @return array|array[]
+     * @throws Exception
+     */
+    public static function getEntitiesChildrenLevel(array $aArgs = []): array
     {
         $entities = EntityModel::getEntityChildrenSubLevel([
             'entitiesId' => $aArgs['entitiesId'],
@@ -353,16 +462,28 @@ class IndexingController
                 $entities[$key]['level'] = $aArgs['level'];
             }
             $entitiesId = array_column($entities, 'entity_id');
-            $entitiesChild = IndexingController::getEntitiesChildrenLevel(['entitiesId' => $entitiesId, 'level' => $aArgs['level'] + 1]);
+            $entitiesChild = IndexingController::getEntitiesChildrenLevel([
+                'entitiesId' => $entitiesId,
+                'level'      => $aArgs['level'] + 1
+            ]);
             $entities = array_merge([$entities], $entitiesChild);
         }
 
         return $entities;
     }
 
-    public static function getIndexingParameters($aArgs = [])
+    /**
+     * @param array $aArgs
+     * @return array|string[]
+     * @throws Exception
+     */
+    public static function getIndexingParameters(array $aArgs = []): array
     {
-        $group = GroupModel::getGroupWithUsersGroups(['userId' => $aArgs['userId'], 'groupId' => $aArgs['groupId'], 'select' => ['can_index', 'indexation_parameters']]);
+        $group = GroupModel::getGroupWithUsersGroups([
+            'userId'  => $aArgs['userId'],
+            'groupId' => $aArgs['groupId'],
+            'select'  => ['can_index', 'indexation_parameters']
+        ]);
         if (empty($group)) {
             return ['errors' => 'This user is not in this group'];
         }
@@ -375,12 +496,17 @@ class IndexingController
         return ['indexingParameters' => $group[0]['indexation_parameters']];
     }
 
-    public static function calculateProcessDate(array $args)
+    /**
+     * @param array $args
+     * @return string
+     * @throws Exception
+     */
+    public static function calculateProcessDate(array $args): string
     {
         ValidatorModel::notEmpty($args, ['date']);
         ValidatorModel::intVal($args, ['delay']);
 
-        $date = new \DateTime($args['date']);
+        $date = new DateTime($args['date']);
 
         $workingDays = ParameterModel::getById(['id' => 'workingDays', 'select' => ['param_value_int']]);
 
@@ -393,13 +519,16 @@ class IndexingController
 
             $processDelayUpdated = 1;
             for ($i = 1; $i <= $args['delay']; $i++) {
-                $tmpDate = new \DateTime($args['date']);
+                $tmpDate = new DateTime($args['date']);
                 if (!empty($args['sub'])) {
-                    $tmpDate->sub(new \DateInterval("P{$i}D"));
+                    $tmpDate->sub(new DateInterval("P{$i}D"));
                 } else {
-                    $tmpDate->add(new \DateInterval("P{$i}D"));
+                    $tmpDate->add(new DateInterval("P{$i}D"));
                 }
-                if (in_array($tmpDate->format('N'), [6, 7]) || in_array($tmpDate->format('d-m'), $hollidays)) {
+                if (
+                    in_array($tmpDate->format('N'), [6, 7]) ||
+                    in_array($tmpDate->format('d-m'), $hollidays)
+                ) {
                     ++$args['delay'];
                 }
                 if ($i + 1 <= $args['delay']) {
@@ -408,16 +537,16 @@ class IndexingController
             }
 
             if (!empty($args['sub'])) {
-                $date->sub(new \DateInterval("P{$processDelayUpdated}D"));
+                $date->sub(new DateInterval("P{$processDelayUpdated}D"));
             } else {
-                $date->add(new \DateInterval("P{$processDelayUpdated}D"));
+                $date->add(new DateInterval("P{$processDelayUpdated}D"));
             }
         } else {
             // Calendar or empty delay
             if (!empty($args['sub'])) {
-                $date->sub(new \DateInterval("P{$args['delay']}D"));
+                $date->sub(new DateInterval("P{$args['delay']}D"));
             } else {
-                $date->add(new \DateInterval("P{$args['delay']}D"));
+                $date->add(new DateInterval("P{$args['delay']}D"));
             }
         }
 

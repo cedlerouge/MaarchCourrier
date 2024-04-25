@@ -205,7 +205,6 @@ class SummarySheetController
         $units = $args['units'];
         $fieldsIdentifier = $args['fieldsIdentifier'];
 
-
         $pdf->AddPage();
         $dimensions = $pdf->getPageDimensions();
         $widthNoMargins = $dimensions['w'] - $dimensions['rm'] - $dimensions['lm'];
@@ -877,7 +876,8 @@ class SummarySheetController
                                         $customFieldsValues[$customFieldsId][$key] = $rawValues[$value];
                                     }
                                 } else {
-                                    $customFieldsValues[$customFieldsId] = $rawValues[$customFieldsValues[$customFieldsId]];
+                                    $customFieldsValues[$customFieldsId] =
+                                        $rawValues[$customFieldsValues[$customFieldsId]];
                                 }
                             }
                             if (is_array($customFieldsValues[$customFieldsId] ?? null)) {

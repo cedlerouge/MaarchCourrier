@@ -381,9 +381,9 @@ class ExportController
                         $csvContent[] = empty($copies[$resource['res_id']]) ? '' : $copies[$resource['res_id']];
                     } elseif ($value['value'] == 'getDetailLink') {
                         $csvContent[] = trim(
-                            UrlController::getCoreUrl(),
-                            '/'
-                        ) . '/dist/index.html#/resources/' .
+                                UrlController::getCoreUrl(),
+                                '/'
+                            ) . '/dist/index.html#/resources/' .
                             $resource['res_id'];
                     } elseif ($value['value'] == 'getParentFolder') {
                         $csvContent[] = ExportController::getParentFolderLabel(['res_id' => $resource['res_id']]);
@@ -427,14 +427,14 @@ class ExportController
                     } elseif ($value['value'] == 'getSignatories') {
                         $signatories = ExportController::getSignatories(['chunkedResIds' => $aArgs['chunkedResIds']]);
                         $csvContent[] = empty(
-                            $signatories[$resource['res_id']]
+                        $signatories[$resource['res_id']]
                         ) ? '' : $signatories[$resource['res_id']];
                     } elseif ($value['value'] == 'getSignatureDates') {
                         $signatureDates = ExportController::getSignatureDates(
                             ['chunkedResIds' => $aArgs['chunkedResIds']]
                         );
                         $csvContent[] = empty(
-                            $signatureDates[$resource['res_id']]
+                        $signatureDates[$resource['res_id']]
                         ) ? '' : $signatureDates[$resource['res_id']];
                     } elseif ($value['value'] == 'getDepartment') {
                         $department = ExportController::getDepartment(['chunkedResIds' => $aArgs['chunkedResIds']]);
@@ -444,7 +444,7 @@ class ExportController
                             ['chunkedResIds' => $aArgs['chunkedResIds']]
                         );
                         $csvContent[] = empty(
-                            $acknowledgementSendDate[$resource['res_id']]
+                        $acknowledgementSendDate[$resource['res_id']]
                         ) ? '' : $acknowledgementSendDate[$resource['res_id']];
                     } elseif (str_contains($value['value'], 'custom_')) {
                         $csvContent[] = ExportController::getCustomFieldValue(
@@ -630,7 +630,7 @@ class ExportController
                             ['chunkedResIds' => $aArgs['chunkedResIds']]
                         );
                         $content[] = empty(
-                            $signatureDates[$resource['res_id']]
+                        $signatureDates[$resource['res_id']]
                         ) ? '' : $signatureDates[$resource['res_id']];
                     } elseif ($value['value'] == 'getDepartment') {
                         $department = ExportController::getDepartment(['chunkedResIds' => $aArgs['chunkedResIds']]);
@@ -640,7 +640,7 @@ class ExportController
                             ['chunkedResIds' => $aArgs['chunkedResIds']]
                         );
                         $content[] = empty(
-                            $acknowledgementSendDate[$resource['res_id']]
+                        $acknowledgementSendDate[$resource['res_id']]
                         ) ? '' : $acknowledgementSendDate[$resource['res_id']];
                     } elseif (str_contains($value['value'], 'custom_')) {
                         $content[] = ExportController::getCustomFieldValue(
@@ -915,7 +915,10 @@ class ExportController
 
             foreach ($listInstances as $listInstance) {
                 if (!empty($listInstance['item_id'])) {
-                    $user = UserModel::getById(['id' => $listInstance['item_id'], 'select' => ['firstname', 'lastname']]);
+                    $user = UserModel::getById([
+                        'id'     => $listInstance['item_id'],
+                        'select' => ['firstname', 'lastname']
+                    ]);
                     if (!empty($aSignatories[$listInstance['res_id']])) {
                         $aSignatories[$listInstance['res_id']] .= "\n";
                     } else {
@@ -1098,7 +1101,8 @@ class ExportController
             $customValues = ContactController::getContactCustomField(['contacts' => $customValues]);
             $customValues = implode("\n", $customValues);
         } elseif ($field['type'] == 'banAutocomplete') {
-            $line = "{$customValues[0]['addressNumber']} {$customValues[0]['addressStreet']} {$customValues[0]['addressTown']} ({$customValues[0]['addressPostcode']})";
+            $line = "{$customValues[0]['addressNumber']} {$customValues[0]['addressStreet']}" .
+                " {$customValues[0]['addressTown']} ({$customValues[0]['addressPostcode']})";
             if (!empty($customValues[0]['sector'])) {
                 $line .= " - {$customValues[0]['sector']}";
             }

@@ -1,21 +1,22 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Watermark Controller
-* @author dev@maarch.org
-*/
+ * @brief Watermark Controller
+ * @author dev@maarch.org
+ */
 
 namespace Resource\controllers;
 
 use Attachment\models\AttachmentModel;
 use Configuration\models\ConfigurationModel;
+use Exception;
 use Resource\models\ResModel;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use SrcCore\controllers\LogsController;
@@ -24,13 +25,21 @@ use SrcCore\models\ValidatorModel;
 
 class WatermarkController
 {
-    public static function watermarkResource(array $args)
+    /**
+     * @param array $args
+     * @return string|null
+     * @throws Exception
+     */
+    public static function watermarkResource(array $args): ?string
     {
         ValidatorModel::notEmpty($args, ['resId', 'fileContent']);
         ValidatorModel::intVal($args, ['resId']);
         ValidatorModel::stringType($args, ['fileContent']);
 
-        $configuration = ConfigurationModel::getByPrivilege(['select' => ['value'], 'privilege' => 'admin_parameters_watermark']);
+        $configuration = ConfigurationModel::getByPrivilege([
+            'select'    => ['value'],
+            'privilege' => 'admin_parameters_watermark'
+        ]);
         if (empty($configuration)) {
             return null;
         }
@@ -56,7 +65,8 @@ class WatermarkController
             $text = str_replace("[{$value}]", $tmp, $text);
         }
 
-        $preProcessWatermarkFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" . rand() . "_preprocess_watermark.pdf";
+        $preProcessWatermarkFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" .
+            rand() . "_preprocess_watermark.pdf";
         file_put_contents($preProcessWatermarkFile, $args['fileContent']);
 
         $flattenedFile = null;
@@ -99,7 +109,7 @@ class WatermarkController
                 $pdf->Text($watermark['posX'], $watermark['posY'], $text);
             }
             $fileContent = $pdf->Output('', 'S');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             LogsController::add([
                 'isTech'    => true,
                 'moduleId'  => 'resources',
@@ -126,7 +136,7 @@ class WatermarkController
     /**
      * @codeCoverageIgnore
      */
-    public static function watermarkAttachment(array $args)
+    public static function watermarkAttachment(array $args): ?string
     {
         ValidatorModel::notEmpty($args, ['attachmentId', 'path']);
         ValidatorModel::intVal($args, ['attachmentId']);
@@ -214,7 +224,7 @@ class WatermarkController
                 $pdf->Text($position[0], $position[1], $text);
             }
             $fileContent = $pdf->Output('', 'S');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             LogsController::add([
                 'isTech'    => true,
                 'moduleId'  => 'attachments',

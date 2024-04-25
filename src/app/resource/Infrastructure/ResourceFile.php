@@ -64,8 +64,11 @@ class ResourceFile implements ResourceFileInterface
             return '';
         }
 
-        $docserverType  = DocserverTypeModel::getById(['id' => $docserverTypeId, 'select' => ['fingerprint_mode']]);
-        $fingerprint    = StoreController::getFingerPrint(['filePath' => $filePath, 'mode' => $docserverType['fingerprint_mode']]);
+        $docserverType = DocserverTypeModel::getById(['id' => $docserverTypeId, 'select' => ['fingerprint_mode']]);
+        $fingerprint = StoreController::getFingerPrint([
+            'filePath' => $filePath,
+            'mode'     => $docserverType['fingerprint_mode']
+        ]);
         return $fingerprint;
     }
 
@@ -106,7 +109,13 @@ class ResourceFile implements ResourceFileInterface
 
     public function convertToThumbnail(int $resId, int $version, string $fileContent, string $extension): array
     {
-        $check = ConvertThumbnailController::convert(['type' => 'resource', 'resId' => $resId, 'fileContent' => $fileContent, 'extension' => $extension, 'version' => $version]);
+        $check = ConvertThumbnailController::convert([
+            'type'        => 'resource',
+            'resId'       => $resId,
+            'fileContent' => $fileContent,
+            'extension'   => $extension,
+            'version'     => $version
+        ]);
         if ($check['errors']) {
             return $check;
         }
@@ -134,7 +143,7 @@ class ResourceFile implements ResourceFileInterface
     /**
      * Retrieves the number of pages in a pdf file
      *
-     * @param   string  $filePath   Resource path.
+     * @param string $filePath Resource path.
      *
      * @return  int     Number of pages.
      */
