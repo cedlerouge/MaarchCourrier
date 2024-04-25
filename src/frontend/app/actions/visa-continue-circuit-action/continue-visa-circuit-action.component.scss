@@ -250,3 +250,17 @@
     letter-spacing: 1px;
     font-size: 14px;
 }
+
+.workflow-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.show-hide-workflow {
+    letter-spacing: 1px;
+    font-weight: bold;
+    color: var(--maarch-color-primary-light);
+    cursor: pointer;
+}
