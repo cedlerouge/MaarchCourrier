@@ -25,14 +25,15 @@
                         <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
                             {{'lang.elements' | translate}}</b> ?
                     </div>
-                    <button mat-icon-button
+                    <button *ngIf="data.resIds.length === 1"
+                        mat-icon-button
                         [attr.aria-hidden]="true"
                         [title]="'lang.toggleVisaWorkflow' | translate"
                         (click)="snav2.toggle()">
                         <mat-icon class="fa fa-stream material-icons"></mat-icon>
                     </button>
                 </div>
-                <app-maarch-message *ngIf="!loading && atLeastOneDocumentHasNoStamp()"
+                <app-maarch-message *ngIf="!loading && data.resIds.length === 1 && atLeastOneDocumentHasNoStamp()"
                     [mode]="'warning'">
                     <div class="at-least-no-one-stamp" role="alert"
                         [innerHTML]="'lang.atLeastOneDocumentHasNoStamp' | translate">
@@ -88,7 +89,7 @@
                         </li>
                     </ul>
                 </app-maarch-message>
-                <div *ngIf="data.resource.docsToSign?.length > 0 && !loading" class="div-container">
+                <div *ngIf="!loading && data.resIds.length === 1 && data.resource.docsToSign?.length > 0" class="div-container">
                     <div class="docs-title"
                         [title]="data.resource.docsToSign.length + ' ' + ('lang.docsToSign' | translate)"
                         [attr.aria-label]="data.resource.docsToSign.length + ' ' + ('lang.docsToSign' | translate)">
