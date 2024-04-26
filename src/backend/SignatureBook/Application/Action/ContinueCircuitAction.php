@@ -14,7 +14,6 @@
 
 namespace MaarchCourrier\SignatureBook\Application\Action;
 
-use Exception;
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
