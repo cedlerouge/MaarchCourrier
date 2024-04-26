@@ -20,6 +20,7 @@ use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterfa
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\DataToBeSentToTheParapheurAreEmptyProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\NoDocumentsInSignatureBookForThisId;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureNotAppliedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 
@@ -38,11 +39,10 @@ class ContinueCircuitAction
      */
     public function execute(int $resId, array $data, array $note): bool
     {
-        $data['documentId'] = intval($data['documentId'] ?? 0);
-
         if (!$this->isNewSignatureBookEnabled) {
             return true;
         }
+
         $signatureBook = $this->signatureServiceConfigLoader->getSignatureServiceConfig();
         if ($signatureBook === null) {
             throw new SignatureBookNoConfigFoundProblem();
@@ -53,6 +53,7 @@ class ContinueCircuitAction
         }
 
         $requiredData = [
+            'resId',
             'documentId',
             'hashSignature',
             'certificate',
@@ -60,40 +61,52 @@ class ContinueCircuitAction
             'signatureFieldName',
             'cookieSession'
         ];
-        $missingData = [];
-
-        $resourceToSign = [
-            'resId' => $resId
-        ];
 
 
-        foreach ($requiredData as $requiredDatum) {
-            if (empty($data[$requiredDatum])) {
-                $missingData[] = $requiredDatum;
+        if (isset($data[$resId])) {
+            foreach ($data[$resId] as $document) {
+                $missingData = [];
+
+                foreach ($requiredData as $requiredDatum) {
+                    if (empty($document[$requiredDatum])) {
+                        $missingData[] = $requiredDatum;
+                    }
+                }
+
+                if (!empty($missingData)) {
+                    throw new DataToBeSentToTheParapheurAreEmptyProblem($missingData);
+                }
+
+                $document['documentId'] = intval($document['documentId'] ?? 0);
+
+                $resourceToSign = [
+                    'resId' => $document['resId']
+                ];
+
+                if (isset($document['isAttachment']) && $document['isAttachment']) {
+                    $resourceToSign['resIdMaster'] = $resId;
+                }
+
+                $applySuccess = $this->signatureService
+                    ->setConfig($signatureBook)
+                    ->applySignature(
+                        $document['documentId'],
+                        $document['hashSignature'],
+                        $document['signatures'] ?? [],
+                        $document['certificate'],
+                        $document['signatureContentLength'],
+                        $document['signatureFieldName'],
+                        $document['tmpUniqueId'] ?? null,
+                        $accessToken,
+                        $document['cookieSession'],
+                        $resourceToSign
+                    );
+                if (is_array($applySuccess)) {
+                    throw new SignatureNotAppliedProblem($applySuccess['errors']);
+                }
             }
-        }
-
-        if (!empty($missingData)) {
-            throw new DataToBeSentToTheParapheurAreEmptyProblem($missingData);
-        }
-
-
-        $applySuccess = $this->signatureService
-            ->setConfig($signatureBook)
-            ->applySignature(
-                $data['documentId'],
-                $data['hashSignature'],
-                $data['signatures'] ?? [],
-                $data['certificate'],
-                $data['signatureContentLength'],
-                $data['signatureFieldName'],
-                $data['tmpUniqueId'] ?? null,
-                $accessToken,
-                $data['cookieSession'],
-                $resourceToSign
-            );
-        if (is_array($applySuccess)) {
-            throw new SignatureNotAppliedProblem($applySuccess['errors']);
+        } else {
+            throw new NoDocumentsInSignatureBookForThisId();
         }
 
         return true;
