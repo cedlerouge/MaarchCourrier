@@ -36,15 +36,22 @@
                 <app-maarch-message *ngIf="!loading && data.resIds.length === 1 && atLeastOneDocumentHasNoStamp()"
                     [mode]="'warning'">
                     <div class="at-least-no-one-stamp" role="alert"
+                        [title]="'lang.atLeastOneDocumentHasNoStamp' | translate"
+                        [attr.aria-label]="'lang.atLeastOneDocumentHasNoStamp' | translate"
                         [innerHTML]="'lang.atLeastOneDocumentHasNoStamp' | translate">
                     </div>
                     <div *ngIf="!digitalCertificate" class="at-least-no-one-stamp" role="alert"
+                        [title]="'lang.seenAsVisaUser' | translate"
+                        [attr.aria-label]="'lang.seenAsVisaUser' | translate"
                         [innerHTML]="'lang.seenAsVisaUser' | translate"></div>
                 </app-maarch-message>
                 <app-maarch-message *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== ''"
                     [mode]="'info'">
                     <div class="workflow-info">
-                        <div [innerHTML]="('lang.sendToDocTo' | translate) + ' <b>' + appVisaWorkflow.getNextVisaUser().labelToDisplay + '</b>'"></div>
+                        <div
+                            [title]="('lang.sendToDocTo' | translate) + ' <b>' + appVisaWorkflow.getNextVisaUser().labelToDisplay + '</b>'"
+                            [attr.aria-label]="('lang.sendToDocTo' | translate) + ' <b>' + appVisaWorkflow.getNextVisaUser().labelToDisplay + '</b>'"
+                            [innerHTML]="('lang.sendToDocTo' | translate) + ' <b>' + appVisaWorkflow.getNextVisaUser().labelToDisplay + '</b>'"></div>
                         <div class="show-hide-workflow"
                             [title]="(!snav2.opened ? 'lang.showVisaWorkflow' : 'lang.hideVisaWorkflow') | translate"
                             (click)="snav2.toggle()">
@@ -55,9 +62,13 @@
                 <app-maarch-message *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() === '' && !noResourceToProcess"
                     [mode]="'info'">
                     <div class="workflow-info">
-                        <div [innerHTML]="'lang.endWorkflow' | translate"></div>
+                        <div
+                            [title]="'lang.endWorkflow' | translate"
+                            [attr.aria-label]="'lang.endWorkflow' | translate"
+                            [innerHTML]="'lang.endWorkflow' | translate"></div>
                         <div class="show-hide-workflow"
                             [title]="(!snav2.opened ? 'lang.showVisaWorkflow' : 'lang.hideVisaWorkflow') | translate"
+                            [attr.aria-label]="(!snav2.opened ? 'lang.showVisaWorkflow' : 'lang.hideVisaWorkflow') | translate"
                             (click)="snav2.toggle()">
                             <span>{{(!snav2.opened ? 'lang.showVisaWorkflow' : 'lang.hideVisaWorkflow') | translate}}</span>
                         </div>
@@ -65,11 +76,13 @@
                 </app-maarch-message>
                 <app-maarch-message *ngIf="resourcesErrors.length > 0"
                     [mode]="'danger'">
-                    <p>
+                    <p [title]="'lang.canNotMakeAction' | translate">
                         {{'lang.canNotMakeAction' | translate}} :
                     </p>
                     <ul>
-                        <li *ngFor="let ressource of resourcesErrors">
+                        <li *ngFor="let ressource of resourcesErrors"
+                            [title]="ressource.alt_identifier + ' : ' + ('lang.' + ressource.reason | translate)"
+                            [attr.aria-label]="ressource.alt_identifier + ' : ' + ('lang.' + ressource.reason | translate)">
                             <b>{{ressource.alt_identifier}}</b> : {{'lang.' + ressource.reason | translate}}
                         </li>
                     </ul>
@@ -77,16 +90,22 @@
                 <app-maarch-message *ngIf="resourcesWarnings.length > 0"
                     [mode]="'info'">
                     <ul style="margin: 0;padding-bottom: 0px;">
-                        <li *ngFor="let ressource of resourcesWarnings">
+                        <li *ngFor="let ressource of resourcesWarnings"
+                            [title]="ressource.alt_identifier + ' : ' + ('lang.' + ressource.reason | translate)"
+                            [attr.aria-label]="ressource.alt_identifier + ' : ' + ('lang.' + ressource.reason | translate)">
                             <b>{{ressource.alt_identifier}}</b> : {{'lang.' + ressource.reason | translate}}
                         </li>
                     </ul>
                 </app-maarch-message>
                 <app-maarch-message *ngIf="resourcesMailing.length > 0 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== '' && appVisaWorkflow.getNextVisaUser().requested_signature"
                     [mode]="'info'">
-                    <p>{{'lang.mailingActionInformations' | translate}}</p>
+                    <p
+                        [title]="'lang.mailingActionInformations' | translate"
+                        [attr.aria-label]="'lang.mailingActionInformations' | translate">
+                            {{'lang.mailingActionInformations' | translate}}
+                        </p>
                     <ul>
-                        <li *ngFor="let ressource of resourcesMailing">
+                        <li *ngFor="let ressource of resourcesMailing" [title]="ressource.alt_identifier" [attr.aria-label]="ressource.alt_identifier">
                             <b>{{ressource.alt_identifier}}</b>
                         </li>
                     </ul>
