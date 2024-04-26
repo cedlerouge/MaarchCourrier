@@ -5,6 +5,34 @@ export interface Action {
     component: string;
 }
 
+export interface DataToSendActionInterface {
+    note: {
+        content: string,
+        entities: any[]
+    },
+    resources: any[]
+    data: any;
+}
+
+export interface ContinueVisaCircuitDataToSendInterface extends DataToSendActionInterface {
+    data : ContinueVisaCircuitObjectInterface;
+}
+
+export interface ContinueVisaCircuitObjectInterface {
+    [key:number]: {
+        resId: number;
+        isAttachment: boolean;
+        documentId: number;
+        cookieSession: string;
+        hashSignature: string;
+        signatureContentLength: number;
+        signatureFieldName: string;
+        signature: any[];
+        certificate: string;
+        tmpUniqueId: string;
+    }[]
+}
+
 export interface MessageActionInterface {
     id : string;
     data?: any;

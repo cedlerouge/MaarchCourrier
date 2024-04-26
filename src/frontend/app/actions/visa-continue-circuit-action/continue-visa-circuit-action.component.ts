@@ -15,29 +15,7 @@ import { PluginManagerService } from '@service/plugin-manager.service';
 import { AuthService } from '@service/auth.service';
 import { HeaderService } from '@service/header.service';
 import { SignatureBookInterface } from '@appRoot/signatureBook/signature-book.service';
-import { Router } from '@angular/router';
-
-export interface ContinueVisaCircuitDataToSendInterface {
-    data: {
-        [key:string]: {
-            resId: number;
-            isAttachment: boolean;
-            documentId: number;
-            cookieSession: string;
-            hashSignature: string;
-            signatureContentLength: number;
-            signatureFieldName: string;
-            signature: any[];
-            certificate: string;
-            tmpUniqueId: string;
-        }[]
-    },
-    note: {
-        content: string,
-        entities: any[]
-    },
-    resources: any[]
-}
+import { ContinueVisaCircuitDataToSendInterface, ContinueVisaCircuitObjectInterface } from "@models/actions.model";
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
@@ -68,8 +46,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
         public functions: FunctionsService,
         private pluginManagerService: PluginManagerService,
         private authService: AuthService,
-        private headerService: HeaderService,
-        private router: Router
+        private headerService: HeaderService
     ) {}
 
     async ngOnInit(): Promise<void> {
@@ -167,13 +144,14 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
         this.loading = false;
     }
 
-    executeAction(realResSelected: number[], objToSend: ContinueVisaCircuitDataToSendInterface = null) {
+    executeAction(realResSelected: number[], objToSend: ContinueVisaCircuitObjectInterface = null) {
+        const dataToSend : ContinueVisaCircuitDataToSendInterface = {
+            resources : realResSelected,
+            note: this.noteEditor.getNote(),
+            data: objToSend
+        };
         this.http
-            .put(this.data.processActionRoute, {
-                resources: realResSelected,
-                note: this.noteEditor.getNote(),
-                data: objToSend,
-            })
+            .put(this.data.processActionRoute, dataToSend)
             .pipe(
                 tap((data: any) => {
                     if (!data) {
@@ -192,8 +170,8 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
             .subscribe();
     }
 
-    formatDataToSend(data: any[]): ContinueVisaCircuitDataToSendInterface {
-        const formatedData: ContinueVisaCircuitDataToSendInterface = {} as ContinueVisaCircuitDataToSendInterface;
+    formatDataToSend(data: any[]): ContinueVisaCircuitObjectInterface {
+        const formatedData: ContinueVisaCircuitObjectInterface = {} as ContinueVisaCircuitObjectInterface;
 
         for (const item of data) {
             if (!formatedData[item.resId]) {
@@ -206,10 +184,5 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
 
     isValidAction() {
         return !this.noResourceToProcess;
-    }
-
-    backToBasket(): void {
-        const path = '/basketList/users/' + this.data.userId + '/groups/' + this.data.groupId + '/baskets/' + this.data.basketId;
-        this.router.navigate([path]);
     }
 }
