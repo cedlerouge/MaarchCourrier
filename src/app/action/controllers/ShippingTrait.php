@@ -50,11 +50,21 @@ trait ShippingTrait
 
         $resource = ResModel::getById(
             [
-                'select' => ['destination', 'integrations', 'subject as title', 'external_id', 'res_id', 'version'],
+                'select' => [
+                    'destination',
+                    'integrations',
+                    'subject as title',
+                    'external_id',
+                    'res_id',
+                    'version',
+                    'alt_identifier as chrono'
+                ],
                 'resId'  => $args['resId']
             ]
         );
         $integrations = json_decode($resource['integrations'], true);
+
+        $subject = $resource['title'];
 
         $recipientEntity = EntityModel::getByEntityId(['select' => ['id'], 'entityId' => $resource['destination']]);
 
@@ -73,7 +83,15 @@ trait ShippingTrait
         $shippingTemplate['fee'] = json_decode($shippingTemplate['fee'], true);
 
         $attachments = AttachmentModel::get([
-            'select' => ['res_id', 'title', 'recipient_id', 'recipient_type', 'external_id', 'status'],
+            'select' => [
+                'res_id',
+                'title',
+                'recipient_id',
+                'recipient_type',
+                'external_id',
+                'status',
+                'identifier as chrono'
+            ],
             'where'  => ['res_id_master = ?', 'in_send_attach = ?', 'status not in (?)', 'attachment_type not in (?)'],
             'data'   => [$args['resId'], true, ['OBS', 'DEL', 'TMP', 'FRZ'], ['signed_response']]
         ]);
@@ -175,7 +193,6 @@ trait ShippingTrait
         $urlAuth = 'auth/realms/services/protocol/openid-connect/token';
         if (str_contains($shippingTemplate['options']['sendMode'], 'digital_registered_mail')) {
             $urlComplement = 'registered_mail/v4';
-            //$urlComplement = 'registered_mail';
             $isRegisteredMail = true;
             $addressEntity = UserModel::getPrimaryEntityById([
                 'id'     => $GLOBALS['id'],
@@ -235,7 +252,7 @@ trait ShippingTrait
 
         $errors = [];
         foreach ($resourcesList as $key => $resource) {
-            $sendingName = CoreConfigModel::uniqueId();
+            $sendingName = mb_strimwidth($resource['chrono'] . ' - ' . $subject, 0, 255);
             $resId = $resource['res_id'];
 
             if ($isRegisteredMail) {
