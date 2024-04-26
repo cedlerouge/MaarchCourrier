@@ -24,7 +24,7 @@ export class SignatureBookActionsComponent implements OnInit {
     @Input() docsToSign: Attachment[] = [];
 
     @Output() openPanelSignatures = new EventEmitter<true>();
-    @Output() docsToSignedUpdated = new EventEmitter<Attachment[]>();
+    @Output() docsToSignUpdated = new EventEmitter<Attachment[]>();
 
     subscription: Subscription;
 
@@ -58,6 +58,7 @@ export class SignatureBookActionsComponent implements OnInit {
                         this.documentDatas = { ...this.documentDatas, ...res.data };
                         if (this.docsToSign.find((resource: Attachment) => resource.resId === res.data.resId) !== undefined && !this.functions.empty(res.data.signatures)) {
                             this.docsToSign.find((resource: Attachment) => resource.resId === res.data.resId).stamps = res.data.signatures;
+                            this.docsToSignUpdated.emit(this.docsToSign);
                         }
                         if (res.data.encodedDocument) {
                             this.functions.blobToBase64(res.data.encodedDocument).then((value: any) => {
