@@ -9,6 +9,9 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
 {
     public int $id = 12;
     public bool $createUserCalled = false;
+    public bool $updateUserCalled = false;
+
+    public bool $userExists = false;
 
     /**
      * @param UserInterface $user
@@ -22,10 +25,14 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
     }
 
     /**
+     * @param UserInterface $user
+     * @param string $accessToken
      * @return array|int
      */
-    public function updateUser(): array|int
+    public function updateUser(UserInterface $user, string $accessToken): array|int
     {
+        $this->updateUserCalled = true;
+        $user->setFirstname('firstname2');
         return $this->id;
     }
 
@@ -38,11 +45,15 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
     }
 
     /**
-     * @param int $id
+     * @param array $ids
+     * @param string $accessToken
      * @return bool
      */
-    public function doesUserExists(int $id): bool
+    public function doesUserExists(array $ids, string $accessToken): bool
     {
-        return false;
+        if (!$this->userExists) {
+            return false;
+        }
+        return true;
     }
 }

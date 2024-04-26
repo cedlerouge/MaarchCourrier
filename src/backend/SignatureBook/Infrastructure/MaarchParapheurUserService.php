@@ -22,13 +22,29 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
     }
 
     /**
-     * @param int $id
-     * @return bool
+     * @param array $ids
+     * @param string $accessToken
+     * @return true
+     * @throws Exception
      */
-    public function doesUserExists(int $id): bool
+    public function doesUserExists(array $ids, string $accessToken): bool
     {
-        // TODO: Implement doesUserExists() method.
-        return true;
+        $response = CurlModel::exec([
+            'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users/',
+            'bearerAuth' => ['token' => $accessToken],
+            'method'     => 'GET',
+            'headers'    => [
+                'content-type: application/json',
+                'Accept: application/json',
+            ],
+            'body'        => json_encode($ids),
+        ]);
+
+        if ($response['code'] != 200) {
+            return true;
+        } else {
+            return $response['errors'];
+        }
     }
 
     /**
@@ -39,14 +55,22 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
      */
     public function createUser(UserInterface $user, string $accessToken): array|int
     {
+        $userDetails = [
+            'firstName' => $user->getFirstname(),
+            'lastName' => $user->getLastname(),
+            'email' => $user->getMail(),
+            'login' => $user->getLogin()
+        ];
+
         $response = CurlModel::exec([
             'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users/',
             'bearerAuth' => ['token' => $accessToken],
+            'method'     => 'POST',
             'headers'    => [
                 'content-type: application/json',
                 'Accept: application/json',
             ],
-            'body'        => json_encode($body),
+            'body'        => json_encode($userDetails),
         ]);
 
         if ($response['code'] == 200) {
@@ -60,12 +84,37 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
     }
 
     /**
+     * @param UserInterface $user
+     * @param string $accessToken
      * @return array|int
+     * @throws Exception
      */
-    public function updateUser(): array|int
+    public function updateUser(UserInterface $user, string $accessToken): array|int
     {
-        // TODO: Implement updateUser() method.
-        return [];
+        $userDetails = [
+            'firstName' => $user->getFirstname(),
+            'lastName' => $user->getLastname(),
+            'email' => $user->getMail(),
+            'login' => $user->getLogin()
+        ];
+
+        $response = CurlModel::exec([
+            'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users/' . $user->getLogin(),
+            'bearerAuth' => ['token' => $accessToken],
+            'method'     => 'PUT',
+            'headers'    => [
+                'content-type: application/json',
+                'Accept: application/json',
+            ],
+            'body'        => json_encode($userDetails),
+        ]);
+
+        if ($response['code'] == 200) {
+            $this->userId = $response['id'];
+        } else {
+            return $response['errors'] ?? ['errors' => 'Failed to update the user in Maarch Parapheur.'];
+        }
+        return $this->userId;
     }
 
     /**

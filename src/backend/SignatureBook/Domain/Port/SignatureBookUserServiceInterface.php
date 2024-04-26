@@ -14,9 +14,11 @@ interface SignatureBookUserServiceInterface
     public function createUser(UserInterface $user, string $accessToken): array|int;
 
     /**
+     * @param UserInterface $user
+     * @param string $accessToken
      * @return array|int
      */
-    public function updateUser(): array|int;
+    public function updateUser(UserInterface $user, string $accessToken): array|int;
 
     /**
      * @return array|int
@@ -24,8 +26,9 @@ interface SignatureBookUserServiceInterface
     public function deleteUser(): array|int;
 
     /**
-     * @param int $id
+     * @param array $ids
+     * @param string $accessToken
      * @return bool
      */
-    public function doesUserExists(int $id): bool;
+    public function doesUserExists(array $ids, string $accessToken): bool;
 }

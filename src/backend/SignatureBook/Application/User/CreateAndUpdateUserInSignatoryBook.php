@@ -15,9 +15,19 @@ class CreateAndUpdateUserInSignatoryBook
     }
     public function createAndUpdateUser(UserInterface $user): UserInterface
     {
+        $accessToken = $this->currentUser->getCurrentUserToken();
         if (!empty($user->getExternalId())) {
+            if ($this->signatureBookUserService->doesUserExists($user->getExternalId(), $accessToken)) {
+                $updatedUser = $this->signatureBookUserService->updateUser($user, $accessToken);
+            } else {
+                $existingIds = $user->getExternalId();
+                $maarchParapheurUserId = $this->signatureBookUserService->createUser($user, $accessToken);
+                if (!in_array($maarchParapheurUserId, $existingIds)) {
+                    $existingIds[] = $maarchParapheurUserId;
+                }
+                $user->setExternalId($existingIds);
+            }
         } else {
-            $accessToken = $this->currentUser->getCurrentUserToken();
             $maarchParapheurUserId[] = $this->signatureBookUserService->createUser($user, $accessToken);
             $user->setExternalId($maarchParapheurUserId);
         }
