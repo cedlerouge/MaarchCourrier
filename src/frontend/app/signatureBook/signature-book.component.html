@@ -59,6 +59,7 @@
                                     [stamp]="defaultStamp"
                                     [docsToSign]="docsToSign"
                                     (openPanelSignatures)="drawerStamps.toggle()"
+                                    (docsToSignUpdated)="docsToSignUpdated($event)"
                                 ></app-maarch-sb-actions>
                             </mat-drawer-content>
                         </mat-drawer-container>
