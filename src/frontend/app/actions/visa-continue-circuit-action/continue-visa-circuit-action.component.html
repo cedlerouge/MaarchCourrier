@@ -38,6 +38,8 @@
                     <div class="at-least-no-one-stamp" role="alert"
                         [innerHTML]="'lang.atLeastOneDocumentHasNoStamp' | translate">
                     </div>
+                    <div *ngIf="!digitalCertificate" class="at-least-no-one-stamp" role="alert"
+                        [innerHTML]="'lang.seenAsVisaUser' | translate"></div>
                 </app-maarch-message>
                 <app-maarch-message *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== ''"
                     [mode]="'info'">
