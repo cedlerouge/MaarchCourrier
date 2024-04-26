@@ -118,8 +118,13 @@ export class SignatureBookComponent implements OnDestroy {
 
     async initDocuments(): Promise<void>{
         await this.signatureBookService.initDocuments(this.userId, this.groupId, this.basketId, this.resId).then((data: any) => {
-            this.docsToSign = data.resourcesToSign;
-            this.attachments = data.resourcesAttached;
+            if (!this.functions.empty(data)) {
+                this.docsToSign = data.resourcesToSign;
+                this.attachments = data.resourcesAttached;
+            } else {
+                this.docsToSign = [];
+                this.attachments = [];
+            }
             this.loadingAttachments = false;
             this.loadingDocsToSign = false;
             this.loading = false;

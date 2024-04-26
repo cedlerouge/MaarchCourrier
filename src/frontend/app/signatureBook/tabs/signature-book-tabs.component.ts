@@ -18,15 +18,13 @@ export class MaarchSbTabsComponent implements OnInit {
     constructor(public functionsService: FunctionsService, private actionsService: ActionsService) {}
 
     ngOnInit(): void {
-        if (this.documents.length > 0) {
-            this.actionsService.emitActionWithData({
-                id: 'attachmentSelected',
-                data: {
-                    attachment: this.documents[0],
-                    position: this.position,
-                },
-            });
-        }
+        this.actionsService.emitActionWithData({
+            id: 'attachmentSelected',
+            data: {
+                attachment: this.documents[0],
+                position: this.position,
+            },
+        });
     }
 
     selectDocument(i: number, attachment: AttachmentInterface): void {

@@ -70,4 +70,14 @@ export class PluginManagerService {
             exposedModule: `./${plugin.id}`,
         });
     }
+
+    async destroyPlugin(remoteComponent: ViewContainerRef): Promise<boolean> {
+        try {
+            remoteComponent.clear();
+            return true;
+        } catch (error) {
+            console.error(`Destroy plugin failed : ${error}`);
+            return false;
+        }
+    }
 }

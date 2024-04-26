@@ -60,10 +60,12 @@ export class MaarchSbContentComponent implements OnDestroy {
                         this.documentData = res.data.attachment;
                         this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
                         setTimeout(async () => {
-                            if (this.position === 'right') {
+                            if (this.position === 'right' && !this.functionsService.empty(this.documentData)) {
                                 await this.loadContent();
                                 this.initPlugin();
                             } else {
+                                this.pluginInstance = null;
+                                this.pluginManagerService.destroyPlugin(this.myPlugin);
                                 this.loading = false;
                             }
                         }, 1000);
@@ -80,6 +82,7 @@ export class MaarchSbContentComponent implements OnDestroy {
     ngOnDestroy() {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
+        this.subscriptionDocument?.unsubscribe();
     }
 
     async initPlugin() {
