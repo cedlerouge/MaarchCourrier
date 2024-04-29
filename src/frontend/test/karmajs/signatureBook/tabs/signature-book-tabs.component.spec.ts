@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
 import { Observable, of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -123,10 +123,11 @@ describe('SignatureBookStampsComponent', () => {
 });
 
 function getAttachments(): Attachment[] {
-    const attachments: Attachment[] = [
-        {
+    return [
+        new Attachment({
             resId: 100,
             resIdMaster: null,
+            resourceUrn: '',
             canConvert: true,
             canDelete: false,
             canUpdate: false,
@@ -135,8 +136,8 @@ function getAttachments(): Attachment[] {
             type: 'main_document',
             typeLabel: 'Document principal',
             signedResId: null,
-        },
-        {
+        }),
+        new Attachment({
             resId: 120,
             resIdMaster: 100,
             canConvert: true,
@@ -147,8 +148,8 @@ function getAttachments(): Attachment[] {
             type: 'simple_attachment',
             typeLabel: 'Pièce jointe',
             signedResId: 1,
-        },
-        {
+        }),
+        new Attachment({
             resId: 121,
             resIdMaster: 100,
             canConvert: true,
@@ -159,8 +160,6 @@ function getAttachments(): Attachment[] {
             typeLabel: 'Pièce joibte capturée',
             type: 'incoming_mail_attachment',
             signedResId: 2,
-        },
+        }),
     ];
-
-    return attachments;
 }
