@@ -132,10 +132,11 @@ export class ExternalVisaWorkflowComponent implements OnInit {
                     ...this.externalSignatoryBookManagerService.setExternalInformation(item),
                     item_entity: item.descriptionToDisplay,
                     requested_signature: item.item_mode !== 'visa',
-                    currentRole: item.item_mode
+                    currentRole: item.item_mode,
+                    role: item?.role ?? item.item_mode
                 }));
                 users.forEach((item: UserWorkflow) => {
-                    if (this.visaWorkflow.items.find((user: UserWorkflow) => user?.item_id === item?.item_id) === undefined) {
+                    if (this.visaWorkflow.items.find((user: UserWorkflow) => user?.item_id === item?.item_id && user.id === item.id) === undefined) {
                         this.visaWorkflow.items.push(item);
                     }
                 })

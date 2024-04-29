@@ -221,7 +221,7 @@ class ListTemplateController
             }
             $entities = EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']]);
             foreach ($entities as $entity) {
-                if ($entity['serialId'] == $body['entityId'] && $entity['allowed'] == false) {
+                if ($entity['serialId'] == $body['entityId'] && !$entity['allowed']) {
                     return $response->withStatus(403)->withJson(['errors' => 'Entity out of perimeter']);
                 }
             }
@@ -306,7 +306,7 @@ class ListTemplateController
         if (!empty($listTemplate['entity_id'])) {
             $entities = EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']]);
             foreach ($entities as $entity) {
-                if ($entity['serialId'] == $listTemplate['entity_id'] && $entity['allowed'] == false) {
+                if ($entity['serialId'] == $listTemplate['entity_id'] && !$entity['allowed']) {
                     return $response->withStatus(403)->withJson(['errors' => 'Entity out of perimeter']);
                 }
             }
@@ -389,7 +389,7 @@ class ListTemplateController
         if (!empty($listTemplate['entityId'])) {
             $entities = EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']]);
             foreach ($entities as $entity) {
-                if ($entity['serialId'] == $listTemplate['entityId'] && $entity['allowed'] == false) {
+                if ($entity['serialId'] == $listTemplate['entityId'] && !$entity['allowed']) {
                     return $response->withStatus(403)->withJson(['errors' => 'Entity out of perimeter']);
                 }
             }
@@ -432,11 +432,10 @@ class ListTemplateController
         $where = ['entity_id = ?'];
         $data = [$args['entityId']];
         if (!empty($queryParams['type'])) {
+            $where[] = 'type = ?';
             if (in_array($queryParams['type'], ['visaCircuit', 'opinionCircuit'])) {
-                $where[] = 'type = ?';
                 $data[] = $queryParams['type'];
             } else {
-                $where[] = 'type = ?';
                 $data[] = 'diffusionList';
             }
         }
@@ -519,6 +518,7 @@ class ListTemplateController
                     } elseif (!empty($queryParams['fastParapheur']) && !empty($externalId['fastParapheur'])) {
                         $listTemplateItems[$itemKey] = [
                             'externalId'           => ['fastParapheur' => $externalId['fastParapheur']],
+                            'id'                   => $listTemplateItems[$itemKey]['id'],
                             'descriptionToDisplay' => $externalId['fastParapheur'],
                             'labelToDisplay'       => trim($user['firstname'] . ' ' . $user['lastname']),
                             'availableRoles'       => ['visa', 'sign'],
