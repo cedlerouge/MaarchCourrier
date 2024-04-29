@@ -405,7 +405,11 @@ class UserController
             'firstName' => $user->getFirstname(),
             'lastName' => $user->getLastname(),
             'mail' => $user->getMail(),
-            'login' => $user->getLogin()
+            'login' => $user->getLogin(),
+            'initials' => $body['initials'],
+            'phone' => $body['phone'],
+            'mode' => $body['mode'],
+            'preferences' => $body['preferences']
         ];
 
         $id = UserModel::create(['user' => $user]);
