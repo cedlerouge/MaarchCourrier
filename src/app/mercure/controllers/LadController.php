@@ -267,6 +267,7 @@ class LadController
             $tabErrors = [];
 
             $tagsErrToCheck = [
+                'not found',
                 'error',
                 'permission denied',
                 'sh: 1'
