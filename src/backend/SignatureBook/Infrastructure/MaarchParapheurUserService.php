@@ -94,7 +94,7 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
         $userDetails = [
             'firstName' => $user->getFirstname(),
             'lastName' => $user->getLastname(),
-            'email' => $user->getMail(),
+            'mail' => $user->getMail(),
             'login' => $user->getLogin()
         ];
 

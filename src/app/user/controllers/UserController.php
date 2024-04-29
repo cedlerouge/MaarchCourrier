@@ -401,6 +401,13 @@ class UserController
         $createUserFactory = new CreateAndUpdateUserInSignatoryBookFactory();
         $createUser = $createUserFactory->create();
         $user = $createUser->createAndUpdateUser($user);
+        $user = [
+            'firstName' => $user->getFirstname(),
+            'lastName' => $user->getLastname(),
+            'mail' => $user->getMail(),
+            'login' => $user->getLogin()
+        ];
+
         $id = UserModel::create(['user' => $user]);
 
         $userQuota = ParameterModel::getById(['id' => 'user_quota', 'select' => ['param_value_int']]);
@@ -517,6 +524,7 @@ class UserController
         }
 
         $userQuota = ParameterModel::getById(['id' => 'user_quota', 'select' => ['param_value_int']]);
+
 
         UserModel::update([
             'set'   => $set,

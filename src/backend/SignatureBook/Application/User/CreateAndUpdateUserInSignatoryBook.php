@@ -18,7 +18,7 @@ class CreateAndUpdateUserInSignatoryBook
         $accessToken = $this->currentUser->getCurrentUserToken();
         if (!empty($user->getExternalId())) {
             if ($this->signatureBookUserService->doesUserExists($user->getExternalId(), $accessToken)) {
-                $updatedUser = $this->signatureBookUserService->updateUser($user, $accessToken);
+                $this->signatureBookUserService->updateUser($user, $accessToken);
             } else {
                 $existingIds = $user->getExternalId();
                 $maarchParapheurUserId = $this->signatureBookUserService->createUser($user, $accessToken);
