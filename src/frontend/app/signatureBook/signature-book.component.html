@@ -46,25 +46,24 @@
                                 <app-maarch-sb-stamps [userId]="userId" (stampsLoaded)="defaultStamp = $event"></app-maarch-sb-stamps>
                             </mat-drawer>
                             <mat-drawer-content style="display: flex; flex-direction: column">
-                                <app-maarch-sb-content
+                                <app-maarch-sb-content *ngIf="!loadingDocsToSign"
                                     position="right"
                                     style="display: contents;"
                                 ></app-maarch-sb-content>
                                 <app-maarch-sb-actions
-                                    *ngIf="docsToSign.length > 0"
+                                    *ngIf="!loadingDocsToSign && signatureBookService.docsToSign.length > 0"
                                     [resId]="resId"
                                     [userId]="userId"
                                     [basketId]="basketId"
                                     [groupId]="groupId"
                                     [stamp]="defaultStamp"
-                                    [docsToSign]="docsToSign"
                                     (openPanelSignatures)="drawerStamps.toggle()"
                                 ></app-maarch-sb-actions>
                             </mat-drawer-content>
                         </mat-drawer-container>
                     </div>
                     <ng-scrollbar class="book-mark" autoHeightDisabled="false">
-                        <app-maarch-sb-tabs *ngIf="!loadingDocsToSign" position="right" [documents]="docsToSign"></app-maarch-sb-tabs>
+                        <app-maarch-sb-tabs *ngIf="!loadingDocsToSign" position="right" [documents]="signatureBookService.docsToSign"></app-maarch-sb-tabs>
                     </ng-scrollbar>
                 </div>
             </div>

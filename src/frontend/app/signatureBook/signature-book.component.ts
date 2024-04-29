@@ -36,7 +36,6 @@ export class SignatureBookComponent implements OnDestroy {
     userId: number;
 
     attachments: Attachment[] = [];
-    docsToSign: Attachment[] = [];
 
     subscription: Subscription;
     defaultStamp: StampInterface;
@@ -65,7 +64,6 @@ export class SignatureBookComponent implements OnDestroy {
             filter((data: MessageActionInterface) => data.id === 'selectedStamp'),
             tap(() => {
                 this.stampsPanel.close();
-                this.notify.success('apposition de la griffe!');
             })
         ).subscribe();
 
@@ -111,14 +109,14 @@ export class SignatureBookComponent implements OnDestroy {
         this.loadingAttachments = true;
 
         this.attachments = [];
-        this.docsToSign = [];
+        this.signatureBookService.docsToSign = [];
 
         this.subscription?.unsubscribe();
     }
 
     async initDocuments(): Promise<void>{
         await this.signatureBookService.initDocuments(this.userId, this.groupId, this.basketId, this.resId).then((data: any) => {
-            this.docsToSign = data.resourcesToSign;
+            this.signatureBookService.docsToSign = data.resourcesToSign;
             this.attachments = data.resourcesAttached;
             this.loadingAttachments = false;
             this.loadingDocsToSign = false;

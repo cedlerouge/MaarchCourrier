@@ -2,13 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionsService } from '@appRoot/actions/actions.service';
-import { Action, MessageActionInterface } from '@models/actions.model';
+import { Action } from '@models/actions.model';
 import { StampInterface } from '@models/signature-book.model';
 import { FunctionsService } from '@service/functions.service';
 import { NotificationService } from '@service/notification/notification.service';
 import { Subscription, catchError, of, tap } from 'rxjs';
 import { SignatureBookConfig, SignatureBookService } from '../signature-book.service';
-import { Attachment } from "@models/attachment.model";
 
 @Component({
     selector: 'app-maarch-sb-actions',
@@ -21,18 +20,10 @@ export class SignatureBookActionsComponent implements OnInit {
     @Input() groupId: number;
     @Input() userId: number;
     @Input() stamp: StampInterface;
-    @Input() docsToSign: Attachment[];
 
     @Output() openPanelSignatures = new EventEmitter<true>();
 
     subscription: Subscription;
-
-    documentDatas: { resId: number; title: string; encodedDocument: Blob; signatures: any[]; } = {
-        resId: null,
-        title: '',
-        encodedDocument: null,
-        signatures: []
-    };
 
     loading: boolean = true;
 
@@ -49,23 +40,18 @@ export class SignatureBookActionsComponent implements OnInit {
         private router: Router,
         private signatureBookService: SignatureBookService
     ) {
-        this.subscription = this.actionsService
+        /*this.subscription = this.actionsService
             .catchActionWithData()
             .pipe(
                 tap((res: MessageActionInterface) => {
                     if (res.id === 'documentToCreate') {
-                        const indexDocument = res.data.index;
-                        delete res.data.index;
-                        this.docsToSign[indexDocument] = new Attachment({ ...this.docsToSign[indexDocument], ...res.data });
-                        if (res.data.encodedDocument) {
-                            this.functions.blobToBase64(res.data.encodedDocument).then((value: any) => {
-                                this.documentDatas.encodedDocument = value.split(',')[1];
-                            });
-                        }
+                        const indexDocument = res.data.resIndex;
+                        delete res.data.resIndex;
+                        this.signatureBookService.docsToSign[indexDocument].stamps = res.data.stamps;
                     }
                 })
             )
-            .subscribe();
+            .subscribe();*/
     }
 
     async ngOnInit(): Promise<void> {
@@ -108,7 +94,7 @@ export class SignatureBookActionsComponent implements OnInit {
                         this.groupId,
                         this.basketId,
                         [this.resId],
-                        { ...data, docsToSign: this.docsToSign, signatureBookConfig: this.signatureBookConfig },
+                        { ...data, docsToSign: this.signatureBookService.docsToSign, signatureBookConfig: this.signatureBookConfig },
                         false
                     );
                 }),

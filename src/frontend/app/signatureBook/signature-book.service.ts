@@ -12,6 +12,7 @@ import { mapAttachment } from "./signature-book.utils";
 export class SignatureBookService {
 
     resourcesListIds: number[] = [];
+    docsToSign: Attachment[] = [];
     basketLabel: string = '';
 
     constructor(

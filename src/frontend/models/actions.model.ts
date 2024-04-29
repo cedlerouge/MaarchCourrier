@@ -33,6 +33,16 @@ export interface ContinueVisaCircuitObjectInterface {
     }[]
 }
 
+export interface ContinueVisaCircuitStampsInterface {
+    encodedImage: string;
+    width: string;
+    height: string;
+    positionX: string;
+    positionY: string;
+    type: string;
+    page: number;
+}
+
 export interface MessageActionInterface {
     id : string;
     data?: any;
