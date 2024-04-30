@@ -10,16 +10,13 @@ use SrcCore\models\CurlModel;
 
 class MaarchParapheurUserService implements SignatureBookUserServiceInterface
 {
-    public int $userId;
+    public int $id;
     private SignatureServiceConfig $config;
 
-
-    /**
-     * @throws Exception
-     */
-    public function __construct()
+    public function setConfig(SignatureServiceConfig $config): SignatureBookUserServiceInterface
     {
-        $this->config = (new SignatureServiceJsonConfigLoader())->getSignatureServiceConfig();
+        $this->config = $config;
+        return $this;
     }
 
     /**
@@ -31,7 +28,7 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
     public function doesUserExists(array $ids, string $accessToken): bool
     {
         $response = CurlModel::exec([
-            'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users/',
+            'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users',
             'bearerAuth' => ['token' => $accessToken],
             'method'     => 'GET',
             'headers'    => [
@@ -64,7 +61,7 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
         ];
 
         $response = CurlModel::exec([
-            'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users/',
+            'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users',
             'bearerAuth' => ['token' => $accessToken],
             'method'     => 'POST',
             'headers'    => [
@@ -75,13 +72,11 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
         ]);
 
         if ($response['code'] == 200) {
-            $this->userId = $response['id'];
+            return $response['response']['id'];
         } else {
             return $response['errors'] ??
                 ['errors' => 'Error occurred during the creation of the Maarch Parapheur user.'];
         }
-
-        return $this->userId;
     }
 
     /**
@@ -100,7 +95,7 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
         ];
 
         $response = CurlModel::exec([
-            'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users/' . $user->getLogin(),
+            'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users' . $user->getLogin(),
             'bearerAuth' => ['token' => $accessToken],
             'method'     => 'PUT',
             'headers'    => [
@@ -111,11 +106,10 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
         ]);
 
         if ($response['code'] == 200) {
-            $this->userId = $response['id'];
+            return $response['response']['id'];
         } else {
             return $response['errors'] ?? ['errors' => 'Failed to update the user in Maarch Parapheur.'];
         }
-        return $this->userId;
     }
 
     /**

@@ -408,7 +408,7 @@ class UserController
                 'lastname' => $user->getLastname(),
                 'mail' => $user->getMail(),
                 'userId' => $user->getLogin(),
-                'externalId' => $user->getExternalId(),
+                'external_id' => $user->getExternalId(),
                 'initials' => $body['initials'] ?? '',
                 'phone' => $body['phone'] ??  '',
                 'mode' => $body['mode'],

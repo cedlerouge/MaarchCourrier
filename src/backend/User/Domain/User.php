@@ -19,7 +19,7 @@ use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 class User implements UserInterface
 {
     private int $id;
-    private array $externalId;
+    private array $externalId = [];
     private string $firstname;
     private string $lastname;
     private string $mail;

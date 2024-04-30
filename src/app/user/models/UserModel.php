@@ -84,7 +84,10 @@ class UserModel
     {
         ValidatorModel::notEmpty($args, ['user']);
         ValidatorModel::notEmpty($args['user'], ['userId', 'firstname', 'lastname']);
-        ValidatorModel::stringType($args['user'], ['userId', 'firstname', 'lastname', 'mail', 'initials', 'phone', 'preferences', 'password']);
+        ValidatorModel::stringType(
+            $args['user'],
+            ['userId', 'firstname', 'lastname', 'mail', 'initials', 'phone', 'preferences', 'password', 'external_id']
+        );
 
         if (empty($args['user']['password'])) {
             $args['user']['password'] = AuthenticationModel::generatePassword();
@@ -105,7 +108,8 @@ class UserModel
                 'preferences'                => $args['user']['preferences'],
                 'mode'                       => empty($args['user']['mode']) ? 'standard' : $args['user']['mode'],
                 'password'                   => AuthenticationModel::getPasswordHash($args['user']['password']),
-                'password_modification_date' => 'CURRENT_TIMESTAMP'
+                'password_modification_date' => 'CURRENT_TIMESTAMP',
+                'external_id'                => json_encode($args['user']['external_id'])
             ]
         ]);
 

@@ -31,4 +31,10 @@ interface SignatureBookUserServiceInterface
      * @return bool
      */
     public function doesUserExists(array $ids, string $accessToken): bool;
+
+    /**
+     * @param SignatureServiceConfig $config
+     * @return SignatureBookUserServiceInterface
+     */
+    public function setConfig(SignatureServiceConfig $config): SignatureBookUserServiceInterface;
 }

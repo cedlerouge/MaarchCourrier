@@ -4,6 +4,8 @@ namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock\User;
 
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookUserServiceInterface;
+use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
+use MaarchCourrier\SignatureBook\Infrastructure\MaarchParapheurUserService;
 
 class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterface
 {
@@ -12,6 +14,8 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
     public bool $updateUserCalled = false;
 
     public bool $userExists = false;
+
+    public SignatureServiceConfig $config;
 
     /**
      * @param UserInterface $user
@@ -55,5 +59,11 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
             return false;
         }
         return true;
+    }
+
+    public function setConfig(SignatureServiceConfig $config): SignatureBookUserServiceInterface
+    {
+        $this->config = $config;
+        return $this;
     }
 }
