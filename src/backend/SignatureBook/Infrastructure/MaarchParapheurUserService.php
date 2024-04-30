@@ -6,19 +6,20 @@ use Exception;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookUserServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
-use MaarchCourrier\User\Domain\User;
 use SrcCore\models\CurlModel;
 
 class MaarchParapheurUserService implements SignatureBookUserServiceInterface
 {
-    private SignatureServiceConfig $config;
     public int $userId;
+    private SignatureServiceConfig $config;
 
 
-    public function setConfig(SignatureServiceConfig $config): MaarchParapheurUserService
+    /**
+     * @throws Exception
+     */
+    public function __construct()
     {
-        $this->config = $config;
-        return $this;
+        $this->config = (new SignatureServiceJsonConfigLoader())->getSignatureServiceConfig();
     }
 
     /**

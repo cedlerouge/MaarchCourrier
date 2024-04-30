@@ -29,6 +29,22 @@ class UserControllerTest extends CourrierTestCase
     private static $redirectId = null;
     private static $signatureId = null;
 
+    protected function setUp(): void
+    {
+        $config = file_get_contents('config/config.json');
+        $config = json_decode($config, true);
+        $config['config']['newInternalParaph'] = false;
+        file_put_contents('config/config.json', json_encode($config, JSON_PRETTY_PRINT));
+    }
+
+    protected function tearDown(): void
+    {
+        $config = file_get_contents('config/config.json');
+        $config = json_decode($config, true);
+        $config['config']['newInternalParaph'] = true;
+        file_put_contents('config/config.json', json_encode($config, JSON_PRETTY_PRINT));
+    }
+
     public function testGet()
     {
         $userController = new UserController();
@@ -1974,7 +1990,7 @@ class UserControllerTest extends CourrierTestCase
         $fullRequest = $this->createRequestWithBody('POST', $body);
         $response     = $userController->setRedirectedBaskets($fullRequest, new Response(), ['id' => $user_id['id']]);
         $responseBody = json_decode((string)$response->getBody());
-        
+
         $this->assertNotNull($responseBody->baskets);
         $this->assertNotNull($responseBody->redirectedBaskets);
         foreach ($responseBody->redirectedBaskets as $redirectedBasket) {
@@ -2039,7 +2055,7 @@ class UserControllerTest extends CourrierTestCase
         $request = $this->createRequest('DELETE');
 
         $user_id = UserModel::getByLogin(['login' => 'bbain', 'select' => ['id']]);
-       
+
         //DELETE MANY WITH ONE ON ERROR
         $body = [
             'redirectedBasketIds' => [ self::$redirectId, -1 ]
