@@ -18,6 +18,7 @@ use Contact\models\ContactGroupListModel;
 use Contact\models\ContactGroupModel;
 use Contact\models\ContactModel;
 use Entity\models\EntityModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Respect\Validation\Validator;
@@ -28,12 +29,19 @@ use User\models\UserModel;
 
 class ContactGroupController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
         $hasAdmin = PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']]);
-        $hasPrivilege = PrivilegeController::hasPrivilege(['privilegeId' => 'add_correspondent_in_shared_groups_on_profile', 'userId' => $GLOBALS['id']]);
+        $hasPrivilege = PrivilegeController::hasPrivilege(
+            ['privilegeId' => 'add_correspondent_in_shared_groups_on_profile', 'userId' => $GLOBALS['id']]
+        );
 
         $where = [];
         $data = [];
@@ -53,11 +61,13 @@ class ContactGroupController
         }
         $contactsGroups = ContactGroupModel::get(['where' => $where, 'data' => $data]);
         foreach ($contactsGroups as $key => $contactsGroup) {
-            $correspondents = ContactGroupListModel::get(['select' => ['COUNT(1)'], 'where' => ['contacts_groups_id = ?'], 'data' => [$contactsGroup['id']]]);
+            $correspondents = ContactGroupListModel::get(
+                ['select' => ['COUNT(1)'], 'where' => ['contacts_groups_id = ?'], 'data' => [$contactsGroup['id']]]
+            );
 
-            $contactsGroups[$key]['labelledOwner']      = UserModel::getLabelledUserById(['id' => $contactsGroup['owner']]);
-            $contactsGroups[$key]['entities']           = (array)json_decode($contactsGroup['entities'], true);
-            $contactsGroups[$key]['nbCorrespondents']   = $correspondents[0]['count'];
+            $contactsGroups[$key]['labelledOwner'] = UserModel::getLabelledUserById(['id' => $contactsGroup['owner']]);
+            $contactsGroups[$key]['entities'] = (array)json_decode($contactsGroup['entities'], true);
+            $contactsGroups[$key]['nbCorrespondents'] = $correspondents[0]['count'];
 
             $contactsGroups[$key]['canUpdateCorrespondents'] = false;
             if ($hasAdmin || $hasPrivilege || $contactsGroup['owner'] == $GLOBALS['id']) {
@@ -68,7 +78,14 @@ class ContactGroupController
         return $response->withJson(['contactsGroups' => $contactsGroups]);
     }
 
-    public function getById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getById(Request $request, Response $response, array $args): Response
     {
         if (!ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Contacts group out of perimeter']);
@@ -77,15 +94,20 @@ class ContactGroupController
         $contactsGroup = ContactGroupModel::getById(['id' => $args['id']]);
 
         $contactsGroup['labelledOwner'] = UserModel::getLabelledUserById(['id' => $contactsGroup['owner']]);
-        $contactsGroup['entities']      = (array)json_decode($contactsGroup['entities'], true);
+        $contactsGroup['entities'] = (array)json_decode($contactsGroup['entities'], true);
 
-        $correspondents = ContactGroupListModel::get(['select' => ['COUNT(1)'], 'where' => ['contacts_groups_id = ?'], 'data' => [$args['id']]]);
-        $contactsGroup['nbCorrespondents']  = $correspondents[0]['count'];
+        $correspondents = ContactGroupListModel::get(
+            ['select' => ['COUNT(1)'], 'where' => ['contacts_groups_id = ?'], 'data' => [$args['id']]]
+        );
+        $contactsGroup['nbCorrespondents'] = $correspondents[0]['count'];
 
         $queryParams = $request->getQueryParams();
 
         $hasPrivilege = false;
-        if (empty($queryParams['profile']) && PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])) {
+        if (
+            empty($queryParams['profile']) &&
+            PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])
+        ) {
             $hasPrivilege = true;
         }
 
@@ -104,13 +126,13 @@ class ContactGroupController
             $allEntities[$key]['id'] = (string)$value['id'];
             if (empty($value['parent_id'])) {
                 $allEntities[$key]['parent'] = '#';
-                $allEntities[$key]['icon']   = "fa fa-building";
+                $allEntities[$key]['icon'] = "fa fa-building";
             } else {
                 $allEntities[$key]['parent'] = (string)$value['parent_id'];
-                $allEntities[$key]['icon']   = "fa fa-sitemap";
+                $allEntities[$key]['icon'] = "fa fa-sitemap";
             }
 
-            $allEntities[$key]['state']['opened']   = true;
+            $allEntities[$key]['state']['opened'] = true;
             $allEntities[$key]['state']['disabled'] = false;
             if (!$hasPrivilege && !in_array($value['id'], $userEntities)) {
                 $allEntities[$key]['state']['disabled'] = true;
@@ -125,26 +147,39 @@ class ContactGroupController
         return $response->withJson(['contactsGroup' => $contactsGroup, 'entities' => $allEntities]);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
         if (!Validator::stringType()->notEmpty()->validate($body['label'] ?? null)) {
             return $response->withStatus(400)->withJson(['errors' => 'Body label is empty or not a string']);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['description'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body description is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body description is empty or not a string']
+            );
         }
 
-        if (!empty($body['entities']) && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])) {
+        if (
+            !empty($body['entities']) &&
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])
+        ) {
             $userEntities = UserModel::getEntitiesById(['id' => $GLOBALS['id'], 'select' => ['entities.id']]);
             $userEntities = array_column($userEntities, 'id');
             if (!empty(array_diff($body['entities'], $userEntities))) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body entities has entities out of perimeter']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body entities has entities out of perimeter']
+                );
             }
         }
 
-        $body['entities']   = !empty($body['entities']) ? json_encode($body['entities']) : '{}';
-        $body['owner']      = $GLOBALS['id'];
+        $body['entities'] = !empty($body['entities']) ? json_encode($body['entities']) : '{}';
+        $body['owner'] = $GLOBALS['id'];
 
         $id = ContactGroupModel::create($body);
 
@@ -160,9 +195,20 @@ class ContactGroupController
         return $response->withJson(['id' => $id]);
     }
 
-    public function update(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $args): Response
     {
-        if (!ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id'], 'canUpdate' => true])) {
+        if (
+            !ContactGroupController::hasRightById(
+                ['id' => $args['id'], 'userId' => $GLOBALS['id'], 'canUpdate' => true]
+            )
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Contacts group out of perimeter']);
         }
 
@@ -173,11 +219,16 @@ class ContactGroupController
             return $response->withStatus(400)->withJson(['errors' => 'Body description is empty or not a string']);
         }
 
-        if (!empty($body['entities']) && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])) {
+        if (
+            !empty($body['entities']) &&
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])
+        ) {
             $userEntities = UserModel::getEntitiesById(['id' => $GLOBALS['id'], 'select' => ['entities.id']]);
             $userEntities = array_column($userEntities, 'id');
             if (!empty(array_diff($body['entities'], $userEntities))) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body entities has entities out of perimeter']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body entities has entities out of perimeter']
+                );
             }
         }
 
@@ -185,9 +236,9 @@ class ContactGroupController
 
         ContactGroupModel::update([
             'set'   => [
-                'label'         => $body['label'],
-                'description'   => $body['description'],
-                'entities'      => $body['entities']
+                'label'       => $body['label'],
+                'description' => $body['description'],
+                'entities'    => $body['entities']
             ],
             'where' => ['id = ?'],
             'data'  => [$args['id']]
@@ -205,9 +256,18 @@ class ContactGroupController
         return $response->withStatus(204);
     }
 
-    public function delete(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $args): Response
     {
-        if (!ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id'], 'canUpdate' => true])) {
+        if (
+            !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id'], 'canUpdate' => true])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Contacts group out of perimeter']);
         }
 
@@ -226,7 +286,14 @@ class ContactGroupController
         return $response->withStatus(204);
     }
 
-    public function duplicate(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function duplicate(Request $request, Response $response, array $args): Response
     {
         if (!ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Contacts group out of perimeter']);
@@ -235,7 +302,15 @@ class ContactGroupController
         $contactGroup = ContactGroupModel::getById(['select' => ['*'], 'id' => $args['id']]);
 
         $label = $contactGroup['label'];
-        $existingCopy = ContactGroupModel::get(['select' => ['label'], 'where' => ['label like ?'], 'data' => ["{$contactGroup['label']} (%)"], 'orderBy' => ['id DESC'], 'limit' => 1]);
+        $existingCopy = ContactGroupModel::get(
+            [
+                'select'  => ['label'],
+                'where'   => ['label like ?'],
+                'data'    => ["{$contactGroup['label']} (%)"],
+                'orderBy' => ['id DESC'],
+                'limit'   => 1
+            ]
+        );
         if (!empty($existingCopy[0])) {
             $pos = strrpos($existingCopy[0]['label'], '(');
             $number = (int)$existingCopy[0]['label'][$pos + 1];
@@ -246,18 +321,20 @@ class ContactGroupController
         }
 
         $id = ContactGroupModel::create([
-            'label'         => $label,
-            'description'   => $contactGroup['description'],
-            'entities'      => '{}',
-            'owner'         => $GLOBALS['id']
+            'label'       => $label,
+            'description' => $contactGroup['description'],
+            'entities'    => '{}',
+            'owner'       => $GLOBALS['id']
         ]);
 
-        $correspondents = ContactGroupListModel::get(['select' => ['*'], 'where' => ['contacts_groups_id = ?'], 'data' => [$args['id']]]);
+        $correspondents = ContactGroupListModel::get(
+            ['select' => ['*'], 'where' => ['contacts_groups_id = ?'], 'data' => [$args['id']]]
+        );
         foreach ($correspondents as $correspondent) {
             ContactGroupListModel::create([
-                'contacts_groups_id'    => $id,
-                'correspondent_id'      => $correspondent['correspondent_id'],
-                'correspondent_type'    => $correspondent['correspondent_type']
+                'contacts_groups_id' => $id,
+                'correspondent_id'   => $correspondent['correspondent_id'],
+                'correspondent_type' => $correspondent['correspondent_type']
             ]);
         }
 
@@ -273,22 +350,38 @@ class ContactGroupController
         return $response->withJson(['id' => $id]);
     }
 
-    public function merge(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function merge(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
         if (!Validator::stringType()->notEmpty()->validate($body['label'] ?? null)) {
             return $response->withStatus(400)->withJson(['errors' => 'Body label is empty or not a string']);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['description'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body description is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body description is empty or not a string']
+            );
         } elseif (!Validator::arrayType()->notEmpty()->validate($body['contactsGroups'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body contactsGroups is empty or not an array']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body contactsGroups is empty or not an array']
+            );
         }
-        if (!ContactGroupController::hasHighRights(['contactsGroups' => $body['contactsGroups'], 'userId' => $GLOBALS['id']])) {
+        if (
+            !ContactGroupController::hasHighRights(
+                ['contactsGroups' => $body['contactsGroups'], 'userId' => $GLOBALS['id']]
+            )
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Contacts groups out of perimeter']);
         }
 
-        $contactsGroups = ContactGroupModel::get(['select' => ['entities'], 'where' => ['id in (?)'], 'data' => [$body['contactsGroups']]]);
+        $contactsGroups = ContactGroupModel::get(
+            ['select' => ['entities'], 'where' => ['id in (?)'], 'data' => [$body['contactsGroups']]]
+        );
         $entities = [];
         foreach ($contactsGroups as $contactsGroup) {
             $entities = array_merge($entities, json_decode($contactsGroup['entities'], true));
@@ -297,17 +390,19 @@ class ContactGroupController
         $entities = array_values($entities);
 
         $id = ContactGroupModel::create([
-            'label'         => $body['label'],
-            'description'   => $body['description'],
-            'entities'      => json_encode($entities),
-            'owner'         => $GLOBALS['id']
+            'label'       => $body['label'],
+            'description' => $body['description'],
+            'entities'    => json_encode($entities),
+            'owner'       => $GLOBALS['id']
         ]);
 
-        $rawList = ContactGroupListModel::get(['select' => ['*'], 'where' => ['contacts_groups_id in (?)'], 'data' => [$body['contactsGroups']]]);
+        $rawList = ContactGroupListModel::get(
+            ['select' => ['*'], 'where' => ['contacts_groups_id in (?)'], 'data' => [$body['contactsGroups']]]
+        );
         $correspondents = [
-            'contact'   => [],
-            'user'      => [],
-            'entity'    => []
+            'contact' => [],
+            'user'    => [],
+            'entity'  => []
         ];
         foreach ($rawList as $value) {
             if (!in_array($value['correspondent_id'], $correspondents[$value['correspondent_type']])) {
@@ -316,23 +411,23 @@ class ContactGroupController
         }
         foreach ($correspondents['contact'] as $correspondent) {
             ContactGroupListModel::create([
-                'contacts_groups_id'    => $id,
-                'correspondent_id'      => $correspondent,
-                'correspondent_type'    => 'contact'
+                'contacts_groups_id' => $id,
+                'correspondent_id'   => $correspondent,
+                'correspondent_type' => 'contact'
             ]);
         }
         foreach ($correspondents['user'] as $correspondent) {
             ContactGroupListModel::create([
-                'contacts_groups_id'    => $id,
-                'correspondent_id'      => $correspondent,
-                'correspondent_type'    => 'user'
+                'contacts_groups_id' => $id,
+                'correspondent_id'   => $correspondent,
+                'correspondent_type' => 'user'
             ]);
         }
         foreach ($correspondents['entity'] as $correspondent) {
             ContactGroupListModel::create([
-                'contacts_groups_id'    => $id,
-                'correspondent_id'      => $correspondent,
-                'correspondent_type'    => 'entity'
+                'contacts_groups_id' => $id,
+                'correspondent_id'   => $correspondent,
+                'correspondent_type' => 'entity'
             ]);
         }
 
@@ -351,7 +446,14 @@ class ContactGroupController
         return $response->withJson(['id' => $id]);
     }
 
-    public function getCorrespondentsById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getCorrespondentsById(Request $request, Response $response, array $args): Response
     {
         if (!ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Contacts group out of perimeter']);
@@ -359,8 +461,10 @@ class ContactGroupController
 
         $queryParams = $request->getQueryParams();
 
-        $queryParams['offset'] = (empty($queryParams['offset']) || !is_numeric($queryParams['offset']) ? 0 : (int)$queryParams['offset']);
-        $queryParams['limit'] = (empty($queryParams['limit']) || !is_numeric($queryParams['limit']) ? 250 : (int)$queryParams['limit']);
+        $queryParams['offset'] = (empty($queryParams['offset']) ||
+        !is_numeric($queryParams['offset']) ? 0 : (int)$queryParams['offset']);
+        $queryParams['limit'] = (empty($queryParams['limit']) ||
+        !is_numeric($queryParams['limit']) ? 250 : (int)$queryParams['limit']);
 
         $where = ['contacts_groups_id = ?'];
         $data = [$args['id']];
@@ -372,47 +476,66 @@ class ContactGroupController
         $order = '';
         $orderBy = ['name'];
         if (!empty($queryParams['order'])) {
-            $order   = !in_array($queryParams['order'], ['asc', 'desc']) ? '' : $queryParams['order'];
+            $order = !in_array($queryParams['order'], ['asc', 'desc']) ? '' : $queryParams['order'];
         }
 
         if (!empty($queryParams['orderBy'])) {
             $orderBy = !in_array($queryParams['orderBy'], ['type', 'name']) ? ['name'] : [$queryParams['orderBy']];
         }
 
-        $orderBy = str_replace(['type', 'name'], ["correspondent_type {$order}", "contacts.lastname {$order}, users.lastname {$order}, entities.entity_label {$order}"], $orderBy);
+        $orderBy = str_replace(
+            ['type', 'name'],
+            [
+                "correspondent_type {$order}",
+                "contacts.lastname {$order}, users.lastname {$order}, entities.entity_label {$order}"
+            ],
+            $orderBy
+        );
 
         if (!empty($queryParams['search'])) {
             $fields = [
-                'contacts.firstname', 'contacts.lastname', 'contacts.company', 'users.firstname', 'users.lastname', 'entities.entity_label',
-                'contacts.address_number', 'contacts.address_street', 'contacts.address_town', 'contacts.address_postcode', 'contacts.sector',
-                'entities.address_number', 'entities.address_street', 'entities.address_town', 'entities.address_postcode'
+                'contacts.firstname',
+                'contacts.lastname',
+                'contacts.company',
+                'users.firstname',
+                'users.lastname',
+                'entities.entity_label',
+                'contacts.address_number',
+                'contacts.address_street',
+                'contacts.address_town',
+                'contacts.address_postcode',
+                'contacts.sector',
+                'entities.address_number',
+                'entities.address_street',
+                'entities.address_town',
+                'entities.address_postcode'
             ];
 
             $fields = AutoCompleteController::getInsensitiveFieldsForRequest(['fields' => $fields]);
             $requestData = AutoCompleteController::getDataForRequest([
-                'search'        => trim($queryParams['search']),
-                'fields'        => $fields,
-                'where'         => $where,
-                'data'          => $data,
-                'fieldsNumber'  => 14,
+                'search'       => trim($queryParams['search']),
+                'fields'       => $fields,
+                'where'        => $where,
+                'data'         => $data,
+                'fieldsNumber' => 14,
             ]);
 
             $rawCorrespondents = ContactGroupListModel::getWithCorrespondents([
-                'select'    => ['correspondent_id', 'correspondent_type', 'count(1) OVER()'],
-                'where'     => $requestData['where'],
-                'data'      => $requestData['data'],
-                'offset'    => $queryParams['offset'],
-                'limit'     => $queryParams['limit'],
-                'orderBy'   => $orderBy
+                'select'  => ['correspondent_id', 'correspondent_type', 'count(1) OVER()'],
+                'where'   => $requestData['where'],
+                'data'    => $requestData['data'],
+                'offset'  => $queryParams['offset'],
+                'limit'   => $queryParams['limit'],
+                'orderBy' => $orderBy
             ]);
         } else {
             $rawCorrespondents = ContactGroupListModel::getWithCorrespondents([
-                'select'    => ['correspondent_id', 'correspondent_type', 'count(1) OVER()'],
-                'where'     => $where,
-                'data'      => $data,
-                'offset'    => $queryParams['offset'],
-                'limit'     => $queryParams['limit'],
-                'orderBy'   => $orderBy
+                'select'  => ['correspondent_id', 'correspondent_type', 'count(1) OVER()'],
+                'where'   => $where,
+                'data'    => $data,
+                'offset'  => $queryParams['offset'],
+                'limit'   => $queryParams['limit'],
+                'orderBy' => $orderBy
             ]);
         }
 
@@ -420,19 +543,33 @@ class ContactGroupController
         foreach ($rawCorrespondents as $correspondent) {
             if ($correspondent['correspondent_type'] == 'contact') {
                 $contact = ContactModel::getById([
-                    'select'    => ['id', 'firstname', 'lastname', 'email', 'company', 'address_number', 'address_street', 'address_town', 'address_postcode', 'sector', 'enabled'],
-                    'id'        => $correspondent['correspondent_id']
+                    'select' => [
+                        'id',
+                        'firstname',
+                        'lastname',
+                        'email',
+                        'company',
+                        'address_number',
+                        'address_street',
+                        'address_town',
+                        'address_postcode',
+                        'sector',
+                        'enabled'
+                    ],
+                    'id'     => $correspondent['correspondent_id']
                 ]);
                 if (!empty($contact)) {
-                    $contactToDisplay = ContactController::getFormattedContactWithAddress(['contact' => $contact, 'color' => true]);
+                    $contactToDisplay = ContactController::getFormattedContactWithAddress(
+                        ['contact' => $contact, 'color' => true]
+                    );
                     $correspondents[] = [
-                        'id'                => $correspondent['correspondent_id'],
-                        'type'              => $correspondent['correspondent_type'],
-                        'name'              => $contactToDisplay['contact']['contact'],
-                        'address'           => $contactToDisplay['contact']['address'],
-                        'sector'            => $contactToDisplay['contact']['sector'],
-                        'thresholdLevel'    => $contactToDisplay['contact']['thresholdLevel'],
-                        'email'              => $contactToDisplay['contact']['email']
+                        'id'             => $correspondent['correspondent_id'],
+                        'type'           => $correspondent['correspondent_type'],
+                        'name'           => $contactToDisplay['contact']['contact'],
+                        'address'        => $contactToDisplay['contact']['address'],
+                        'sector'         => $contactToDisplay['contact']['sector'],
+                        'thresholdLevel' => $contactToDisplay['contact']['thresholdLevel'],
+                        'email'          => $contactToDisplay['contact']['email']
                     ];
                 }
             } elseif ($correspondent['correspondent_type'] == 'user') {
@@ -448,35 +585,55 @@ class ContactGroupController
                 if (!empty($entity)) {
                     $contactToDisplay = ContactController::getFormattedContactWithAddress(['contact' => $entity]);
                     $correspondents[] = [
-                        'id'        => $correspondent['correspondent_id'],
-                        'type'      => $correspondent['correspondent_type'],
-                        'name'      => $entity['entity_label'],
-                        'address'   => $contactToDisplay['contact']['address']
+                        'id'      => $correspondent['correspondent_id'],
+                        'type'    => $correspondent['correspondent_type'],
+                        'name'    => $entity['entity_label'],
+                        'address' => $contactToDisplay['contact']['address']
                     ];
                 }
             }
         }
 
         $rawAllCorrespondents = ContactGroupListModel::get([
-            'select'    => ['correspondent_id', 'correspondent_type'],
-            'where'     => ['contacts_groups_id = ?'],
-            'data'      => [$args['id']]
+            'select' => ['correspondent_id', 'correspondent_type'],
+            'where'  => ['contacts_groups_id = ?'],
+            'data'   => [$args['id']]
         ]);
         $allCorrespondents = [];
         foreach ($rawAllCorrespondents as $rawAllCorrespondent) {
             $allCorrespondents[] = [
-                'id'    => $rawAllCorrespondent['correspondent_id'],
-                'type'  => $rawAllCorrespondent['correspondent_type']
+                'id'   => $rawAllCorrespondent['correspondent_id'],
+                'type' => $rawAllCorrespondent['correspondent_type']
             ];
         }
 
-        return $response->withJson(['correspondents' => $correspondents, 'count' => $rawCorrespondents[0]['count'] ?? 0, 'allCorrespondents' => $allCorrespondents]);
+        return $response->withJson(
+            [
+                'correspondents'    => $correspondents,
+                'count'             => $rawCorrespondents[0]['count'] ?? 0,
+                'allCorrespondents' => $allCorrespondents
+            ]
+        );
     }
 
-    public function addCorrespondents(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function addCorrespondents(Request $request, Response $response, array $args): Response
     {
-        if (!ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id'], 'canUpdate' => true])) {
-            if (!ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id']]) || !PrivilegeController::hasPrivilege(['privilegeId' => 'add_correspondent_in_shared_groups_on_profile', 'userId' => $GLOBALS['id']])) {
+        if (
+            !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id'], 'canUpdate' => true])
+        ) {
+            if (
+                !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id']]) ||
+                !PrivilegeController::hasPrivilege(
+                    ['privilegeId' => 'add_correspondent_in_shared_groups_on_profile', 'userId' => $GLOBALS['id']]
+                )
+            ) {
                 return $response->withStatus(403)->withJson(['errors' => 'Contacts group out of perimeter']);
             }
         }
@@ -484,28 +641,42 @@ class ContactGroupController
         $body = $request->getParsedBody();
 
         if (!Validator::arrayType()->notEmpty()->validate($body['correspondents'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body correspondents is empty or not an array']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body correspondents is empty or not an array']
+            );
         }
 
-        $rawList = ContactGroupListModel::get(['select' => ['correspondent_id', 'correspondent_type'], 'where' => ['contacts_groups_id = ?'], 'data' => [$args['id']]]);
+        $rawList = ContactGroupListModel::get(
+            [
+                'select' => ['correspondent_id', 'correspondent_type'],
+                'where'  => ['contacts_groups_id = ?'],
+                'data'   => [$args['id']]
+            ]
+        );
         $correspondents = [
-            'contact'   => [],
-            'user'      => [],
-            'entity'    => []
+            'contact' => [],
+            'user'    => [],
+            'entity'  => []
         ];
         foreach ($rawList as $value) {
             $correspondents[$value['correspondent_type']][] = $value['correspondent_id'];
         }
 
         foreach ($body['correspondents'] as $correspondent) {
-            if (!Validator::notEmpty()->intVal()->validate($correspondent['id'] ?? null) || !Validator::stringType()->notEmpty()->validate($correspondent['type'] ?? null)) {
+            if (
+                !Validator::notEmpty()->intVal()->validate($correspondent['id'] ?? null) ||
+                !Validator::stringType()->notEmpty()->validate($correspondent['type'] ?? null)
+            ) {
                 continue;
             }
-            if (!in_array($correspondent['id'], $correspondents[$correspondent['type']]) && in_array($correspondent['type'], ['contact', 'user', 'entity'])) {
+            if (
+                !in_array($correspondent['id'], $correspondents[$correspondent['type']]) &&
+                in_array($correspondent['type'], ['contact', 'user', 'entity'])
+            ) {
                 ContactGroupListModel::create([
-                    'contacts_groups_id'    => $args['id'],
-                    'correspondent_id'      => $correspondent['id'],
-                    'correspondent_type'    => $correspondent['type']
+                    'contacts_groups_id' => $args['id'],
+                    'correspondent_id'   => $correspondent['id'],
+                    'correspondent_type' => $correspondent['type']
                 ]);
             }
         }
@@ -524,10 +695,24 @@ class ContactGroupController
         return $response->withStatus(204);
     }
 
-    public function deleteCorrespondents(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function deleteCorrespondents(Request $request, Response $response, array $args): Response
     {
-        if (!ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id'], 'canUpdate' => true])) {
-            if (!ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id']]) || !PrivilegeController::hasPrivilege(['privilegeId' => 'add_correspondent_in_shared_groups_on_profile', 'userId' => $GLOBALS['id']])) {
+        if (
+            !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id'], 'canUpdate' => true])
+        ) {
+            if (
+                !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id']]) ||
+                !PrivilegeController::hasPrivilege(
+                    ['privilegeId' => 'add_correspondent_in_shared_groups_on_profile', 'userId' => $GLOBALS['id']]
+                )
+            ) {
                 return $response->withStatus(403)->withJson(['errors' => 'Contacts group out of perimeter']);
             }
         }
@@ -535,12 +720,19 @@ class ContactGroupController
         $body = $request->getParsedBody();
 
         if (!Validator::arrayType()->notEmpty()->validate($body['correspondents'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body correspondents is empty or not an array']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body correspondents is empty or not an array']
+            );
         }
 
         foreach ($body['correspondents'] as $correspondent) {
             if (!empty($correspondent['id']) && !empty($correspondent['type'])) {
-                ContactGroupListModel::delete(['where' => ['contacts_groups_id = ?', 'correspondent_id = ?', 'correspondent_type = ?'], 'data' => [$args['id'], $correspondent['id'], $correspondent['type']]]);
+                ContactGroupListModel::delete(
+                    [
+                        'where' => ['contacts_groups_id = ?', 'correspondent_id = ?', 'correspondent_type = ?'],
+                        'data'  => [$args['id'], $correspondent['id'], $correspondent['type']]
+                    ]
+                );
             }
         }
 
@@ -558,12 +750,21 @@ class ContactGroupController
         return $response->withStatus(204);
     }
 
-    public function getAllowedEntities(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function getAllowedEntities(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
         $hasPrivilege = false;
-        if (empty($queryParams['profile']) && PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])) {
+        if (
+            empty($queryParams['profile']) &&
+            PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])
+        ) {
             $hasPrivilege = true;
         }
 
@@ -582,14 +783,14 @@ class ContactGroupController
             $allEntities[$key]['id'] = (string)$value['id'];
             if (empty($value['parent_id'])) {
                 $allEntities[$key]['parent'] = '#';
-                $allEntities[$key]['icon']   = "fa fa-building";
+                $allEntities[$key]['icon'] = "fa fa-building";
             } else {
                 $allEntities[$key]['parent'] = (string)$value['parent_id'];
-                $allEntities[$key]['icon']   = "fa fa-sitemap";
+                $allEntities[$key]['icon'] = "fa fa-sitemap";
             }
 
             $allEntities[$key]['state']['disabled'] = false;
-            $allEntities[$key]['state']['opened']   = true;
+            $allEntities[$key]['state']['opened'] = true;
             if (!$hasPrivilege && !in_array($value['id'], $userEntities)) {
                 $allEntities[$key]['state']['disabled'] = true;
             }
@@ -600,18 +801,29 @@ class ContactGroupController
         return $response->withJson(['entities' => $allEntities]);
     }
 
-    public function getCorrespondents(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getCorrespondents(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
         if (!Validator::notEmpty()->intVal()->validate($queryParams['correspondentId'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'QueryParams correspondentId is empty or not an integer']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'QueryParams correspondentId is empty or not an integer']
+            );
         } elseif (!Validator::stringType()->notEmpty()->validate($queryParams['correspondentType'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'QueryParams correspondentType is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'QueryParams correspondentType is empty or not a string']
+            );
         }
 
         $hasAdmin = PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']]);
-        $hasPrivilege = PrivilegeController::hasPrivilege(['privilegeId' => 'add_correspondent_in_shared_groups_on_profile', 'userId' => $GLOBALS['id']]);
+        $hasPrivilege = PrivilegeController::hasPrivilege(
+            ['privilegeId' => 'add_correspondent_in_shared_groups_on_profile', 'userId' => $GLOBALS['id']]
+        );
 
         $where = [];
         $data = [];
@@ -635,7 +847,13 @@ class ContactGroupController
         $where[] = 'correspondent_type = ?';
         $data[] = $queryParams['correspondentId'];
         $data[] = $queryParams['correspondentType'];
-        $contactsgroupsWhereContactIs = ContactGroupModel::getWithList(['select' => ['contacts_groups.id', 'contacts_groups.label', 'contacts_groups.owner'], 'where' => $where, 'data' => $data]);
+        $contactsgroupsWhereContactIs = ContactGroupModel::getWithList(
+            [
+                'select' => ['contacts_groups.id', 'contacts_groups.label', 'contacts_groups.owner'],
+                'where'  => $where,
+                'data'   => $data
+            ]
+        );
         $contactsGroups = [];
         foreach ($contactsgroupsWhereContactIs as $value) {
             $canUpdateCorrespondents = false;
@@ -644,16 +862,20 @@ class ContactGroupController
             }
 
             $contactsGroups[] = [
-                'id'                        => $value['id'],
-                'label'                     => $value['label'],
-                'canUpdateCorrespondents'   => $canUpdateCorrespondents
+                'id'                      => $value['id'],
+                'label'                   => $value['label'],
+                'canUpdateCorrespondents' => $canUpdateCorrespondents
             ];
         }
 
         return $response->withJson(['contactsGroups' => $contactsGroups]);
     }
 
-    private static function hasRightById(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     */
+    private static function hasRightById(array $args): bool
     {
         $contactsGroup = ContactGroupModel::getById(['id' => $args['id'], 'select' => ['owner', 'entities']]);
         if (empty($contactsGroup)) {
@@ -680,9 +902,15 @@ class ContactGroupController
         return false;
     }
 
-    private static function hasHighRights(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     */
+    private static function hasHighRights(array $args): bool
     {
-        $contactsGroups = ContactGroupModel::get(['select' => ['owner'], 'where' => ['id in (?)'], 'data' => [$args['contactsGroups']]]);
+        $contactsGroups = ContactGroupModel::get(
+            ['select' => ['owner'], 'where' => ['id in (?)'], 'data' => [$args['contactsGroups']]]
+        );
         if (count($contactsGroups) != count($args['contactsGroups'])) {
             return false;
         }

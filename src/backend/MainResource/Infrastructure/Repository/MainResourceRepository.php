@@ -49,8 +49,8 @@ class MainResourceRepository implements MainResourceRepositoryInterface
         $typist = $this->userFactory->createUserFromArray(['id' => $resource['typist']]);
 
         $document = (new Document())
-            ->setFileName($resource['filename'])
-            ->setFileExtension($resource['format']);
+            ->setFileName($resource['filename'] ?? '')
+            ->setFileExtension($resource['format'] ?? '');
         $integration = (new Integration())->createFromArray(json_decode($resource['integrations'], true));
 
         return (new MainResource())

@@ -43,7 +43,7 @@
                 <mat-icon mat-list-icon class="fa-2x fa"
                     [title]="'lang.' + (diffusion.status | lowercase) + 'Status' | translate"
                     [class.fa-hourglass]="diffusion.process_date == null && diffusion.status !== 'END'"
-                    [class.fa-thumbs-up]="diffusion.process_date != null && diffusion.status == 'VAL'"
+                    [class.fa-thumbs-up]="diffusion.process_date != null && diffusion.status === 'VAL'"
                     [class.fa-thumbs-down]="diffusion.process_date != null && diffusion.status === 'REF'"
                     [class.fa-hand-paper]="diffusion.process_date != null && diffusion.status === 'STOP'"
                     [class.fa-times]="diffusion.status === 'END'"
@@ -76,7 +76,7 @@
                 </div>
                 <div *ngIf="diffusion.hasPrivilege && diffusion.isValid">
                     <ng-container>
-                        <button mat-icon-button *ngIf="canManageUser() && diffusion.item_id === null && canAddExternalUser()"
+                        <button mat-icon-button *ngIf="canManageUser() && diffusion.item_id === null && diffusion?.externalInformations && canAddExternalUser()"
                             (click)="openCreateUserOtp(diffusion)" [title]="'lang.updateOtp' | translate">
                             <mat-icon class="fas fa-edit" color="primary"></mat-icon>
                         </button>

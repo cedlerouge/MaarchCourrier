@@ -32,7 +32,7 @@ export class LadService {
     launchLadProcess(file: BinaryFile) {
 
         return new Promise((resolve) => {
-            if (file.format !== 'pdf') {
+            if (file.format !== 'pdf' && file.base64src === null) {
                 resolve(false);
                 console.warn(`Unsupported format for lad : ${file.format}`);
             }

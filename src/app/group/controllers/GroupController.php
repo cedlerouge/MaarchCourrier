@@ -47,9 +47,10 @@ class GroupController
 
         if ($hasPrivilege) {
             foreach ($groups as $key => $value) {
-                $groups[$key]['users'] = GroupModel::getUsersById(
-                    ['id' => $value['id'], 'select' => ['users.user_id', 'users.firstname', 'users.lastname']]
-                );
+                $groups[$key]['users'] = GroupModel::getUsersById([
+                    'id'     => $value['id'],
+                    'select' => ['users.user_id', 'users.firstname', 'users.lastname']
+                ]);
             }
         }
 
@@ -287,7 +288,7 @@ class GroupController
             return $response->withStatus(400)->withJson(['errors' => 'Group not found']);
         }
         $oldGroupUsers = GroupModel::getUsersById(['id' => $aArgs['id'], 'select' => ['users.id']]);
-        $newGroupUsers = GroupModel::getUsersById(['id' => $aArgs['id'], 'select' => ['users.id']]);
+        $newGroupUsers = GroupModel::getUsersById(['id' => $aArgs['newGroupId'], 'select' => ['users.id']]);
 
         //Mapped array to have only user_id
         $oldGroupUsers = array_map(function ($entry) {
@@ -306,7 +307,7 @@ class GroupController
         }
 
         $where = ['group_id = ?'];
-        $data = [$aArgs['groupId']];
+        $data = [$aArgs['id']];
         if (!empty($ignoredUsers)) {
             $where[] = 'user_id NOT IN (?)';
             $data[] = $ignoredUsers;
@@ -407,13 +408,15 @@ class GroupController
         }
         if (isset($body['actions']) && is_array($body['actions'])) {
             if (!empty($body['actions'])) {
-                $countActions = ActionModel::get(
-                    ['select' => ['count(1)'], 'where' => ['id in (?)'], 'data' => [$body['actions']]]
-                );
+                $countActions = ActionModel::get([
+                    'select' => ['count(1)'],
+                    'where'  => ['id in (?)'],
+                    'data'   => [$body['actions']]
+                ]);
                 if ($countActions[0]['count'] != count($body['actions'])) {
-                    return $response->withStatus(400)->withJson(
-                        ['errors' => 'Body actions contains invalid actions']
-                    );
+                    return $response->withStatus(400)->withJson([
+                        'errors' => 'Body actions contains invalid actions'
+                    ]);
                 }
                 foreach ($body['actions'] as $key => $action) {
                     $body['actions'][$key] = (string)$action;
@@ -423,13 +426,15 @@ class GroupController
         }
         if (isset($body['entities']) && is_array($body['entities'])) {
             if (!empty($body['entities'])) {
-                $countEntities = EntityModel::get(
-                    ['select' => ['count(1)'], 'where' => ['id in (?)'], 'data' => [$body['entities']]]
-                );
+                $countEntities = EntityModel::get([
+                    'select' => ['count(1)'],
+                    'where'  => ['id in (?)'],
+                    'data'   => [$body['entities']]
+                ]);
                 if ($countEntities[0]['count'] != count($body['entities'])) {
-                    return $response->withStatus(400)->withJson(
-                        ['errors' => 'Body entities contains invalid entities']
-                    );
+                    return $response->withStatus(400)->withJson([
+                        'errors' => 'Body entities contains invalid entities'
+                    ]);
                 }
                 foreach ($body['entities'] as $key => $entity) {
                     $body['entities'][$key] = (string)$entity;
@@ -464,9 +469,10 @@ class GroupController
         $groupsClause = '';
         foreach ($groups as $key => $group) {
             if (!empty($group['where_clause'])) {
-                $groupClause = PreparedClauseController::getPreparedClause(
-                    ['clause' => $group['where_clause'], 'userId' => $args['userId']]
-                );
+                $groupClause = PreparedClauseController::getPreparedClause([
+                    'clause' => $group['where_clause'],
+                    'userId' => $args['userId']
+                ]);
                 if ($key > 0) {
                     $groupsClause .= ' or ';
                 }

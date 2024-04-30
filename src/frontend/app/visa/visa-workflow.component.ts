@@ -255,6 +255,7 @@ export class VisaWorkflowComponent implements OnInit {
     loadWorkflow(resId: number) {
         this.resId = resId;
         this.loading = true;
+        this.visaWorkflow.items = [];
         return new Promise((resolve) => {
             this.http.get('../rest/resources/' + resId + '/visaCircuit').pipe(
                 tap((data: any) => {
