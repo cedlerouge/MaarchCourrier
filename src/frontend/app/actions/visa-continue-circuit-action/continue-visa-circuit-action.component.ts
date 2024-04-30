@@ -18,8 +18,6 @@ import { SignatureBookInterface } from '@appRoot/signatureBook/signature-book.se
 import { Router } from '@angular/router';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Attachment } from '@models/attachment.model';
-import { UntypedFormControl } from '@angular/forms';
-import { MaarchPluginFortifyInterface } from '@models/maarch-plugin-fortify.model';
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
@@ -44,10 +42,6 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
 
     digitalCertificate: boolean = true;
 
-    parameters: { digitalCertificate: UntypedFormControl } = {
-        digitalCertificate: new UntypedFormControl(true)
-    }
-
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -62,20 +56,11 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
     ) {}
 
     async ngOnInit(): Promise<void> {
-
-        this.parameters.digitalCertificate.valueChanges.pipe(
-            tap((value: boolean) => {
-                this.digitalCertificate = value;
-            })
-        ).subscribe();
         this.loading = true;
         await this.checkSignatureBook();
         this.data.resource.signatureBookConfig.url = (this.data.resource.signatureBookConfig as SignatureBookInterface)?.url?.replace(/\/$/, '')
         this.loading = false;
-    }
-
-    setPluginData(): any {
-        const data: MaarchPluginFortifyInterface = {
+        const data: any = {
             functions: this.functions,
             notification: this.notify,
             translate: this.translate,
@@ -84,11 +69,14 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
                 resource: this.data.resource.documentToCreate,
                 sender: `${this.headerService.user.firstname} ${this.headerService.user.lastname}`,
                 externalUserId: this.headerService.user.externalId,
-                signatureBookConfig: (this.data.resource.signatureBookConfig as SignatureBookInterface),
-                digitalCertificate: this.digitalCertificate
+                signatureBookConfig: (this.data.resource.signatureBookConfig as SignatureBookInterface)
             },
         };
-        return data;
+        this.componentInstance = await this.pluginManagerService.initPlugin(
+            'maarch-plugins-fortify',
+            this.myPlugin,
+            data
+        );
     }
 
     checkSignatureBook() {
@@ -141,12 +129,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
         const realResSelected: number[] = this.data.resIds.filter(
             (resId: any) => this.resourcesErrors.map((resErr) => resErr.res_id).indexOf(resId) === -1
         );
-        if ((this.data.resource.signatureBookConfig as SignatureBookInterface).isNewInternalParaph) {
-            this.componentInstance = await this.pluginManagerService.initPlugin(
-                'maarch-plugins-fortify',
-                this.myPlugin,
-                this.setPluginData()
-            );
+        if ((this.data.resource.signatureBookConfig as SignatureBookInterface).isNewInternalParaph && this.digitalCertificate) {
             this.componentInstance
                 .open()
                 .pipe(
@@ -172,7 +155,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
             .put(this.data.processActionRoute, {
                 resources: realResSelected,
                 note: this.noteEditor.getNote(),
-                data: { ...objToSend, digitalCertificate: this.parameters.digitalCertificate.value },
+                data: { ...objToSend, digitalCertificate: this.digitalCertificate },
             })
             .pipe(
                 tap((data: any) => {
