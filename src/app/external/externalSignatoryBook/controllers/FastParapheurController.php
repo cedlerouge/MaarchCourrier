@@ -2005,7 +2005,7 @@ class FastParapheurController
         }
 
         $height = 20;   // height of pictogram, from prepareStampsSteps
-        $pdf = new Fpdi('', 'mm');  // orientation param is empty for automatic orientation
+        $pdf = new Fpdi('');  // orientation param is empty for automatic orientation
         $pdf->setSourceFile($filePath);
 
         foreach ($stampPositionsArray as &$stampPosition) {
