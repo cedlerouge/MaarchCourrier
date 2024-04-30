@@ -36,13 +36,13 @@
                 <app-maarch-message *ngIf="!loading && data.resIds.length === 1 && atLeastOneDocumentHasNoStamp()"
                     [mode]="'warning'">
                     <div class="at-least-no-one-stamp" role="alert"
-                        [title]="'lang.atLeastOneDocumentHasNoStamp' | translate"
-                        [attr.aria-label]="'lang.atLeastOneDocumentHasNoStamp' | translate"
+                        [title]="functions.getPlainText('lang.atLeastOneDocumentHasNoStamp')"
+                        [attr.aria-label]="functions.getPlainText('lang.atLeastOneDocumentHasNoStamp')"
                         [innerHTML]="'lang.atLeastOneDocumentHasNoStamp' | translate">
                     </div>
                     <div *ngIf="!digitalCertificate" class="at-least-no-one-stamp" role="alert"
-                        [title]="'lang.seenAsVisaUser' | translate"
-                        [attr.aria-label]="'lang.seenAsVisaUser' | translate"
+                        [title]="functions.getPlainText('lang.seenAsVisaUser')"
+                        [attr.aria-label]="functions.getPlainText('lang.seenAsVisaUser')"
                         [innerHTML]="'lang.seenAsVisaUser' | translate"></div>
                 </app-maarch-message>
                 <app-maarch-message *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== ''"

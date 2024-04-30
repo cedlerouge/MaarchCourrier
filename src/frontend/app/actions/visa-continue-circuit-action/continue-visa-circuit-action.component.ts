@@ -100,7 +100,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
                 .subscribe(
                     (data: any) => {
                         if (!this.functions.empty(data.resourcesInformations.warning)) {
-                            this.resourcesWarnings = data.resourcesInformations.warning;
+                            this.resourcesWarnings = (data.resourcesInformations.warning as any[]).filter((warning: any) => warning.reason !== 'userHasntSigned');
                         }
 
                         if (!this.functions.empty(data.resourcesInformations.error)) {
