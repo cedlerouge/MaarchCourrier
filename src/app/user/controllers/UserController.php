@@ -397,8 +397,7 @@ class UserController
                 ->setFirstname($body['firstname'])
                 ->setLastname($body['lastname'])
                 ->setMail($body['mail'])
-                ->setLogin($body['userId'])
-                ->setExternalId([]);
+                ->setLogin($body['userId']);
 
             $createUserFactory = new CreateAndUpdateUserInSignatoryBookFactory();
             $createUser = $createUserFactory->create();

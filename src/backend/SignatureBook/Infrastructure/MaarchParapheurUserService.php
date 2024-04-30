@@ -57,8 +57,8 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
     public function createUser(UserInterface $user, string $accessToken): array|int
     {
         $userDetails = [
-            'firstName' => $user->getFirstname(),
-            'lastName' => $user->getLastname(),
+            'firstname' => $user->getFirstname(),
+            'lastname' => $user->getLastname(),
             'email' => $user->getMail(),
             'login' => $user->getLogin()
         ];
