@@ -6,14 +6,13 @@ import { NotificationService } from '@service/notification/notification.service'
 import { filter, tap } from 'rxjs';
 import { Subscription } from 'rxjs';
 import { MatDrawer } from '@angular/material/sidenav';
-import { StampInterface } from '@models/signature-book.model';
-
 import { Attachment } from '@models/attachment.model';
 import { MessageActionInterface } from '@models/actions.model';
 import { SignatureBookService } from './signature-book.service';
 import { ResourcesListComponent } from './resourcesList/resources-list.component';
 import { TranslateService } from '@ngx-translate/core';
 import { FunctionsService } from '@service/functions.service';
+import { UserStampInterface } from '@models/user-stamp.model';
 
 @Component({
     templateUrl: 'signature-book.component.html',
@@ -38,7 +37,7 @@ export class SignatureBookComponent implements OnDestroy {
     attachments: Attachment[] = [];
 
     subscription: Subscription;
-    defaultStamp: StampInterface;
+    defaultUserStamp: UserStampInterface;
 
     processActionSubscription: Subscription;
 

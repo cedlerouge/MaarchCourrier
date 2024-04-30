@@ -43,7 +43,7 @@
                     <div class="book-content">
                         <mat-drawer-container style="flex: 1;background: none;">
                             <mat-drawer class="drawer-stamps-list" mode="over" #drawerStamps>
-                                <app-maarch-sb-stamps [userId]="userId" (stampsLoaded)="defaultStamp = $event"></app-maarch-sb-stamps>
+                                <app-maarch-sb-stamps [userId]="userId" (stampsLoaded)="defaultUserStamp = $event"></app-maarch-sb-stamps>
                             </mat-drawer>
                             <mat-drawer-content style="display: flex; flex-direction: column">
                                 <app-maarch-sb-content *ngIf="!loadingDocsToSign"
@@ -56,7 +56,7 @@
                                     [userId]="userId"
                                     [basketId]="basketId"
                                     [groupId]="groupId"
-                                    [stamp]="defaultStamp"
+                                    [userStamp]="defaultUserStamp"
                                     (openPanelSignatures)="drawerStamps.toggle()"
                                 ></app-maarch-sb-actions>
                             </mat-drawer-content>

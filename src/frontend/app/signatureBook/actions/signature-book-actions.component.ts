@@ -3,11 +3,11 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { Action } from '@models/actions.model';
-import { StampInterface } from '@models/signature-book.model';
 import { FunctionsService } from '@service/functions.service';
 import { NotificationService } from '@service/notification/notification.service';
 import { Subscription, catchError, of, tap } from 'rxjs';
 import { SignatureBookConfig, SignatureBookService } from '../signature-book.service';
+import { UserStampInterface } from '@models/user-stamp.model';
 
 @Component({
     selector: 'app-maarch-sb-actions',
@@ -19,7 +19,7 @@ export class SignatureBookActionsComponent implements OnInit {
     @Input() basketId: number;
     @Input() groupId: number;
     @Input() userId: number;
-    @Input() stamp: StampInterface;
+    @Input() userStamp: UserStampInterface;
 
     @Output() openPanelSignatures = new EventEmitter<true>();
 
@@ -115,10 +115,10 @@ export class SignatureBookActionsComponent implements OnInit {
         this.router.navigate([path]);
     }
 
-    signWithStamp(stamp: StampInterface) {
+    signWithStamp(userStamp: UserStampInterface) {
         this.actionsService.emitActionWithData({
             id: 'selectedStamp',
-            data: stamp,
+            data: userStamp,
         });
     }
 }
