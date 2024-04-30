@@ -6,7 +6,7 @@ import { HeaderService } from '@service/header.service';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatSidenav } from '@angular/material/sidenav';
 import { AppService } from '@service/app.service';
-import { tap, catchError, finalize, exhaustMap, filter } from 'rxjs/operators';
+import { tap, catchError, finalize, exhaustMap } from 'rxjs/operators';
 import { SortPipe } from '../../../plugins/sorting.pipe';
 import { IndexingFormComponent } from '../../indexation/indexing-form/indexing-form.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -100,7 +100,7 @@ export class IndexingModelAdministrationComponent implements OnInit {
                         this.categoriesList = data.categories;
 
                     }),
-                    tap((data: any) => {
+                    tap(() => {
                         this.loading = false;
                         setTimeout(() => {
                             this.indexingForm.changeCategory(this.indexingModel.category);
@@ -178,7 +178,7 @@ export class IndexingModelAdministrationComponent implements OnInit {
 
         if (this.creationMode) {
             this.http.post('../rest/indexingModels', this.indexingModel).pipe(
-                tap((data: any) => {
+                tap(() => {
                     this.indexingForm.setModification();
                     this.setModification();
                     this.router.navigate(['/administration/indexingModels']);
@@ -192,7 +192,7 @@ export class IndexingModelAdministrationComponent implements OnInit {
             ).subscribe();
         } else {
             this.http.put('../rest/indexingModels/' + this.indexingModel.id, this.indexingModel).pipe(
-                tap((data: any) => {
+                tap(() => {
                     this.indexingForm.setModification();
                     this.setModification();
                     this.router.navigate(['/administration/indexingModels']);

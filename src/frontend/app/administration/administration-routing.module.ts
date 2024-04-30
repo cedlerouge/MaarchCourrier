@@ -38,7 +38,6 @@ import { SendmailAdministrationComponent } from './sendmail/sendmail-administrat
 import { ShippingsAdministrationComponent } from './shipping/shippings-administration.component';
 import { ShippingAdministrationComponent } from './shipping/shipping-administration.component';
 import { CustomFieldsAdministrationComponent } from './customField/custom-fields-administration.component';
-import { AppGuard } from '@service/app.guard';
 import { AppGuardAdmin } from '@service/app.guardAdmin';
 import { IndexingModelAdministrationComponent } from './indexingModel/indexing-model-administration.component';
 import { IndexingModelsAdministrationComponent } from './indexingModel/indexing-models-administration.component';

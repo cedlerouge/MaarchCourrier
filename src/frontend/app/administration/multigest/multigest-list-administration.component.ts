@@ -123,7 +123,7 @@ export class MultigestListAdministrationComponent implements OnInit {
                     this.multigestUrlClone = JSON.parse(JSON.stringify(this.multigestUrl));
                     this.notify.success(this.translate.instant('lang.dataUpdated'));
                 }),
-                catchError((err: any) => {
+                catchError(() => {
                     this.notify.handleSoftErrors(this.translate.instant('lang.multigestUriIsEmpty'));
                     return of(false);
                 })

@@ -105,7 +105,7 @@ export class InstallerComponent implements OnInit, AfterViewInit {
         });
         dialogRef.afterClosed().pipe(
             filter((result: any) => !this.functionService.empty(result)),
-            tap((result: any) => {
+            tap(() => {
             }),
             catchError((err: any) => {
                 this.notify.handleErrors(err);

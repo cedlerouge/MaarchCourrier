@@ -2,13 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { UntypedFormControl } from '@angular/forms';
-import { catchError, debounceTime, exhaustMap, filter, finalize, map, tap } from 'rxjs/operators';
+import { catchError, debounceTime, filter, finalize, map, tap } from 'rxjs/operators';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { NotificationService } from '@service/notification/notification.service';
 import { of } from 'rxjs';
 import { KeyValue } from '@angular/common';
-import { environment } from '../../../../environments/environment';
 import { FunctionsService } from '@service/functions.service';
 import { PrivilegeService } from '@service/privileges.service';
 
@@ -206,7 +205,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
                             this.communications[elemId].valueChanges
                                 .pipe(
                                     debounceTime(1000),
-                                    tap((value: any) => {
+                                    tap(() => {
                                         this.saveConfiguration();
                                     }),
                                 ).subscribe();
@@ -216,7 +215,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
                             this.metadata[elemId].valueChanges
                                 .pipe(
                                     debounceTime(300),
-                                    tap((value: any) => {
+                                    tap(() => {
                                         this.saveConfiguration();
                                     }),
                                 ).subscribe();
@@ -244,7 +243,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
                                         this.annuary[elemId][index][annuaryItem].valueChanges
                                             .pipe(
                                                 debounceTime(1000),
-                                                tap((value: any) => {
+                                                tap(() => {
                                                     this.saveConfiguration();
                                                 }),
                                             ).subscribe();
@@ -256,7 +255,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
                         this.basketToRedirect.valueChanges
                             .pipe(
                                 debounceTime(300),
-                                tap((value: any) => {
+                                tap(() => {
                                     this.saveConfiguration();
                                 }),
                             ).subscribe();
@@ -335,7 +334,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
             newAnnuary[annuaryItem].valueChanges
                 .pipe(
                     debounceTime(1000),
-                    tap((value: any) => {
+                    tap(() => {
                         this.saveConfiguration();
                     }),
                 ).subscribe();
@@ -360,7 +359,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
         ).subscribe();
     }
 
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     originalOrder = (a: KeyValue<string, any>, b: KeyValue<string, any>): number => 0;
 
     saveConfiguration() {
@@ -397,7 +396,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
             if (elemId !== 'annuaries') {
                 config['annuary'][elemId] = this.annuary[elemId].value;
             } else {
-                this.annuary[elemId].forEach((annuary: any, index: number) => {
+                this.annuary[elemId].forEach((annuary: any) => {
                     const annuaryObj = {};
                     Object.keys(annuary).forEach(annuaryItem => {
                         annuaryObj[annuaryItem] = annuary[annuaryItem].value;
