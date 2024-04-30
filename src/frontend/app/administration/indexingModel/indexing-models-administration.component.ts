@@ -97,7 +97,7 @@ export class IndexingModelsAdministrationComponent implements OnInit {
         this.dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
             exhaustMap(() => this.http.request('PUT', '../rest/indexingModels/' + indexingModel.id + '/disable')),
-            tap((data: any) => {
+            tap(() => {
                 for (const i in this.indexingModels) {
                     if (this.indexingModels[i].id === indexingModel.id) {
                         this.indexingModels[i].enabled = false;
@@ -118,7 +118,7 @@ export class IndexingModelsAdministrationComponent implements OnInit {
         this.dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
             exhaustMap(() => this.http.request('PUT', '../rest/indexingModels/' + indexingModel.id + '/enable')),
-            tap((data: any) => {
+            tap(() => {
                 for (const i in this.indexingModels) {
                     if (this.indexingModels[i].id === indexingModel.id) {
                         this.indexingModels[i].enabled = true;

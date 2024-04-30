@@ -176,7 +176,7 @@ export class NotificationsAdministrationComponent implements OnInit {
         this.newCron.description = description[description.length - 1];
         this.crontab.push(this.newCron);
         this.http.post('../rest/notifications/schedule', this.crontab)
-            .subscribe((data: any) => {
+            .subscribe(() => {
                 this.newCron = {
                     'm': '',
                     'h': '',
@@ -196,7 +196,7 @@ export class NotificationsAdministrationComponent implements OnInit {
     deleteCron(i: number) {
         this.crontab[i].state = 'deleted';
         this.http.post('../rest/notifications/schedule', this.crontab)
-            .subscribe((data: any) => {
+            .subscribe(() => {
                 this.crontab.splice(i, 1);
                 this.notify.success(this.translate.instant('lang.notificationScheduleUpdated'));
             }, (err) => {
