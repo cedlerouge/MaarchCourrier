@@ -58,6 +58,13 @@ class FastParapheurController
 {
     public const INVALID_DOC_ID_ERROR = "Internal error: Invalid docId";
     public const INVALID_DOC_ID_TYPE_ERROR = "Internal error: Failed to convert value of type 'java.lang.String' to required type 'long'";
+    /**
+     * Dimensions are in mm.
+     */
+    private const PICTOGRAM_DIMENSIONS = [
+        'height' => 20,
+        'width' => 50,
+    ];
 
     /**
      * @param Request $request
@@ -1962,8 +1969,8 @@ class FastParapheurController
                     // Position allows you to define the position of the pictogram in the document. Sizes are in mm.
                     // The 0.0 point corresponds to the bottom left corner of the document.
                     'position'  => [
-                        'height' => '20',
-                        'width'  => '50',
+                        'height' => FastParapheurController::PICTOGRAM_DIMENSIONS['height'],
+                        'width'  => FastParapheurController::PICTOGRAM_DIMENSIONS['width'],
                         'page'   => $step['signaturePositions'][0]['page'], // $ corresponds the last page
                         // coordinates of the pictogram frame corresponding to the bottom left corner
                         'x'      => $step['signaturePositions'][0]['positionX'],
@@ -2004,7 +2011,6 @@ class FastParapheurController
             require_once $libPath;
         }
 
-        $height = 20;   // height of pictogram, from prepareStampsSteps
         $pdf = new Fpdi('');  // orientation param is empty for automatic orientation
         $pdf->setSourceFile($filePath);
 
@@ -2016,7 +2022,7 @@ class FastParapheurController
                 // Convert coordinates to millimeters
                 $position['position']['x'] = (int)($dimensions['width'] * $position['position']['x'] / 100);
                 $position['position']['y'] = (int)($dimensions['height'] -
-                    ($dimensions['height'] * $position['position']['y'] / 100) - $height);
+                    ($dimensions['height'] * $position['position']['y'] / 100) - FastParapheurController::PICTOGRAM_DIMENSIONS['height']);
             }
         }
 
