@@ -440,8 +440,7 @@ class UserController
         }
 
         if ($loggingMethod['id'] == 'standard') {
-            AuthenticationController::sendAccountActivationNotification(['userId' => $id, 'userEmail' => $body['mail']]
-            );
+            AuthenticationController::sendAccountActivationNotification(['userId' => $id, 'userEmail' => $body['mail']]);
         }
 
         HistoryController::add([
@@ -773,8 +772,7 @@ class UserController
         if (!empty($contactGroupsToDelete)) {
             $contactGroupsToDelete = array_column($contactGroupsToDelete, 'id');
             ContactGroupModel::delete(['where' => ['id in (?)'], 'data' => [$contactGroupsToDelete]]);
-            ContactGroupListModel::delete(['where' => ['contacts_groups_id in (?)'], 'data' => [$contactGroupsToDelete]]
-            );
+            ContactGroupListModel::delete(['where' => ['contacts_groups_id in (?)'], 'data' => [$contactGroupsToDelete]]);
         }
         ContactGroupListModel::delete(
             ['where' => ['correspondent_id = ?', 'correspondent_type = ?'], 'data' => [$args['id'], 'user']]
@@ -853,8 +851,7 @@ class UserController
         if (!empty($contactGroupsToDelete)) {
             $contactGroupsToDelete = array_column($contactGroupsToDelete, 'id');
             ContactGroupModel::delete(['where' => ['id in (?)'], 'data' => [$contactGroupsToDelete]]);
-            ContactGroupListModel::delete(['where' => ['contacts_groups_id in (?)'], 'data' => [$contactGroupsToDelete]]
-            );
+            ContactGroupListModel::delete(['where' => ['contacts_groups_id in (?)'], 'data' => [$contactGroupsToDelete]]);
         }
         ContactGroupListModel::delete(
             ['where' => ['correspondent_id = ?', 'correspondent_type = ?'], 'data' => [$args['id'], 'user']]
@@ -1028,6 +1025,7 @@ class UserController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function updateCurrentUserFeatureTour(Request $request, Response $response): Response
     {
@@ -1061,6 +1059,7 @@ class UserController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function updateCurrentUserPreferences(Request $request, Response $response): Response
     {
@@ -1390,10 +1389,10 @@ class UserController
         }
 
         $pathToSignature = $docserver['path_template'] . str_replace(
-                '#',
-                '/',
-                $signatures[0]['signature_path']
-            ) .
+            '#',
+            '/',
+            $signatures[0]['signature_path']
+        ) .
             $signatures[0]['signature_file_name'];
         $image = file_get_contents($pathToSignature);
         if ($image === false) {
@@ -2307,6 +2306,7 @@ class UserController
      * @param Response $response
      * @param array $aArgs
      * @return Response
+     * @throws Exception
      */
     public function updateCurrentUserBasketPreferences(Request $request, Response $response, array $aArgs): Response
     {
@@ -2675,9 +2675,9 @@ class UserController
                 continue;
             } elseif (
                 !empty($user['phone']) && (!preg_match(
-                        "/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/",
-                        $user['phone']
-                    ) ||
+                    "/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/",
+                    $user['phone']
+                ) ||
                     !Validator::length(1, 32)->validate($user['phone']))
             ) {
                 $errors[] = [
@@ -2910,6 +2910,7 @@ class UserController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function forgotPassword(Request $request, Response $response): Response
     {
@@ -2931,8 +2932,7 @@ class UserController
         UserModel::update(['set' => ['reset_token' => $resetToken], 'where' => ['id = ?'], 'data' => [$user['id']]]);
 
         $url = UrlController::getCoreUrl() . 'dist/index.html#/reset-password?token=' . $resetToken;
-        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server', 'select' => ['value']]
-        );
+        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server', 'select' => ['value']]);
         $configuration = json_decode($configuration['value'], true);
         if (!empty($configuration['from'])) {
             $sender = $configuration['from'];
@@ -2972,6 +2972,7 @@ class UserController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function passwordInitialization(Request $request, Response $response): Response
     {

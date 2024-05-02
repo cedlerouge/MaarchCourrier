@@ -54,5 +54,4 @@ interface UserInterface
     public function getPhone(): string;
 
     public function setPhone(string $phone): UserInterface;
-
 }

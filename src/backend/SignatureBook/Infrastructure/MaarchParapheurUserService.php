@@ -97,9 +97,9 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
 
         $response = CurlModel::exec([
             'url'        => rtrim(
-                    $this->config->getUrl(),
-                    '/'
-                ) . '/rest/users/' . $externalId['internalParapheur'],
+                $this->config->getUrl(),
+                '/'
+            ) . '/rest/users/' . $externalId['internalParapheur'],
             'bearerAuth' => ['token' => $accessToken],
             'method'     => 'PUT',
             'headers'    => [
