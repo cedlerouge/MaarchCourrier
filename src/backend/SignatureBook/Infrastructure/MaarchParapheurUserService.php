@@ -35,7 +35,7 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
                 'content-type: application/json',
                 'Accept: application/json',
             ],
-            'body'        => json_encode($ids),
+            'body'       => json_encode($ids),
         ]);
 
         if ($response['code'] != 200) {
@@ -55,10 +55,9 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
     {
         $userDetails = [
             'firstname' => $user->getFirstname(),
-            'lastname' => $user->getLastname(),
-            'email' => $user->getMail(),
-            'login' => $user->getLogin(),
-            'signatureMode' => ["rgs_2stars"]
+            'lastname'  => $user->getLastname(),
+            'email'     => $user->getMail(),
+            'login'     => $user->getLogin()
         ];
 
         $response = CurlModel::exec([
@@ -69,7 +68,7 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
                 'content-type: application/json',
                 'Accept: application/json',
             ],
-            'body'        => json_encode($userDetails),
+            'body'       => json_encode($userDetails),
         ]);
 
         if ($response['code'] == 200) {
@@ -83,31 +82,35 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
     /**
      * @param UserInterface $user
      * @param string $accessToken
-     * @return array|int
+     * @return array|bool
      * @throws Exception
      */
-    public function updateUser(UserInterface $user, string $accessToken): array|int
+    public function updateUser(UserInterface $user, string $accessToken): array|bool
     {
         $userDetails = [
-            'firstName' => $user->getFirstname(),
-            'lastName' => $user->getLastname(),
-            'mail' => $user->getMail(),
-            'login' => $user->getLogin()
+            'firstname' => $user->getFirstname(),
+            'lastname'  => $user->getLastname(),
+            'email'     => $user->getMail(),
+            "phone"     => $user->getPhone()
         ];
+        $externalId = $user->getExternalId();
 
         $response = CurlModel::exec([
-            'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users' . $user->getLogin(),
+            'url'        => rtrim(
+                    $this->config->getUrl(),
+                    '/'
+                ) . '/rest/users/' . $externalId['internalParapheur'],
             'bearerAuth' => ['token' => $accessToken],
             'method'     => 'PUT',
             'headers'    => [
                 'content-type: application/json',
                 'Accept: application/json',
             ],
-            'body'        => json_encode($userDetails),
+            'body'       => json_encode($userDetails),
         ]);
 
         if ($response['code'] == 200) {
-            return $response['response']['id'];
+            return true;
         } else {
             return $response['errors'] ?? ['errors' => 'Failed to update the user in Maarch Parapheur.'];
         }

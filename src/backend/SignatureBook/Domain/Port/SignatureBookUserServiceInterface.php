@@ -16,9 +16,9 @@ interface SignatureBookUserServiceInterface
     /**
      * @param UserInterface $user
      * @param string $accessToken
-     * @return array|int
+     * @return array|bool
      */
-    public function updateUser(UserInterface $user, string $accessToken): array|int;
+    public function updateUser(UserInterface $user, string $accessToken): array|bool;
 
     /**
      * @return array|int

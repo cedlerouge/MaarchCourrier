@@ -24,7 +24,7 @@ class User implements UserInterface
     private string $lastname;
     private string $mail;
     private string $login;
-    private string $mode;
+    private string $phone;
 
     /**
      * Create User from an array
@@ -112,14 +112,21 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getMode(): string
+    /**
+     * @return string
+     */
+    public function getPhone(): string
     {
-        return $this->mode;
+        return $this->phone;
     }
 
-    public function setMode(string $mode): UserInterface
+    /**
+     * @param string $phone
+     * @return UserInterface
+     */
+    public function setPhone(string $phone): UserInterface
     {
-        $this->mode = $mode;
+        $this->phone = $phone;
         return $this;
     }
 }

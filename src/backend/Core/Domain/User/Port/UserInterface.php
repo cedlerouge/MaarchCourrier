@@ -36,6 +36,7 @@ interface UserInterface
     public function setExternalId(array $externalId): UserInterface;
 
     public function getFirstname(): string;
+
     public function setFirstname(string $firstname): UserInterface;
 
     public function getLastname(): string;
@@ -50,6 +51,8 @@ interface UserInterface
 
     public function setLogin(string $login): UserInterface;
 
-    public function getMode(): string;
-    public function setMode(string $mode): UserInterface;
+    public function getPhone(): string;
+
+    public function setPhone(string $phone): UserInterface;
+
 }

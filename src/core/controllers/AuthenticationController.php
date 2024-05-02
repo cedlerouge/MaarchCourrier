@@ -1038,8 +1038,8 @@ class AuthenticationController
                 ]
             );
             $externalId = json_decode($user['external_id'], true);
-            if ($externalId['maarchParapheur'] ?? null) {
-                $user['external_id'] = $externalId['maarchParapheur'];
+            if ($externalId['internalParapheur'] ?? null) {
+                $user['external_id'] = $externalId['internalParapheur'];
             } else {
                 $user = UserModel::getById(
                     [

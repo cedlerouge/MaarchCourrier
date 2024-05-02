@@ -33,11 +33,11 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
      * @param string $accessToken
      * @return array|int
      */
-    public function updateUser(UserInterface $user, string $accessToken): array|int
+    public function updateUser(UserInterface $user, string $accessToken): array|bool
     {
         $this->updateUserCalled = true;
         $user->setFirstname('firstname2');
-        return $this->id;
+        return true;
     }
 
     /**

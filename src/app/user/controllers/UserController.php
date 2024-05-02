@@ -406,14 +406,14 @@ class UserController
             $createUser = $createUserFactory->create();
             $user = $createUser->createAndUpdateUser($user);
             $user = [
-                'firstname' => $user->getFirstname(),
-                'lastname' => $user->getLastname(),
-                'mail' => $user->getMail(),
-                'userId' => $user->getLogin(),
+                'firstname'   => $user->getFirstname(),
+                'lastname'    => $user->getLastname(),
+                'mail'        => $user->getMail(),
+                'userId'      => $user->getLogin(),
                 'external_id' => json_encode($user->getExternalId()),
-                'initials' => $body['initials'] ?? '',
-                'phone' => $body['phone'] ??  '',
-                'mode' => $body['mode'],
+                'initials'    => $body['initials'] ?? '',
+                'phone'       => $body['phone'] ?? '',
+                'mode'        => $body['mode'],
                 'preferences' => $body['preferences'],
             ];
         }
@@ -440,7 +440,8 @@ class UserController
         }
 
         if ($loggingMethod['id'] == 'standard') {
-            AuthenticationController::sendAccountActivationNotification(['userId' => $id, 'userEmail' => $body['mail']]);
+            AuthenticationController::sendAccountActivationNotification(['userId' => $id, 'userEmail' => $body['mail']]
+            );
         }
 
         HistoryController::add([
@@ -500,7 +501,7 @@ class UserController
         ];
 
         if (PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])) {
-            $set['phone'] = $body['phone'];
+            $set['phone'] = $body['phone'] ?? '';
         }
 
         if (!empty($body['status']) && $body['status'] == 'OK') {
@@ -543,12 +544,12 @@ class UserController
                 ->setFirstname($body['firstname'])
                 ->setLastname($body['lastname'])
                 ->setMail($body['mail'])
-                ->setLogin($body['userId'])
+                ->setPhone($body['phone'])
                 ->setExternalId($body['external_id']);
 
             $createUserFactory = new CreateAndUpdateUserInSignatoryBookFactory();
             $updateUser = $createUserFactory->create();
-            $user = $updateUser->createAndUpdateUser($user);
+            $updateUser->createAndUpdateUser($user);
         }
 
         UserModel::update([
@@ -772,7 +773,8 @@ class UserController
         if (!empty($contactGroupsToDelete)) {
             $contactGroupsToDelete = array_column($contactGroupsToDelete, 'id');
             ContactGroupModel::delete(['where' => ['id in (?)'], 'data' => [$contactGroupsToDelete]]);
-            ContactGroupListModel::delete(['where' => ['contacts_groups_id in (?)'], 'data' => [$contactGroupsToDelete]]);
+            ContactGroupListModel::delete(['where' => ['contacts_groups_id in (?)'], 'data' => [$contactGroupsToDelete]]
+            );
         }
         ContactGroupListModel::delete(
             ['where' => ['correspondent_id = ?', 'correspondent_type = ?'], 'data' => [$args['id'], 'user']]
@@ -851,7 +853,8 @@ class UserController
         if (!empty($contactGroupsToDelete)) {
             $contactGroupsToDelete = array_column($contactGroupsToDelete, 'id');
             ContactGroupModel::delete(['where' => ['id in (?)'], 'data' => [$contactGroupsToDelete]]);
-            ContactGroupListModel::delete(['where' => ['contacts_groups_id in (?)'], 'data' => [$contactGroupsToDelete]]);
+            ContactGroupListModel::delete(['where' => ['contacts_groups_id in (?)'], 'data' => [$contactGroupsToDelete]]
+            );
         }
         ContactGroupListModel::delete(
             ['where' => ['correspondent_id = ?', 'correspondent_type = ?'], 'data' => [$args['id'], 'user']]
@@ -1387,10 +1390,10 @@ class UserController
         }
 
         $pathToSignature = $docserver['path_template'] . str_replace(
-            '#',
-            '/',
-            $signatures[0]['signature_path']
-        ) .
+                '#',
+                '/',
+                $signatures[0]['signature_path']
+            ) .
             $signatures[0]['signature_file_name'];
         $image = file_get_contents($pathToSignature);
         if ($image === false) {
@@ -2672,9 +2675,9 @@ class UserController
                 continue;
             } elseif (
                 !empty($user['phone']) && (!preg_match(
-                    "/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/",
-                    $user['phone']
-                ) ||
+                        "/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/",
+                        $user['phone']
+                    ) ||
                     !Validator::length(1, 32)->validate($user['phone']))
             ) {
                 $errors[] = [
@@ -2928,7 +2931,8 @@ class UserController
         UserModel::update(['set' => ['reset_token' => $resetToken], 'where' => ['id = ?'], 'data' => [$user['id']]]);
 
         $url = UrlController::getCoreUrl() . 'dist/index.html#/reset-password?token=' . $resetToken;
-        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server', 'select' => ['value']]);
+        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server', 'select' => ['value']]
+        );
         $configuration = json_decode($configuration['value'], true);
         if (!empty($configuration['from'])) {
             $sender = $configuration['from'];
