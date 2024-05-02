@@ -17,6 +17,7 @@ namespace ExternalSignatoryBook\controllers;
 use Attachment\models\AttachmentModel;
 use Attachment\models\AttachmentTypeModel;
 use Convert\controllers\ConvertPdfController;
+use Convert\models\AdrModel;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Exception;
@@ -171,11 +172,12 @@ class IxbusController
         $mainDocumentFilePath = null;
         if (!empty($mainResource['docserver_id'])) {
             $adrMainInfo = ConvertPdfController::getConvertedPdfById([
-                'resId' => $args['resIdMaster'], 'collId' => 'letterbox_coll'
+                'resId'  => $args['resIdMaster'],
+                'collId' => 'letterbox_coll'
             ]);
             $letterboxPath = DocserverModel::getByDocserverId([
                 'docserverId' => $adrMainInfo['docserver_id'],
-                'select' => ['path_template']
+                'select'      => ['path_template']
             ]);
             $mainDocumentFilePath = $letterboxPath['path_template'] .
                 str_replace('#', '/', $adrMainInfo['path']) . $adrMainInfo['filename'];
@@ -214,7 +216,7 @@ class IxbusController
         foreach ($attachments as $key => $value) {
             if (!$attachmentTypes[$value['attachment_type']]) {
                 $adrInfo = ConvertPdfController::getConvertedPdfById([
-                    'resId' => $value['res_id'],
+                    'resId'  => $value['res_id'],
                     'collId' => 'attachments_coll'
                 ]);
                 if (
@@ -230,12 +232,12 @@ class IxbusController
                 $filePath = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) .
                     $adrInfo['filename'];
                 $docserverType = DocserverTypeModel::getById([
-                    'id' => $docserverInfo['docserver_type_id'],
+                    'id'     => $docserverInfo['docserver_type_id'],
                     'select' => ['fingerprint_mode']
                 ]);
                 $fingerprint = StoreController::getFingerPrint([
                     'filePath' => $filePath,
-                    'mode' => $docserverType['fingerprint_mode']
+                    'mode'     => $docserverType['fingerprint_mode']
                 ]);
                 if ($adrInfo['fingerprint'] != $fingerprint) {
                     return ['error' => 'Fingerprints do not match'];
@@ -260,7 +262,7 @@ class IxbusController
                 [
                     'filePath' => $mainDocumentFilePath,
                     'fileName' => TextFormatModel::formatFilename([
-                            'filename' => $mainResource['subject'],
+                            'filename'  => $mainResource['subject'],
                             'maxLength' => 250
                         ]) . '.pdf'
                 ]
@@ -287,18 +289,28 @@ class IxbusController
             $resId = $value['res_id'];
             $collId = 'attachments_coll';
 
-            $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => $collId]);
+            $adrInfo = [
+                'docserver_id' => $value['docserver_id'],
+                'path'         => $value['path'],
+                'filename'     => $value['filename'],
+                'fingerprint'  => $value['fingerprint']
+            ];
+
+            if (!empty($args['config']['optionSendOfficeDocument'] ?? null)) {
+                $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => $collId]);
+            }
+
             $docserverInfo = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id']]);
             $filePath = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) .
                 $adrInfo['filename'];
 
             $docserverType = DocserverTypeModel::getById([
-                'id' => $docserverInfo['docserver_type_id'],
+                'id'     => $docserverInfo['docserver_type_id'],
                 'select' => ['fingerprint_mode']
             ]);
             $fingerprint = StoreController::getFingerPrint([
                 'filePath' => $filePath,
-                'mode' => $docserverType['fingerprint_mode']
+                'mode'     => $docserverType['fingerprint_mode']
             ]);
             if ($adrInfo['fingerprint'] != $fingerprint) {
                 return ['error' => 'Fingerprints do not match'];
@@ -338,9 +350,9 @@ class IxbusController
             }
 
             $transmittedFolder = IxBusController::transmitFolder([
-                'config' => $args['config'],
-                'folderId' => $folderId]
-            );
+                'config'   => $args['config'],
+                'folderId' => $folderId
+            ]);
             if (!empty($transmittedFolder['error'])) {
                 return ['error' => $transmittedFolder['error']];
             }
@@ -355,18 +367,28 @@ class IxbusController
             $resId = $mainResource['res_id'];
             $collId = 'letterbox_coll';
 
-            $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => $collId]);
+            $adrInfo = [
+                'docserver_id' => $mainResource['docserver_id'],
+                'path'         => $mainResource['path'],
+                'filename'     => $mainResource['filename'],
+                'fingerprint'  => $mainResource['fingerprint']
+            ];
+
+            if (!empty($args['config']['optionSendOfficeDocument'] ?? null)) {
+                $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => $collId]);
+            }
+
             $docserverInfo = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id']]);
             $filePath = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) .
                 $adrInfo['filename'];
 
             $docserverType = DocserverTypeModel::getById([
-                'id' => $docserverInfo['docserver_type_id'],
+                'id'     => $docserverInfo['docserver_type_id'],
                 'select' => ['fingerprint_mode']
             ]);
             $fingerprint = StoreController::getFingerPrint([
                 'filePath' => $filePath,
-                'mode' => $docserverType['fingerprint_mode']
+                'mode'     => $docserverType['fingerprint_mode']
             ]);
             if ($adrInfo['fingerprint'] != $fingerprint) {
                 return ['error' => 'Fingerprints do not match'];
@@ -411,7 +433,7 @@ class IxbusController
             }
 
             $transmittedFolder = IxBusController::transmitFolder([
-                'config' => $args['config'],
+                'config'   => $args['config'],
                 'folderId' => $folderId
             ]);
             if (!empty($transmittedFolder['error'])) {
@@ -507,7 +529,7 @@ class IxbusController
         $version = $args['version'];
         foreach ($args['idsToRetrieve'][$version] as $resId => $value) {
             $folderData = IxbusController::getDossier([
-                'config' => $args['config'],
+                'config'   => $args['config'],
                 'folderId' => $value['external_id']
             ]);
 
