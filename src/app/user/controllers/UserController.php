@@ -304,7 +304,9 @@ class UserController
             ) ||
             !preg_match("/^[\w.@-]*$/", $body['userId'])
         ) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body userId is empty, not a string or not valid']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body userId is empty, not a string or not valid']
+            );
         } elseif (
             !Validator::stringType()->length(1, 255)->notEmpty()->validate(
                 $body['firstname'] ?? null
