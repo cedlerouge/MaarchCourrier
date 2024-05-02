@@ -15,7 +15,6 @@ class CreateAndUpdateUserInSignatoryBook
         private readonly SignatureBookUserServiceInterface $signatureBookUserService,
         private readonly CurrentUserInterface $currentUser,
         private readonly SignatureServiceConfigLoaderInterface $signatureServiceConfigLoader
-
     ) {
     }
 
@@ -36,15 +35,12 @@ class CreateAndUpdateUserInSignatoryBook
             throw new CurrentTokenIsNotFoundProblem();
         }
 
-
         if (!empty($user->getExternalId())) {
             if ($this->signatureBookUserService->doesUserExists($user->getExternalId(), $accessToken)) {
                 $this->signatureBookUserService->updateUser($user, $accessToken);
             } else {
                 $existingIds = $user->getExternalId();
                 $existingIds['internalParapheur'] = $this->signatureBookUserService->createUser($user, $accessToken);
-
-
                 $user->setExternalId($existingIds);
             }
         } else {
