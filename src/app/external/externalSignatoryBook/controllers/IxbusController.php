@@ -152,8 +152,10 @@ class IxbusController
     public static function sendDatas($args): array
     {
         $mainResource = ResModel::getById([
+            'resId'  => $args['resIdMaster'],
             'select' => [
                 'res_id',
+                'subject',
                 'path',
                 'filename',
                 'docserver_id',
@@ -161,9 +163,9 @@ class IxbusController
                 'category_id',
                 'external_id',
                 'integrations',
-                'subject'
-            ],
-            'resId'  => $args['resIdMaster']
+                'process_limit_date',
+                'fingerprint'
+            ]
         ]);
 
         $mainDocumentFilePath = null;
@@ -245,22 +247,6 @@ class IxbusController
         }
 
         $attachmentToFreeze = [];
-        $mainResource = ResModel::getById([
-            'resId'  => $args['resIdMaster'],
-            'select' => [
-                'res_id',
-                'subject',
-                'path',
-                'filename',
-                'docserver_id',
-                'format',
-                'category_id',
-                'external_id',
-                'integrations',
-                'process_limit_date',
-                'fingerprint'
-            ]
-        ]);
 
         if (empty($mainResource['process_limit_date'])) {
             $processLimitDate = date('Y-m-d', strtotime(date("Y-m-d") . ' + 14 days'));
