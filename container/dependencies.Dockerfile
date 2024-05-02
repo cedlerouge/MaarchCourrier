@@ -11,6 +11,9 @@ COPY ./container/dependences.apt ./container/dependences.php /mnt/
 ## Dependencies
 # Binaries dependencies + configuration
 RUN apt-get update \
+    && apt-get install --no-install-recommends -y debsecan \
+    && apt-get install --no-install-recommends -y $(debsecan --suite buster --format packages --only-fixed) \
+    && apt-get purge -y debsecan \
     && apt-get install --no-install-recommends -y $(cat /mnt/dependences.apt) \
     && sed -i 's/rights="none" pattern="PDF"/rights="read" pattern="PDF"/' /etc/ImageMagick-6/policy.xml \
     && rm -rf /var/lib/apt/lists/* \
