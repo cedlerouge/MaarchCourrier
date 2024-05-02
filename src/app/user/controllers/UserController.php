@@ -882,11 +882,11 @@ class UserController
         ]);
 
         $sbcl = new SignatureBookConfigLoader();
-        $user = null;
+        $externalId = json_decode($user['external_id']);
         if ($sbcl->getConfig()->isNewInternalParaph()) {
-            if ($user['external_id']['interalParapheur'] !== null) {
+            if ($user['external_id']['internalParapheur'] !== null) {
                 $user = (new User())
-                    ->setExternalId($user['external_id']['internalParapheur'] ?? null);
+                    ->setExternalId($externalId['internalParapheur'] ?? null);
 
                 $deletedUserFactory = new DeleteUserInSignatoryBookFactory();
                 $deleteUser = $deletedUserFactory->create();
