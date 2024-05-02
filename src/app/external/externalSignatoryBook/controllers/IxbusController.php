@@ -166,6 +166,7 @@ class IxbusController
             'resId'  => $args['resIdMaster']
         ]);
 
+        $mainDocumentFilePath = null;
         if (!empty($mainResource['docserver_id'])) {
             $adrMainInfo = ConvertPdfController::getConvertedPdfById([
                 'resId' => $args['resIdMaster'], 'collId' => 'letterbox_coll'
@@ -205,7 +206,7 @@ class IxbusController
             'data'   => [$args['resIdMaster'], ['incoming_mail_attachment', 'signed_response']]
         ]);
 
-        $annexesAttachments = [];
+        $annexes = [];
         $attachmentTypes = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
         $attachmentTypes = array_column($attachmentTypes, 'signable', 'type_id');
         foreach ($attachments as $key => $value) {
@@ -238,7 +239,7 @@ class IxbusController
                     return ['error' => 'Fingerprints do not match'];
                 }
 
-                $annexesAttachments[] = ['filePath' => $filePath, 'fileName' => $value['title'] . '.pdf'];
+                $annexes[] = ['filePath' => $filePath, 'fileName' => $value['title'] . '.pdf'];
                 unset($attachments[$key]);
             }
         }
@@ -268,19 +269,17 @@ class IxbusController
             $processLimitDate = $processLimitDateTmp[0];
         }
 
-        $attachmentsData = [];
         if (!empty($mainDocumentFilePath)) {
-            $attachmentsData = [
+            $annexes = array_merge($annexes, [
                 [
                     'filePath' => $mainDocumentFilePath,
                     'fileName' => TextFormatModel::formatFilename([
-                        'filename' => $mainResource['subject'],
-                        'maxLength' => 250
+                            'filename' => $mainResource['subject'],
+                            'maxLength' => 250
                         ]) . '.pdf'
                 ]
-            ];
+            ]);
         }
-        $attachmentsData = array_merge($annexesAttachments, $attachmentsData);
 
         $signature = $args['manSignature'] == 'manual' ? 1 : 0;
         $bodyData = [
@@ -339,12 +338,12 @@ class IxbusController
                 return ['error' => $addedFile['error']];
             }
 
-            foreach ($attachmentsData as $attachmentData) {
+            foreach ($annexes as $annexeFile) {
                 $addedFile = IxBusController::addFileToFolder([
                     'config'   => $args['config'],
                     'folderId' => $folderId,
-                    'filePath' => $attachmentData['filePath'],
-                    'fileName' => $attachmentData['fileName'],
+                    'filePath' => $annexeFile['filePath'],
+                    'fileName' => $annexeFile['fileName'],
                     'fileType' => 'annexe'
                 ]);
                 if (!empty($addedFile['error'])) {
@@ -408,16 +407,16 @@ class IxbusController
                 return ['error' => $addedFile['error']];
             }
 
-            $attachmentsData = array_filter($attachmentsData, function ($attachment) use ($filePath, $fileName) {
+            $annexes = array_filter($annexes, function ($attachment) use ($filePath, $fileName) {
                 return !($attachment['filePath'] === $filePath && $attachment['fileName'] === $fileName);
             });
 
-            foreach ($attachmentsData as $attachmentData) {
+            foreach ($annexes as $annexeFile) {
                 $addedFile = IxBusController::addFileToFolder([
                     'config'   => $args['config'],
                     'folderId' => $folderId,
-                    'filePath' => $attachmentData['filePath'],
-                    'fileName' => $attachmentData['fileName'],
+                    'filePath' => $annexeFile['filePath'],
+                    'fileName' => $annexeFile['fileName'],
                     'fileType' => 'annexe'
                 ]);
                 if (!empty($addedFile['error'])) {
