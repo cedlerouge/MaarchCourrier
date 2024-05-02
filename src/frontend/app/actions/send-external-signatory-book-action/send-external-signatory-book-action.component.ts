@@ -50,6 +50,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     };
     resourcesToSign: any[] = [];
     resourcesMailing: any[] = [];
+    availableResources: any[] = [];
 
     externalSignatoryBookDatas: any = {
         steps: [],
@@ -132,8 +133,11 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
             this.additionalsInfos = data.additionalsInfos;
             if (this.additionalsInfos.attachments.length > 0) {
                 this.resourcesMailing = data.additionalsInfos.attachments.filter((element: any) => element.mailing);
-                data.availableResources.filter((element: any) => !element.mainDocument).forEach((element: any) => {
-                    this.toggleDocToSign(true, element, false);
+                this.availableResources = data.availableResources;
+                this.availableResources.filter((element: any) => !element.mainDocument).forEach((element: any) => {
+                    if (this.resourcesToSign.find((resource: any) => resource.resId === element.resId) === undefined) {
+                        this.toggleDocToSign(true, element, false);
+                    }
                 });
             }
             this.errors = data.errors;
@@ -221,13 +225,15 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
 
     toggleDocToSign(state: boolean, document: any, mainDocument: boolean = true) {
         if (state) {
-            this.resourcesToSign.push(
-                {
-                    resId: document.resId,
-                    chrono: document.chrono,
-                    title: document.subject,
-                    mainDocument: mainDocument,
-                });
+            if (this.resourcesToSign.find((resource: any) => resource.resId === document.resId) === undefined) {
+                this.resourcesToSign.push(
+                    {
+                        resId: document.resId,
+                        chrono: document.chrono,
+                        title: document.subject,
+                        mainDocument: mainDocument,
+                    });
+            }
         } else {
             const index = this.resourcesToSign.map((item: any) => `${item.resId}_${item.mainDocument}`).indexOf(`${document.resId}_${mainDocument}`);
             this.resourcesToSign.splice(index, 1);
@@ -262,9 +268,15 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         return this.translate.instant('lang.sendToExternalSignatoryBook');
     }
 
-    async afterAttachmentToggle() {
+    async afterAttachmentToggle(data: {id: string, attachment: any}) {
         await this.checkExternalSignatureBook();
         this.attachmentsList.setTaget(this.attachmentsList.currentIntegrationTarget);
+        if (!data.attachment.inSignatureBook) {
+            const resource: any = this.resourcesToSign.find((resource: any) => resource.resId === data.attachment.resId);
+            if (resource !== undefined) {
+                this.toggleDocToSign(false, resource, false);
+            }
+        }
     }
 
     getIntegratedAttachments(): number {

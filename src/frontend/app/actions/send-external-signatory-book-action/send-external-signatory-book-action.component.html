@@ -107,7 +107,7 @@
                 <app-attachments-list #attachmentsList
                     [isModal]="true"
                     [resId]="data.resIds[0]"
-                    (afterActionAttachment)="afterAttachmentToggle()">
+                    (afterActionAttachment)="afterAttachmentToggle($event)">
                 </app-attachments-list>
             </mat-sidenav>
         </mat-sidenav-container>
