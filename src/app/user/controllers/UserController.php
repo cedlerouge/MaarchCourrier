@@ -38,6 +38,7 @@ use Group\models\GroupModel;
 use History\controllers\HistoryController;
 use History\models\HistoryModel;
 use MaarchCourrier\SignatureBook\Infrastructure\Factory\CreateAndUpdateUserInSignatoryBookFactory;
+use MaarchCourrier\SignatureBook\Infrastructure\Factory\DeleteUserInSignatoryBookFactory;
 use MaarchCourrier\SignatureBook\Infrastructure\SignatureBookConfigLoader;
 use MaarchCourrier\User\Domain\User;
 use Notification\controllers\NotificationsEventsController;
@@ -811,7 +812,9 @@ class UserController
             return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
         }
 
-        $user = UserModel::getById(['id' => $args['id'], 'select' => ['firstname', 'lastname', 'user_id', 'mode']]);
+        $user = UserModel::getById(
+            ['id' => $args['id'], 'select' => ['firstname', 'lastname', 'user_id', 'mode', 'external_id']]
+        );
         if (
             in_array($user['mode'], ['root_visible', 'root_invisible']) &&
             !UserController::isRoot(['id' => $GLOBALS['id']])
@@ -878,6 +881,18 @@ class UserController
             'data'  => [$args['id']]
         ]);
 
+        $sbcl = new SignatureBookConfigLoader();
+        $user = null;
+        if ($sbcl->getConfig()->isNewInternalParaph()) {
+            if ($user['external_id']['interalParapheur'] !== null) {
+                $user = (new User())
+                    ->setExternalId($user['external_id']['internalParapheur'] ?? null);
+
+                $deletedUserFactory = new DeleteUserInSignatoryBookFactory();
+                $deleteUser = $deletedUserFactory->create();
+                $deleteUser->deleteUser($user);
+            }
+        }
         UserModel::delete(['id' => $args['id']]);
 
         HistoryController::add([

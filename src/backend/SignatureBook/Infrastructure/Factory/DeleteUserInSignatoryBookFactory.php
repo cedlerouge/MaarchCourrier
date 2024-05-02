@@ -2,23 +2,23 @@
 
 namespace MaarchCourrier\SignatureBook\Infrastructure\Factory;
 
-use MaarchCourrier\SignatureBook\Application\User\CreateAndUpdateUserInSignatoryBook;
+use MaarchCourrier\SignatureBook\Application\User\DeleteUserInSignatoryBook;
 use MaarchCourrier\SignatureBook\Infrastructure\MaarchParapheurUserService;
 use MaarchCourrier\SignatureBook\Infrastructure\SignatureServiceJsonConfigLoader;
 use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 
-class CreateAndUpdateUserInSignatoryBookFactory
+class DeleteUserInSignatoryBookFactory
 {
-    public function create(): CreateAndUpdateUserInSignatoryBook
+    public static function create(): DeleteUserInSignatoryBook
     {
         $currentUser = new CurrentUserInformations();
         $signatureBookUser = new MaarchParapheurUserService();
         $SignatureServiceConfigLoader = new SignatureServiceJsonConfigLoader();
 
-        return new CreateAndUpdateUserInSignatoryBook(
+        return new DeleteUserInSignatoryBook(
             $signatureBookUser,
             $currentUser,
-            $SignatureServiceConfigLoader
+            $SignatureServiceConfigLoader,
         );
     }
 }

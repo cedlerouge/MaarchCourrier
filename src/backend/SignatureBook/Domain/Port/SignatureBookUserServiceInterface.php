@@ -21,9 +21,11 @@ interface SignatureBookUserServiceInterface
     public function updateUser(UserInterface $user, string $accessToken): array|bool;
 
     /**
-     * @return array|int
+     * @param UserInterface $user
+     * @param string $accessToken
+     * @return array|bool
      */
-    public function deleteUser(): array|int;
+    public function deleteUser(UserInterface $user, string $accessToken): array|bool;
 
     /**
      * @param array $ids

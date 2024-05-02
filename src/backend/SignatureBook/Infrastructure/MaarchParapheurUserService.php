@@ -117,11 +117,30 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
     }
 
     /**
-     * @return array|int
+     * @param UserInterface $user
+     * @param string $accessToken
+     * @return array|bool
+     * @throws Exception
      */
-    public function deleteUser(): array|int
+    public function deleteUser(UserInterface $user, string $accessToken): array|bool
     {
-        // TODO: Implement deleteUser() method.
-        return [];
+        $externalId = $user->getExternalId();
+        $response = CurlModel::exec([
+            'url'        => rtrim(
+                $this->config->getUrl(),
+                '/'
+            ) . '/rest/users/' . $externalId['internalParapheur'],
+            'bearerAuth' => ['token' => $accessToken],
+            'method'     => 'PUT',
+            'headers'    => [
+                'content-type: application/json',
+                'Accept: application/json',
+            ]
+        ]);
+        if ($response['code'] === 200) {
+            return true;
+        } else {
+            return $response['errors'] ?? ['errors' => 'Failed to delete the Maarch Parapheur.'];
+        }
     }
 }

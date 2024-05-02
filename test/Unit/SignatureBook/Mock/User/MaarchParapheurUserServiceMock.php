@@ -13,6 +13,7 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
     public bool $createUserCalled = false;
     public bool $updateUserCalled = false;
 
+    public bool $deleteUserCalled = false;
     public bool $userExists = false;
 
     public SignatureServiceConfig $config;
@@ -41,11 +42,14 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
     }
 
     /**
-     * @return array|int
+     * @param UserInterface $user
+     * @param string $accessToken
+     * @return array|bool
      */
-    public function deleteUser(): array|int
+    public function deleteUser(UserInterface $user, string $accessToken): array|bool
     {
-        return $this->id;
+        $this->deleteUserCalled = true;
+        return true;
     }
 
     /**
