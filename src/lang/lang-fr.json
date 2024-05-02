@@ -2853,5 +2853,13 @@
     "moreActions": "Plus d'actions",
     "toggleResListDrawer": "Ouvrir/Fermer le panneau latéral",
     "nextParaph": "Parapheur suivant",
-    "prevParaph": "Parapheur précédent"
+    "prevParaph": "Parapheur précédent",
+    "docsToSign": "document(s) à signer",
+    "toggleVisaWorkflow": "Afficher/Masquer le circuit de visa",
+    "digitalCertificate": "Certificat électronique",
+    "atLeastOneDocumentHasNoStamp": "Au moins un document n'a <b color=\"warn\">pas de griffe.</b>",
+    "noStampDesc": "Aucune griffe apposée sur le document",
+    "showVisaWorkflow": "Voir le circuit de visa",
+    "hideVisaWorkflow": "Masquer le circuit de visa",
+    "seenAsVisaUser": "Vous serez considéré comme <b color=\"warn\">viseur</b>."
 }

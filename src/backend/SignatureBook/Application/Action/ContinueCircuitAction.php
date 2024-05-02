@@ -14,7 +14,6 @@
 
 namespace MaarchCourrier\SignatureBook\Application\Action;
 
-use Exception;
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
@@ -34,7 +33,14 @@ class ContinueCircuitAction
     }
 
     /**
-     * @throws Exception
+     * @param int $resId
+     * @param array $data
+     * @param array $note
+     * @return bool
+     * @throws CurrentTokenIsNotFoundProblem
+     * @throws DataToBeSentToTheParapheurAreEmptyProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     * @throws SignatureNotAppliedProblem
      */
     public function execute(int $resId, array $data, array $note): bool
     {
@@ -66,34 +72,34 @@ class ContinueCircuitAction
             'resId' => $resId
         ];
 
-
-        foreach ($requiredData as $requiredDatum) {
-            if (empty($data[$requiredDatum])) {
-                $missingData[] = $requiredDatum;
+        if ($data['digitalCertificate']) {
+            foreach ($requiredData as $requiredDatum) {
+                if (empty($data[$requiredDatum])) {
+                    $missingData[] = $requiredDatum;
+                }
             }
-        }
 
-        if (!empty($missingData)) {
-            throw new DataToBeSentToTheParapheurAreEmptyProblem($missingData);
-        }
+            if (!empty($missingData)) {
+                throw new DataToBeSentToTheParapheurAreEmptyProblem($missingData);
+            }
 
-
-        $applySuccess = $this->signatureService
-            ->setConfig($signatureBook)
-            ->applySignature(
-                $data['documentId'],
-                $data['hashSignature'],
-                $data['signatures'] ?? [],
-                $data['certificate'],
-                $data['signatureContentLength'],
-                $data['signatureFieldName'],
-                $data['tmpUniqueId'] ?? null,
-                $accessToken,
-                $data['cookieSession'],
-                $resourceToSign
-            );
-        if (is_array($applySuccess)) {
-            throw new SignatureNotAppliedProblem($applySuccess['errors']);
+            $applySuccess = $this->signatureService
+                ->setConfig($signatureBook)
+                ->applySignature(
+                    $data['documentId'],
+                    $data['hashSignature'],
+                    $data['signatures'] ?? [],
+                    $data['certificate'],
+                    $data['signatureContentLength'],
+                    $data['signatureFieldName'],
+                    $data['tmpUniqueId'] ?? null,
+                    $accessToken,
+                    $data['cookieSession'],
+                    $resourceToSign
+                );
+            if (is_array($applySuccess)) {
+                throw new SignatureNotAppliedProblem($applySuccess['errors']);
+            }
         }
 
         return true;

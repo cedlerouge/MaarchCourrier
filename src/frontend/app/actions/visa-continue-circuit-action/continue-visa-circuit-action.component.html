@@ -7,59 +7,171 @@
         </div>
         <mat-sidenav-container autosize style="height:100%;">
             <mat-sidenav-content style="background: white;padding:10px;">
-                <div>
-                    {{'lang.makeActionOn' | translate}}
-                    <b *ngIf="data.resIds.length === 0" color="primary"
-                        class="highlight">{{'lang.currentIndexingMail' | translate}}</b>
-                    <b *ngIf="data.resIds.length === 1" color="primary" class="highlight">{{data.resource.chrono}}</b>
-                    <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
-                        {{'lang.elements' | translate}}</b> ?
+                <div class="digital-certificate" [attr.aria-label]="'lang.digitalCertificate' | translate">
+                    <mat-checkbox
+                        name="digitalCertificate"
+                        color="primary"
+                        [title]="'lang.digitalCertificate' | translate"
+                        [(ngModel)]="digitalCertificate">
+                        {{'lang.digitalCertificate' | translate}}
+                    </mat-checkbox>
                 </div>
-                <div class="alert-message alert-message-info"
-                    *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== ''"
-                    role="alert" style="margin-top: 30px;"
-                    [innerHTML]="('lang.sendToDocTo' | translate) + ' <b>' + appVisaWorkflow.getNextVisaUser().labelToDisplay + '</b>'">
+                <div class="make-action-stream-icon">
+                    <div class="make-action">
+                        {{'lang.makeActionOn' | translate}}
+                        <b *ngIf="data.resIds.length === 0" color="primary"
+                            class="highlight">{{'lang.currentIndexingMail' | translate}}</b>
+                        <b *ngIf="data.resIds.length === 1" color="primary" class="highlight">{{data.resource.chrono}}</b>
+                        <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
+                            {{'lang.elements' | translate}}</b> ?
+                    </div>
+                    <button *ngIf="data.resIds.length === 1"
+                        mat-icon-button
+                        [attr.aria-hidden]="true"
+                        [title]="'lang.toggleVisaWorkflow' | translate"
+                        (click)="snav2.toggle()">
+                        <mat-icon class="fa fa-stream material-icons"></mat-icon>
+                    </button>
                 </div>
-
-                <div class="alert-message alert-message-info"
-                    *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() === '' && !noResourceToProcess"
-                    role="alert" style="margin-top: 30px;" [innerHTML]="'lang.endWorkflow' | translate"></div>
-
-                <div *ngIf="resourcesErrors.length > 0" class="alert-message alert-message-danger mailList"
-                    role="alert">
-                    <p>
+                <app-maarch-message *ngIf="!loading && data.resIds.length === 1 && atLeastOneDocumentHasNoStamp()"
+                    [mode]="'warning'">
+                    <div class="at-least-no-one-stamp" role="alert"
+                        [title]="functions.getPlainText('lang.atLeastOneDocumentHasNoStamp')"
+                        [attr.aria-label]="functions.getPlainText('lang.atLeastOneDocumentHasNoStamp')"
+                        [innerHTML]="'lang.atLeastOneDocumentHasNoStamp' | translate">
+                    </div>
+                    <div *ngIf="!digitalCertificate" class="at-least-no-one-stamp" role="alert"
+                        [title]="functions.getPlainText('lang.seenAsVisaUser')"
+                        [attr.aria-label]="functions.getPlainText('lang.seenAsVisaUser')"
+                        [innerHTML]="'lang.seenAsVisaUser' | translate"></div>
+                </app-maarch-message>
+                <app-maarch-message *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== ''"
+                    [mode]="'info'">
+                    <div class="workflow-info">
+                        <div
+                            [title]="('lang.sendToDocTo' | translate) + ' <b>' + appVisaWorkflow.getNextVisaUser().labelToDisplay + '</b>'"
+                            [attr.aria-label]="('lang.sendToDocTo' | translate) + ' <b>' + appVisaWorkflow.getNextVisaUser().labelToDisplay + '</b>'"
+                            [innerHTML]="('lang.sendToDocTo' | translate) + ' <b>' + appVisaWorkflow.getNextVisaUser().labelToDisplay + '</b>'"></div>
+                        <div class="show-hide-workflow"
+                            [title]="(!snav2.opened ? 'lang.showVisaWorkflow' : 'lang.hideVisaWorkflow') | translate"
+                            (click)="snav2.toggle()">
+                            <span>{{(!snav2.opened ? 'lang.showVisaWorkflow' : 'lang.hideVisaWorkflow') | translate}}</span>
+                        </div>
+                    </div>
+                </app-maarch-message>
+                <app-maarch-message *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() === '' && !noResourceToProcess"
+                    [mode]="'info'">
+                    <div class="workflow-info">
+                        <div
+                            [title]="'lang.endWorkflow' | translate"
+                            [attr.aria-label]="'lang.endWorkflow' | translate"
+                            [innerHTML]="'lang.endWorkflow' | translate"></div>
+                        <div class="show-hide-workflow"
+                            [title]="(!snav2.opened ? 'lang.showVisaWorkflow' : 'lang.hideVisaWorkflow') | translate"
+                            [attr.aria-label]="(!snav2.opened ? 'lang.showVisaWorkflow' : 'lang.hideVisaWorkflow') | translate"
+                            (click)="snav2.toggle()">
+                            <span>{{(!snav2.opened ? 'lang.showVisaWorkflow' : 'lang.hideVisaWorkflow') | translate}}</span>
+                        </div>
+                    </div>
+                </app-maarch-message>
+                <app-maarch-message *ngIf="resourcesErrors.length > 0"
+                    [mode]="'danger'">
+                    <p [title]="'lang.canNotMakeAction' | translate">
                         {{'lang.canNotMakeAction' | translate}} :
                     </p>
                     <ul>
-                        <li *ngFor="let ressource of resourcesErrors">
+                        <li *ngFor="let ressource of resourcesErrors"
+                            [title]="ressource.alt_identifier + ' : ' + ('lang.' + ressource.reason | translate)"
+                            [attr.aria-label]="ressource.alt_identifier + ' : ' + ('lang.' + ressource.reason | translate)">
                             <b>{{ressource.alt_identifier}}</b> : {{'lang.' + ressource.reason | translate}}
                         </li>
                     </ul>
-                </div>
-                <div *ngIf="resourcesWarnings.length > 0" class="alert-message alert-message-info mailList"
-                    role="alert">
+                </app-maarch-message>
+                <app-maarch-message *ngIf="resourcesWarnings.length > 0"
+                    [mode]="'info'">
                     <ul style="margin: 0;padding-bottom: 0px;">
-                        <li *ngFor="let ressource of resourcesWarnings">
+                        <li *ngFor="let ressource of resourcesWarnings"
+                            [title]="ressource.alt_identifier + ' : ' + ('lang.' + ressource.reason | translate)"
+                            [attr.aria-label]="ressource.alt_identifier + ' : ' + ('lang.' + ressource.reason | translate)">
                             <b>{{ressource.alt_identifier}}</b> : {{'lang.' + ressource.reason | translate}}
                         </li>
                     </ul>
-                </div>
-                <div *ngIf="resourcesMailing.length > 0 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== '' && appVisaWorkflow.getNextVisaUser().requested_signature"
-                    class="alert-message alert-message-info" role="alert">
-                    <p>{{'lang.mailingActionInformations' | translate}}</p>
+                </app-maarch-message>
+                <app-maarch-message *ngIf="resourcesMailing.length > 0 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== '' && appVisaWorkflow.getNextVisaUser().requested_signature"
+                    [mode]="'info'">
+                    <p
+                        [title]="'lang.mailingActionInformations' | translate"
+                        [attr.aria-label]="'lang.mailingActionInformations' | translate">
+                            {{'lang.mailingActionInformations' | translate}}
+                        </p>
                     <ul>
-                        <li *ngFor="let ressource of resourcesMailing">
+                        <li *ngFor="let ressource of resourcesMailing" [title]="ressource.alt_identifier" [attr.aria-label]="ressource.alt_identifier">
                             <b>{{ressource.alt_identifier}}</b>
                         </li>
                     </ul>
+                </app-maarch-message>
+                <div *ngIf="!loading && data.resIds.length === 1 && data.resource.docsToSign?.length > 0" class="div-container">
+                    <div class="docs-title"
+                        [title]="data.resource.docsToSign.length + ' ' + ('lang.docsToSign' | translate)"
+                        [attr.aria-label]="data.resource.docsToSign.length + ' ' + ('lang.docsToSign' | translate)">
+                        <span> {{data.resource.docsToSign.length}} {{'lang.docsToSign' | translate}}</span>
+                    </div>
+                    <div class="docs-container">
+                        <div class="docs-to-sign">
+                            <div class="content" *ngFor="let resource of data.resource.docsToSign"
+                                [attr.aria-label]="resource.chrono + ' - ' + resource.title"
+                                [title]="resource.chrono + ' - ' + resource.title">
+                                <div class="chrono-stamp"
+                                    [attr.aria-label]="('lang.chrono' | translate) + ' : ' + resource.chrono">
+                                    <span class="chrono" [title]="resource.chrono">{{resource.chrono}}</span>
+                                    <div *ngIf="resource.stamps.length === 0"
+                                        class="empty-stamp-warn"
+                                        [title]="'lang.noStampDesc' | translate">
+                                        <mat-icon class="fas fa-circle-exclamation" color="warn"></mat-icon>
+                                        <span
+                                            [attr.aria-label]="'lang.noStamp' | translate"
+                                            class="empty-stamp">
+                                            {{'lang.noStamp' | translate}}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="resource-title"
+                                    [attr.aria-label]="('lang.subject' | translate) + ' : ' + resource.title">
+                                    <span [title]="resource.title">{{resource.title}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <app-visa-workflow *ngIf="data.resIds.length === 1" [adminMode]="false" [resId]="data.resIds[0]"
-                    #appVisaWorkflow [target]="'action'">
-                </app-visa-workflow>
-                <div style="padding-top: 10px;">
-                    <app-note-editor #noteEditor [resIds]="data.resIds"></app-note-editor>
+                <div style="display: flow;">
+                    <mat-expansion-panel style="margin-top: 10px;" expanded="true">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title color="primary">
+                                {{'lang.note' | translate}}
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <ng-template matExpansionPanelContent>
+                            <app-note-editor #noteEditor [resIds]="data.resIds"></app-note-editor>
+                        </ng-template>
+                    </mat-expansion-panel>
                 </div>
             </mat-sidenav-content>
+            <mat-sidenav *ngIf="data.resIds.length === 1" #snav2 class="visa-workflow-sidenav"
+                position='end'
+                autoFocus="false"
+                fixedTopGap="56"
+                [mode]="'side'"
+                [opened]="false"
+                [ngStyle]="{'width': '600px', 'padding': '5px'}"
+                style="overflow-x:hidden;">
+                <mat-toolbar color="primary" class="workflow-toolbar">
+                    <mat-icon class="fas fa-list-ol"></mat-icon>
+                    <span>{{'lang.visaWorkflow' | translate}}</span>
+                </mat-toolbar>
+                <app-visa-workflow [adminMode]="false" [resId]="data.resIds[0]"
+                    #appVisaWorkflow [target]="'action'">
+                </app-visa-workflow>
+            </mat-sidenav>
         </mat-sidenav-container>
     </div>
     <span class="divider-modal"></span>

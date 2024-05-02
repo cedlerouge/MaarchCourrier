@@ -16,6 +16,8 @@ import { AuthService } from '@service/auth.service';
 import { HeaderService } from '@service/header.service';
 import { SignatureBookInterface } from '@appRoot/signatureBook/signature-book.service';
 import { Router } from '@angular/router';
+import { MatSidenav } from '@angular/material/sidenav';
+import { Attachment } from '@models/attachment.model';
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
@@ -23,8 +25,9 @@ import { Router } from '@angular/router';
 })
 export class ContinueVisaCircuitActionComponent implements OnInit {
     @ViewChild('myPlugin', { read: ViewContainerRef, static: true }) myPlugin: ViewContainerRef;
-    @ViewChild('noteEditor', { static: true }) noteEditor: NoteEditorComponent;
+    @ViewChild('noteEditor', { static: false }) noteEditor: NoteEditorComponent;
     @ViewChild('appVisaWorkflow', { static: false }) appVisaWorkflow: VisaWorkflowComponent;
+    @ViewChild('snav2', { static: false }) public snav2: MatSidenav;
 
     subscription: Subscription;
 
@@ -36,6 +39,8 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
 
     noResourceToProcess: boolean = null;
     componentInstance: any = null;
+
+    digitalCertificate: boolean = true;
 
     constructor(
         public translate: TranslateService,
@@ -95,7 +100,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
                 .subscribe(
                     (data: any) => {
                         if (!this.functions.empty(data.resourcesInformations.warning)) {
-                            this.resourcesWarnings = data.resourcesInformations.warning;
+                            this.resourcesWarnings = (data.resourcesInformations.warning as any[]).filter((warning: any) => warning.reason !== 'userHasntSigned');
                         }
 
                         if (!this.functions.empty(data.resourcesInformations.error)) {
@@ -124,7 +129,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
         const realResSelected: number[] = this.data.resIds.filter(
             (resId: any) => this.resourcesErrors.map((resErr) => resErr.res_id).indexOf(resId) === -1
         );
-        if ((this.data.resource.signatureBookConfig as SignatureBookInterface).isNewInternalParaph && this.componentInstance?.maarchFortifyService?.signatureMode === 'rgs_2stars') {
+        if ((this.data.resource.signatureBookConfig as SignatureBookInterface).isNewInternalParaph && this.digitalCertificate) {
             this.componentInstance
                 .open()
                 .pipe(
@@ -150,7 +155,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
             .put(this.data.processActionRoute, {
                 resources: realResSelected,
                 note: this.noteEditor.getNote(),
-                data: objToSend,
+                data: { ...objToSend, digitalCertificate: this.digitalCertificate },
             })
             .pipe(
                 tap((data: any) => {
@@ -177,5 +182,12 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
     backToBasket(): void {
         const path = '/basketList/users/' + this.data.userId + '/groups/' + this.data.groupId + '/baskets/' + this.data.basketId;
         this.router.navigate([path]);
+    }
+
+    atLeastOneDocumentHasNoStamp(): boolean {
+        if (this.data.resource.docsToSign.length > 0) {
+            return (this.data.resource.docsToSign as Attachment[]).some((resource: Attachment) => resource.stamps.length === 0);
+        }
+        return false;
     }
 }

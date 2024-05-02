@@ -135,6 +135,7 @@ function getAttachments(): Attachment[] {
             type: 'main_document',
             typeLabel: 'Document principal',
             signedResId: null,
+            stamps: []
         },
         {
             resId: 120,
@@ -147,6 +148,7 @@ function getAttachments(): Attachment[] {
             type: 'simple_attachment',
             typeLabel: 'Pièce jointe',
             signedResId: 1,
+            stamps: []
         },
         {
             resId: 121,
@@ -159,6 +161,7 @@ function getAttachments(): Attachment[] {
             typeLabel: 'Pièce joibte capturée',
             type: 'incoming_mail_attachment',
             signedResId: 2,
+            stamps: []
         },
     ];
 
