@@ -410,7 +410,7 @@ class UserController
                 'lastname' => $user->getLastname(),
                 'mail' => $user->getMail(),
                 'userId' => $user->getLogin(),
-                'external_id' => $user->getExternalId(),
+                'external_id' => json_encode($user->getExternalId()),
                 'initials' => $body['initials'] ?? '',
                 'phone' => $body['phone'] ??  '',
                 'mode' => $body['mode'],
@@ -536,6 +536,20 @@ class UserController
 
         $userQuota = ParameterModel::getById(['id' => 'user_quota', 'select' => ['param_value_int']]);
 
+        $sbcl = new SignatureBookConfigLoader();
+        $user = null;
+        if ($sbcl->getConfig()->isNewInternalParaph()) {
+            $user = (new User())
+                ->setFirstname($body['firstname'])
+                ->setLastname($body['lastname'])
+                ->setMail($body['mail'])
+                ->setLogin($body['userId'])
+                ->setExternalId($body['external_id']);
+
+            $createUserFactory = new CreateAndUpdateUserInSignatoryBookFactory();
+            $updateUser = $createUserFactory->create();
+            $user = $updateUser->createAndUpdateUser($user);
+        }
 
         UserModel::update([
             'set'   => $set,

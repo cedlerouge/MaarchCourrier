@@ -24,6 +24,7 @@ class User implements UserInterface
     private string $lastname;
     private string $mail;
     private string $login;
+    private string $mode;
 
     /**
      * Create User from an array
@@ -108,6 +109,17 @@ class User implements UserInterface
     public function setLogin(string $login): UserInterface
     {
         $this->login = $login;
+        return $this;
+    }
+
+    public function getMode(): string
+    {
+        return $this->mode;
+    }
+
+    public function setMode(string $mode): UserInterface
+    {
+        $this->mode = $mode;
         return $this;
     }
 }

@@ -49,4 +49,7 @@ interface UserInterface
     public function getLogin(): string;
 
     public function setLogin(string $login): UserInterface;
+
+    public function getMode(): string;
+    public function setMode(string $mode): UserInterface;
 }
