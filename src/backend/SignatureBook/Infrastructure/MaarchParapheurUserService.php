@@ -57,7 +57,8 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
             'firstname' => $user->getFirstname(),
             'lastname' => $user->getLastname(),
             'email' => $user->getMail(),
-            'login' => $user->getLogin()
+            'login' => $user->getLogin(),
+            'signatureMode' => ["rgs_2stars"]
         ];
 
         $response = CurlModel::exec([
