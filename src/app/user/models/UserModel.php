@@ -109,7 +109,7 @@ class UserModel
                 'mode'                       => empty($args['user']['mode']) ? 'standard' : $args['user']['mode'],
                 'password'                   => AuthenticationModel::getPasswordHash($args['user']['password']),
                 'password_modification_date' => 'CURRENT_TIMESTAMP',
-                'external_id'                => json_encode($args['user']['external_id'])
+                'external_id'                => $args['user']['external_id']
             ]
         ]);
 
