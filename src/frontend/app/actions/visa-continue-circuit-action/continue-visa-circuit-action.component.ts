@@ -17,6 +17,7 @@ import { HeaderService } from '@service/header.service';
 import { SignatureBookInterface } from '@appRoot/signatureBook/signature-book.service';
 import { ContinueVisaCircuitDataToSendInterface, ContinueVisaCircuitObjectInterface } from "@models/actions.model";
 import { MatSidenav } from "@angular/material/sidenav";
+import { Attachment } from "@models/attachment.model";
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
@@ -188,5 +189,12 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
 
     isValidAction() {
         return !this.noResourceToProcess;
+    }
+
+    atLeastOneDocumentHasNoStamp(): boolean {
+        if (this.data.resource.docsToSign.length > 0) {
+            return (this.data.resource.docsToSign as Attachment[]).some((resource: Attachment) => resource.stamps.length === 0);
+        }
+        return false;
     }
 }

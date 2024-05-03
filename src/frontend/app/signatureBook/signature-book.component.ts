@@ -35,6 +35,7 @@ export class SignatureBookComponent implements OnDestroy {
     userId: number;
 
     attachments: Attachment[] = [];
+    docsToSign: Attachment[] = [];
 
     subscription: Subscription;
     defaultUserStamp: UserStampInterface;
