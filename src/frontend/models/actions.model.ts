@@ -21,6 +21,7 @@ export interface ContinueVisaCircuitDataToSendInterface extends DataToSendAction
 export interface ContinueVisaCircuitObjectInterface {
     [key:number]: {
         resId: number;
+        resIdMaster: number;
         isAttachment: boolean;
         documentId: number;
         cookieSession: string;

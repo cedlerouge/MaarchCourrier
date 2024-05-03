@@ -179,10 +179,10 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
         const formatedData: ContinueVisaCircuitObjectInterface = {} as ContinueVisaCircuitObjectInterface;
 
         for (const item of data) {
-            if (!formatedData[item.resId]) {
-                formatedData[item.resId] = [];
+            if (!formatedData[item.resIdMaster]) {
+                formatedData[item.resIdMaster] = [];
             }
-            formatedData[item.resId].push(item);
+            formatedData[item.resIdMaster].push(item);
         }
         return formatedData;
     }
