@@ -11,10 +11,9 @@ class UserDeletionInMaarchParapheurFailedProblem extends Problem
         parent::__construct(
             "user deletion in maarch parapheur failed : " . $content['errors'],
             403,
-                [
+            [
                     'errors' => $content['errors']
                 ]
-
         );
     }
 }
