@@ -27,7 +27,7 @@ class DeleteUserInSignatoryBook
      * @throws SignatureBookNoConfigFoundProblem
      * @throws UserDeletionInMaarchParapheurFailedProblem
      */
-    public function deleteUser(UserInterface $user): bool|ar
+    public function deleteUser(UserInterface $user): bool
     {
         $signatureBook = $this->signatureServiceConfigLoader->getSignatureServiceConfig();
         if ($signatureBook === null) {
@@ -40,7 +40,7 @@ class DeleteUserInSignatoryBook
             throw new CurrentTokenIsNotFoundProblem();
         }
         $userIsDeleted = $this->signatureBookUserService->deleteUser($user, $accessToken);
-        if (!$userIsDeleted) {
+        if (!empty($userIsDeleted['errors'])) {
             throw new UserDeletionInMaarchParapheurFailedProblem($userIsDeleted);
         } else {
             return true;

@@ -5,6 +5,8 @@ namespace Unit\SignatureBook\Application\User;
 use MaarchCourrier\SignatureBook\Application\User\DeleteUserInSignatoryBook;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\SignatureNotAppliedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\UserDeletionInMaarchParapheurFailedProblem;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\SignatureServiceJsonConfigLoaderMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\CurrentUserInformationsMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\User\MaarchParapheurUserServiceMock;
@@ -31,7 +33,7 @@ class DeleteUserInSignatoryBookTest extends TestCase
 
     /**
      * @throws CurrentTokenIsNotFoundProblem
-     * @throws SignatureBookNoConfigFoundProblem
+     * @throws UserDeletionInMaarchParapheurFailedProblem|SignatureBookNoConfigFoundProblem
      */
     public function testTheUserIsDeletedInMaarchParapheurSoIGetTrueWhichIsReturned(): void
     {
@@ -48,4 +50,22 @@ class DeleteUserInSignatoryBookTest extends TestCase
         $this->assertTrue($this->signatureBookUserServiceMock->deleteUserCalled = true);
         $this->assertTrue($deletedUser);
     }
+
+    /**
+     * @throws CurrentTokenIsNotFoundProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     * @throws UserDeletionInMaarchParapheurFailedProblem
+     */
+    public function testAnErrorOccurredWhenDeletingTheUserInMaarchParapheur()
+    {
+        $user = (new User())
+            ->setFirstname('firstname')
+            ->setLastname('lastname')
+            ->setMail('mail')
+            ->setLogin('userId');
+        $this->signatureBookUserServiceMock->deletedUser = ['errors' => 'Failed to delete the user in Maarch Parapheur.'];
+        $this->expectException(UserDeletionInMaarchParapheurFailedProblem::class);
+        $this->deleteUserInSignatoryBook->deleteUser($user);
+    }
+
 }

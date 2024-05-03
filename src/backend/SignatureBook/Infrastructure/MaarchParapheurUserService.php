@@ -140,7 +140,7 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
         if ($response['code'] === 200) {
             return true;
         } else {
-            return $response['errors'] ?? ['errors' => 'Failed to delete the Maarch Parapheur.'];
+            return $response['errors'] ?? ['errors' => 'Failed to delete the user in Maarch Parapheur.'];
         }
     }
 }

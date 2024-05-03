@@ -9,10 +9,11 @@ use MaarchCourrier\SignatureBook\Infrastructure\MaarchParapheurUserService;
 
 class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterface
 {
-    public int $id = 12;
     public bool $createUserCalled = false;
+    public  int|array $userCreated = 12;
     public bool $updateUserCalled = false;
-
+    public bool|array $userUpdated = false;
+    public array|bool $deletedUser = false;
     public bool $deleteUserCalled = false;
     public bool $userExists = false;
 
@@ -26,7 +27,7 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
     public function createUser(UserInterface $user, string $accessToken): array|int
     {
         $this->createUserCalled = true;
-        return $this->id;
+        return $this->userCreated;
     }
 
     /**
@@ -38,7 +39,7 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
     {
         $this->updateUserCalled = true;
         $user->setFirstname('firstname2');
-        return true;
+        return $this->userUpdated;
     }
 
     /**
@@ -49,7 +50,7 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
     public function deleteUser(UserInterface $user, string $accessToken): array|bool
     {
         $this->deleteUserCalled = true;
-        return true;
+        return $this->deletedUser;
     }
 
     /**
