@@ -16,6 +16,7 @@ import { AuthService } from '@service/auth.service';
 import { HeaderService } from '@service/header.service';
 import { SignatureBookInterface } from '@appRoot/signatureBook/signature-book.service';
 import { ContinueVisaCircuitDataToSendInterface, ContinueVisaCircuitObjectInterface } from "@models/actions.model";
+import { MatSidenav } from "@angular/material/sidenav";
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',

@@ -8,6 +8,7 @@ import { NotificationService } from '@service/notification/notification.service'
 import { Subscription, catchError, of, tap } from 'rxjs';
 import { SignatureBookConfig, SignatureBookService } from '../signature-book.service';
 import { UserStampInterface } from '@models/user-stamp.model';
+import { Attachment } from "@models/attachment.model";
 
 @Component({
     selector: 'app-maarch-sb-actions',
