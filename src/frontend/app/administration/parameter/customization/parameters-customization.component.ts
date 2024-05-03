@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators, ValidatorFn } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NotificationService } from '@service/notification/notification.service';
@@ -30,8 +30,6 @@ export class ParametersCustomizationComponent implements OnInit, OnDestroy {
         private scanPipe: ScanPipe,
         public http: HttpClient,
     ) {
-        const valIdentifier: ValidatorFn[] = [Validators.pattern(/^[a-zA-Z0-9_\-]*$/), Validators.required];
-
         this.stepFormGroup = this._formBuilder.group({
             applicationName: ['', Validators.required],
             maarchUrl: ['', Validators.required],

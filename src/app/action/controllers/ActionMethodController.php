@@ -52,6 +52,7 @@ use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use Tag\models\ResourceTagModel;
+use Throwable;
 use User\models\UserModel;
 use SignatureBook\controllers\SignatureBookController;
 
@@ -525,7 +526,7 @@ class ActionMethodController
 
         if ($workflowSignatoryRole == SignatureBookController::SIGNATORY_ROLE_MANDATORY_FINAL) {
             $last = count($circuit) - 1;
-            if ($circuit[$last]['requested_signature'] == false) {
+            if (!$circuit[$last]['requested_signature']) {
                 return ['errors' => ['Circuit last user is not a signatory']];
             }
         }
@@ -551,7 +552,7 @@ class ActionMethodController
             return ['errors' => ['No available attachments']];
         }
 
-        if ($circuit[0]['requested_signature'] == true) {
+        if ($circuit[0]['requested_signature']) {
             $attachmentsStatus = array_column($attachments, 'status');
             if (in_array('SEND_MASS', $attachmentsStatus)) {
                 static $massData;
@@ -597,7 +598,7 @@ class ActionMethodController
         }
         try {
             $continueCircuitAction->execute($args['resId'], $args['data'], $args['note']);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return ['errors' => [$th->getMessage()]];
         }
 
@@ -666,7 +667,7 @@ class ActionMethodController
             return true;
         }
 
-        if ($nextValid['requested_signature'] == true) {
+        if ($nextValid['requested_signature']) {
             $attachments = AttachmentModel::get([
                 'select' => ['res_id'],
                 'where'  => ['res_id_master = ?', 'in_signature_book = ?', 'status = ?'],

@@ -312,7 +312,7 @@ export class NotificationAdministrationComponent implements OnInit {
             ).subscribe();
     }
 
-    updateDiffusionType(type: any) {
+    updateDiffusionType() {
         this.notification.diffusion_properties = [];
     }
 

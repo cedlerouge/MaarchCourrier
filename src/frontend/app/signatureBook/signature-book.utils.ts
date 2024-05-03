@@ -12,6 +12,7 @@ export function mapAttachment(data: any): Attachment {
         typeLabel: data.typeLabel,
         canConvert: data.isConverted,
         canDelete: data.canDelete,
-        canUpdate: data.canModify
+        canUpdate: data.canModify,
+        stamps: []
     });
 }

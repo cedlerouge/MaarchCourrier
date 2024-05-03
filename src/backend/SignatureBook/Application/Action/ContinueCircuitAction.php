@@ -14,7 +14,6 @@
 
 namespace MaarchCourrier\SignatureBook\Application\Action;
 
-use Exception;
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
@@ -35,7 +34,14 @@ class ContinueCircuitAction
     }
 
     /**
-     * @throws Exception
+     * @param int $resId
+     * @param array $data
+     * @param array $note
+     * @return bool
+     * @throws CurrentTokenIsNotFoundProblem
+     * @throws DataToBeSentToTheParapheurAreEmptyProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     * @throws SignatureNotAppliedProblem
      */
     public function execute(int $resId, array $data, array $note): bool
     {

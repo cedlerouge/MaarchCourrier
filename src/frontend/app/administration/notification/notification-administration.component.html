@@ -9,14 +9,14 @@
                     {{'lang.createScriptNotification' | translate}}
                 </p>
             </a>
-            <a mat-list-item *ngIf="!creationMode && !loading && notification.is_enabled == 'N'"
+            <a mat-list-item *ngIf="!creationMode && !loading && notification.is_enabled === 'N'"
                 (click)="toggleNotif()">
                 <mat-icon color="accent" mat-list-icon class="fa fa-play"></mat-icon>
                 <p mat-line>
                     {{'lang.activateNotification' | translate}}
                 </p>
             </a>
-            <a mat-list-item *ngIf="!creationMode && !loading && notification.is_enabled == 'Y'"
+            <a mat-list-item *ngIf="!creationMode && !loading && notification.is_enabled === 'Y'"
                 (click)="toggleNotif()">
                 <mat-icon color="warn" mat-list-icon class="fa fa-pause"></mat-icon>
                 <p mat-line>
@@ -44,7 +44,7 @@
                     <mat-spinner style="margin:auto;"></mat-spinner>
                 </div>
                 <mat-card *ngIf="!loading" class="card-app-content">
-                    <div *ngIf="notification.is_enabled == 'N'" class="text-warning"
+                    <div *ngIf="notification.is_enabled === 'N'" class="text-warning"
                         style="position: absolute;opacity: 0.1;font-size: 120px;transform: rotate(324deg);-webkit-transform: rotate(324deg);margin-left: 25%;margin-top: 90px;">
                         {{'lang.suspended' | translate}}</div>
                     <form class="form-horizontal" (ngSubmit)="onSubmit()" #notificationsFormUp="ngForm">
@@ -107,7 +107,7 @@
                         <div class="form-group">
                             <div class="col-md-4">
                                 <app-select-with-filter name="diffusionType" [label]="'lang.sendTo' | translate"
-                                    [(ngModel)]="notification.diffusion_type" (selectionChange)="updateDiffusionType($event)" [array]="diffusionTypes"
+                                    [(ngModel)]="notification.diffusion_type" (selectionChange)="updateDiffusionType()" [array]="diffusionTypes"
                                     [required]="true"></app-select-with-filter>
                             </div>
                             <div class="col-md-8">
@@ -126,7 +126,7 @@
                                     [(ngModel)]="notification.diffusion_properties" [array]="entities" [required]="true"
                                     [multiple]="true">
                                 </app-select-with-filter>
-                                <app-select-with-filter *ngIf="notification.diffusion_type == 'dest_user' || notification.diffusion_type == 'copy_list' || notification.diffusion_type == 'dest_entity' || notification.diffusion_type == 'dest_user_visa' || notification.diffusion_type == 'dest_user_sign'"
+                                <app-select-with-filter *ngIf="notification.diffusion_type === 'dest_user' || notification.diffusion_type === 'copy_list' || notification.diffusion_type === 'dest_entity' || notification.diffusion_type === 'dest_user_visa' || notification.diffusion_type === 'dest_user_sign'"
                                     name="diffusionProperties" [label]="('lang.selectedDocumentStatus' | translate) + ' ' + ('lang.optional' | translate)"
                                     [(ngModel)]="notification.diffusion_properties" [array]="statuses" [multiple]="true">
                                 </app-select-with-filter>

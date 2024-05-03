@@ -22,6 +22,7 @@ export class SignatureBookActionsComponent implements OnInit {
     @Input() userStamp: UserStampInterface;
 
     @Output() openPanelSignatures = new EventEmitter<true>();
+    @Output() docsToSignUpdated = new EventEmitter<Attachment[]>();
 
     subscription: Subscription;
 

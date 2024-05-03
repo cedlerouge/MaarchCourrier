@@ -185,4 +185,8 @@ export class SignatureBookComponent implements OnDestroy {
             }
         }));
     }
+
+    docsToSignUpdated(updatedDocsToSign: Attachment[]): void {
+        this.docsToSign = updatedDocsToSign;
+    }
 }

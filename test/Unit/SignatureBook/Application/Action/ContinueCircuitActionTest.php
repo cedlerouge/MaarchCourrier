@@ -82,8 +82,12 @@ class ContinueCircuitActionTest extends TestCase
         );
     }
 
+
     /**
-     * @throws Exception
+     * @throws CurrentTokenIsNotFoundProblem
+     * @throws SignatureNotAppliedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     * @throws DataToBeSentToTheParapheurAreEmptyProblem
      */
     public function testTheNewInternalParapheurIsEnabled(): void
     {
