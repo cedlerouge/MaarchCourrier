@@ -324,12 +324,17 @@ class IxbusController
             }
             $folderId = $createdFile['folderId'];
 
+            $fileExtension = strtolower(pathinfo($adrInfo['filename'], PATHINFO_EXTENSION));
+            $fileExtensionLength = strlen($fileExtension);
+
             $addedFile = IxBusController::addFileToFolder([
                 'config'   => $args['config'],
                 'folderId' => $folderId,
                 'filePath' => $filePath,
-                'fileName' => TextFormatModel::formatFilename(['filename' => $value['title'], 'maxLength' => 250]) .
-                    '.pdf',
+                'fileName' => TextFormatModel::formatFilename([
+                        'filename'  => $value['title'],
+                        'maxLength' => 250 - $fileExtensionLength
+                    ]) . ".$fileExtension",
                 'fileType' => 'principal'
             ]);
             if (!empty($addedFile['error'])) {
@@ -394,9 +399,14 @@ class IxbusController
                 return ['error' => 'Fingerprints do not match'];
             }
 
+            $fileExtension = strtolower(pathinfo($adrInfo['filename'], PATHINFO_EXTENSION));
+            $fileExtensionLength = strlen($fileExtension);
+
             $bodyData['nom'] = str_replace(["\r\n", "\n", "\r"], " ", $mainResource['subject']);
-            $fileName = TextFormatModel::formatFilename(['filename' => $mainResource['subject'], 'maxLength' => 250]) .
-                '.pdf';
+            $fileName = TextFormatModel::formatFilename([
+                    'filename'  => $mainResource['subject'],
+                    'maxLength' => 250 - $fileExtensionLength
+                ]) . ".$fileExtension";
 
             $createdFile = IxBusController::createFolder(['config' => $args['config'], 'body' => $bodyData]);
             if (!empty($createdFile['error'])) {
@@ -572,7 +582,6 @@ class IxbusController
                 unset($args['idsToRetrieve'][$version][$resId]);
                 continue;
             }
-
 
             if (in_array($folderData['data']['etat'], ['Refusé', 'Terminé'])) {
                 $args['idsToRetrieve'][$version][$resId]['status'] = $folderData['data']['etat'] ==
