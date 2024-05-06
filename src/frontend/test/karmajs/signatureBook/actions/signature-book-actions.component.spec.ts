@@ -83,7 +83,7 @@ describe('SignatureBookActionsComponent', () => {
             const req = httpTestingController.expectOne(
                 '../rest/resourcesList/users/1/groups/1/baskets/1/actions?resId=100'
             );
-            component.stamp = null;
+            component.userStamp = null;
             req.flush({
                 actions: [
                     {

@@ -178,6 +178,10 @@ define('_LINK_ADDED_TAG', 'Liaison de mot-clé ajoutée');
 define('_LINK_DELETED_TAG', 'Liaison de mot-clé supprimée');
 define('_LOGIN', 'Connexion de l\'utilisateur');
 define('_LOGOUT', 'Déconnexion de l\'utilisateur');
+define('_MAIN_RESOURCE_SIGNED', 'Le document principal a été signé');
+define('_ATTACHMENT_SIGNED', 'Une pièce attachée a été signée');
+define('_MAIN_RESOURCE_SIGN_REFUSED', 'Signature refusée pour le document principal');
+define('_ATTACHMENT_SIGN_REFUSED', 'Signature refusée pour la pièce attachée');
 
 // ADMINISTRATION
 define('_USERS', 'Utilisateurs');

@@ -6,14 +6,13 @@ import { NotificationService } from '@service/notification/notification.service'
 import { filter, tap } from 'rxjs';
 import { Subscription } from 'rxjs';
 import { MatDrawer } from '@angular/material/sidenav';
-import { StampInterface } from '@models/signature-book.model';
-
 import { Attachment } from '@models/attachment.model';
 import { MessageActionInterface } from '@models/actions.model';
 import { SignatureBookService } from './signature-book.service';
 import { ResourcesListComponent } from './resourcesList/resources-list.component';
 import { TranslateService } from '@ngx-translate/core';
 import { FunctionsService } from '@service/functions.service';
+import { UserStampInterface } from '@models/user-stamp.model';
 
 @Component({
     templateUrl: 'signature-book.component.html',
@@ -39,7 +38,7 @@ export class SignatureBookComponent implements OnDestroy {
     docsToSign: Attachment[] = [];
 
     subscription: Subscription;
-    defaultStamp: StampInterface;
+    defaultUserStamp: UserStampInterface;
 
     processActionSubscription: Subscription;
 
@@ -65,7 +64,6 @@ export class SignatureBookComponent implements OnDestroy {
             filter((data: MessageActionInterface) => data.id === 'selectedStamp'),
             tap(() => {
                 this.stampsPanel.close();
-                this.notify.success('apposition de la griffe!');
             })
         ).subscribe();
 
@@ -111,20 +109,15 @@ export class SignatureBookComponent implements OnDestroy {
         this.loadingAttachments = true;
 
         this.attachments = [];
-        this.docsToSign = [];
+        this.signatureBookService.docsToSign = [];
 
         this.subscription?.unsubscribe();
     }
 
     async initDocuments(): Promise<void>{
         await this.signatureBookService.initDocuments(this.userId, this.groupId, this.basketId, this.resId).then((data: any) => {
-            if (!this.functions.empty(data)) {
-                this.docsToSign = data.resourcesToSign;
-                this.attachments = data.resourcesAttached;
-            } else {
-                this.docsToSign = [];
-                this.attachments = [];
-            }
+            this.signatureBookService.docsToSign = data.resourcesToSign;
+            this.attachments = data.resourcesAttached;
             this.loadingAttachments = false;
             this.loadingDocsToSign = false;
             this.loading = false;

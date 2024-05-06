@@ -9,6 +9,7 @@ import { HeaderService } from '@service/header.service';
 import { NotificationService } from '@service/notification/notification.service';
 import { PluginManagerService } from '@service/plugin-manager.service';
 import { Subscription, catchError, finalize, of, tap } from 'rxjs';
+import { SignatureBookService } from "@appRoot/signatureBook/signature-book.service";
 
 @Component({
     selector: 'app-maarch-sb-content',
@@ -27,6 +28,7 @@ export class MaarchSbContentComponent implements OnDestroy {
     subscriptionDocument: Subscription;
 
     documentData: Attachment;
+    currentIndexDocument: number;
 
     documentType: 'attachments' | 'resources';
 
@@ -43,7 +45,8 @@ export class MaarchSbContentComponent implements OnDestroy {
         private notificationService: NotificationService,
         private pluginManagerService: PluginManagerService,
         private translateService: TranslateService,
-        private headerService: HeaderService
+        private headerService: HeaderService,
+        private signatureBookService: SignatureBookService
     ) {
         this.subscription = this.actionsService
             .catchActionWithData()
@@ -57,12 +60,20 @@ export class MaarchSbContentComponent implements OnDestroy {
                     } else if (res.id === 'attachmentSelected' && this.position === res.data.position) {
                         this.loading = true;
                         this.subscriptionDocument?.unsubscribe();
+                        this.currentIndexDocument = res.data.resIndex;
                         this.documentData = res.data.attachment;
                         this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
                         setTimeout(async () => {
                             if (this.position === 'right' && !this.functionsService.empty(this.documentData)) {
                                 await this.loadContent();
-                                this.initPlugin();
+                                if (this.pluginInstance) {
+                                    this.pluginInstance.loadDocument({
+                                        fileName: this.documentData.title,
+                                        content: this.documentContent,
+                                    }, this.signatureBookService.docsToSign[this.currentIndexDocument].stamps);
+                                } else {
+                                    this.initPlugin();
+                                }
                             } else {
                                 this.pluginInstance = null;
                                 this.pluginManagerService.destroyPlugin(this.myPlugin);
@@ -98,12 +109,7 @@ export class MaarchSbContentComponent implements OnDestroy {
         this.pluginInstance = await this.pluginManagerService.initPlugin('maarch-plugins-pdftron', this.myPlugin, data);
         this.documentChangeEnd.pipe(
             tap((data: any) => {
-                const { resId, title } = this.documentData;
-
-                this.actionsService.emitActionWithData({
-                    id: 'documentToCreate',
-                    data: { resId, title, signatures: data.signatures  },
-                });
+                this.signatureBookService.docsToSign[this.currentIndexDocument].stamps = data.stamps;
             })
         ).subscribe();
     }
@@ -126,15 +132,10 @@ export class MaarchSbContentComponent implements OnDestroy {
         this.documentContent = null;
         return new Promise((resolve) => {
             this.subscriptionDocument = this.http
-                .get(`../rest/${this.documentType}/${this.documentData.resId}/content`, { responseType: 'blob' })
+                .get(`../${this.documentData.resourceUrn}`, { responseType: 'blob' })
                 .pipe(
                     tap((data: Blob) => {
                         this.documentContent = data;
-                        const { resId, title } = this.documentData;
-                        this.actionsService.emitActionWithData({
-                            id: 'documentToCreate',
-                            data: { resId, title, encodedDocument: data },
-                        });
                     }),
                     finalize(() => {
                         this.loading = false;

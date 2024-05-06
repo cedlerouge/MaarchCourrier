@@ -18,13 +18,16 @@ export class MaarchSbTabsComponent implements OnInit {
     constructor(public functionsService: FunctionsService, private actionsService: ActionsService) {}
 
     ngOnInit(): void {
-        this.actionsService.emitActionWithData({
-            id: 'attachmentSelected',
-            data: {
-                attachment: this.documents[0],
-                position: this.position,
-            },
-        });
+        if (this.documents.length > 0) {
+            this.actionsService.emitActionWithData({
+                id: 'attachmentSelected',
+                data: {
+                    attachment: this.documents[0],
+                    position: this.position,
+                    resIndex: 0
+                },
+            });
+        }
     }
 
     selectDocument(i: number, attachment: AttachmentInterface): void {
@@ -34,6 +37,7 @@ export class MaarchSbTabsComponent implements OnInit {
             data: {
                 attachment: attachment,
                 position: this.position,
+                resIndex: this.selectedId
             },
         });
     }

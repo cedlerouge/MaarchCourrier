@@ -15,9 +15,9 @@ import { PluginManagerService } from '@service/plugin-manager.service';
 import { AuthService } from '@service/auth.service';
 import { HeaderService } from '@service/header.service';
 import { SignatureBookInterface } from '@appRoot/signatureBook/signature-book.service';
-import { Router } from '@angular/router';
-import { MatSidenav } from '@angular/material/sidenav';
-import { Attachment } from '@models/attachment.model';
+import { ContinueVisaCircuitDataToSendInterface, ContinueVisaCircuitObjectInterface } from "@models/actions.model";
+import { MatSidenav } from "@angular/material/sidenav";
+import { Attachment } from "@models/attachment.model";
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
@@ -51,8 +51,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
         public functions: FunctionsService,
         private pluginManagerService: PluginManagerService,
         private authService: AuthService,
-        private headerService: HeaderService,
-        private router: Router
+        private headerService: HeaderService
     ) {}
 
     async ngOnInit(): Promise<void> {
@@ -66,7 +65,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
             translate: this.translate,
             pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/maarch-plugins',
             additionalInfo: {
-                resource: this.data.resource.documentToCreate,
+                resources: this.data.resource.docsToSign,
                 sender: `${this.headerService.user.firstname} ${this.headerService.user.lastname}`,
                 externalUserId: this.headerService.user.externalId,
                 signatureBookConfig: (this.data.resource.signatureBookConfig as SignatureBookInterface)
@@ -135,7 +134,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
                 .pipe(
                     tap((data: any) => {
                         if (!this.functions.empty(data) && typeof data === 'object') {
-                            this.executeAction(realResSelected, data);
+                            this.executeAction(realResSelected, this.formatDataToSend(data));
                         }
                     }),
                     catchError((err: any) => {
@@ -150,13 +149,14 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
         this.loading = false;
     }
 
-    executeAction(realResSelected: number[], objToSend: object = null) {
+    executeAction(realResSelected: number[], objToSend: ContinueVisaCircuitObjectInterface = null) {
+        const dataToSend : ContinueVisaCircuitDataToSendInterface = {
+            resources : realResSelected,
+            note: this.noteEditor.getNote(),
+            data: objToSend
+        };
         this.http
-            .put(this.data.processActionRoute, {
-                resources: realResSelected,
-                note: this.noteEditor.getNote(),
-                data: { ...objToSend, digitalCertificate: this.digitalCertificate },
-            })
+            .put(this.data.processActionRoute, dataToSend)
             .pipe(
                 tap((data: any) => {
                     if (!data) {
@@ -175,13 +175,21 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
             .subscribe();
     }
 
-    isValidAction() {
-        return !this.noResourceToProcess;
+    formatDataToSend(data: any[]): ContinueVisaCircuitObjectInterface {
+        const formatedData: ContinueVisaCircuitObjectInterface = {} as ContinueVisaCircuitObjectInterface;
+
+        for (const item of data) {
+            const mainDocResId: number = item.resIdMaster ?? item.resId;
+            if (!formatedData[mainDocResId]) {
+                formatedData[mainDocResId] = [];
+            }
+            formatedData[mainDocResId].push(item);
+        }
+        return formatedData;
     }
 
-    backToBasket(): void {
-        const path = '/basketList/users/' + this.data.userId + '/groups/' + this.data.groupId + '/baskets/' + this.data.basketId;
-        this.router.navigate([path]);
+    isValidAction() {
+        return !this.noResourceToProcess;
     }
 
     atLeastOneDocumentHasNoStamp(): boolean {

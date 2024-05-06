@@ -3,9 +3,9 @@
     <span role="heading">{{'lang.myStamps' | translate}}</span>
 </mat-toolbar>
 <div class="component-container">
-    <div *ngIf="stamps.length > 0" class="stamps-container">
+    <div *ngIf="userStamps.length > 0" class="stamps-container">
         <button
-            *ngFor="let stamp of stamps"
+            *ngFor="let stamp of userStamps"
             mat-raised-button
             class="stamp-button"
             [title]="'lang.applyStamp' | translate"
@@ -13,7 +13,7 @@
             (click)="signWithStamp(stamp)"
         ></button>
     </div>
-    <div *ngIf="stamps.length === 0"
+    <div *ngIf="userStamps.length === 0"
         class="no-stamp"
         [title]="'lang.noStamp' | translate"
         [attr.aria-label]="'lang.noStamp' | translate">

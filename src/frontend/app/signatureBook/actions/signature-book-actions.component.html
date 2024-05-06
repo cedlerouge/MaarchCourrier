@@ -62,28 +62,28 @@
     </ng-container>
 </div>
 <div class="book-footer-stamps">
-    <div *ngIf="stamp === undefined">
+    <div *ngIf="userStamp === undefined">
         <mat-spinner class="spinner-white" diameter="50" aria-hidden="true"></mat-spinner>
     </div>
-    <div *ngIf="stamp !== undefined" class="sign-button-container">
+    <div *ngIf="userStamp !== undefined" class="sign-button-container">
         <button
                 tabindex="5"
                 mat-button
                 class="sign-button"
                 [title]="'lang.applyStamp' | translate"
-                *ngIf="stamp?.contentUrl"
-                [disabled]="stamp === null"
-                [style.backgroundImage]="'url(' + (stamp?.contentUrl | secureUrl | async) + ')'"
-                (click)="signWithStamp(stamp)"
+                *ngIf="userStamp?.contentUrl"
+                [disabled]="userStamp === null"
+                [style.backgroundImage]="'url(' + (userStamp?.contentUrl | secureUrl | async) + ')'"
+                (click)="signWithStamp(userStamp)"
         ></button>
-        <button *ngIf="stamp !== undefined" mat-button
+        <button *ngIf="userStamp !== undefined" mat-button
                 tabindex="6"
                 class="open-sign-list-button"
                 [title]="'lang.displayStampsList' | translate"
                 (click)="openSignaturesList()">
             <mat-icon class="fa fa-angle-right" aria-hidden="true"></mat-icon>
         </button>
-        <div *ngIf="!stamp?.contentUrl" class="no-stamp">
+        <div *ngIf="!userStamp?.contentUrl" class="no-stamp">
             {{ 'lang.noStamp' | translate }}
         </div>
     </div>

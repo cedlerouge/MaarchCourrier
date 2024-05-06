@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActionsService } from '@appRoot/actions/actions.service';
-import { StampInterface } from '@models/signature-book.model';
+import { UserStampInterface } from '@models/user-stamp.model';
 import { NotificationService } from '@service/notification/notification.service';
 import { catchError, map, of, tap } from 'rxjs';
 
@@ -14,12 +14,12 @@ export class SignatureBookStampsComponent implements OnInit {
 
     @Input() userId: number;
 
-    @Output() stampsLoaded: EventEmitter<StampInterface> = new EventEmitter();
+    @Output() stampsLoaded: EventEmitter<UserStampInterface> = new EventEmitter();
 
 
     loading: boolean = true;
 
-    stamps: StampInterface[] = [];
+    userStamps: UserStampInterface[] = [];
 
     constructor(
         public http: HttpClient,
@@ -33,9 +33,9 @@ export class SignatureBookStampsComponent implements OnInit {
 
     getUserSignatures() {
         return new Promise<boolean>((resolve) => {
-            this.http.get<StampInterface[]>(`../rest/users/${this.userId}/visaSignatures`).pipe(
+            this.http.get<UserStampInterface[]>(`../rest/users/${this.userId}/visaSignatures`).pipe(
                 map((signatures: any) => {
-                    const stamps : StampInterface[] = signatures.map((sign: any) => {
+                    const stamps : UserStampInterface[] = signatures.map((sign: any) => {
                         return {
                             id: sign.id,
                             userId: sign.user_serial_id,
@@ -45,9 +45,9 @@ export class SignatureBookStampsComponent implements OnInit {
                     });
                     return stamps;
                 }),
-                tap((stamps: StampInterface[]) => {
-                    this.stamps = stamps;
-                    this.stampsLoaded.emit(this.stamps[0] ?? null);
+                tap((stamps: UserStampInterface[]) => {
+                    this.userStamps = stamps;
+                    this.stampsLoaded.emit(this.userStamps[0] ?? null);
                     resolve(true);
                 }),
                 catchError((err: any) => {
@@ -58,7 +58,7 @@ export class SignatureBookStampsComponent implements OnInit {
         })
     }
 
-    signWithStamp(stamp: StampInterface) {
+    signWithStamp(stamp: UserStampInterface) {
         this.actionsService.emitActionWithData({
             id: 'selectedStamp',
             data: stamp
