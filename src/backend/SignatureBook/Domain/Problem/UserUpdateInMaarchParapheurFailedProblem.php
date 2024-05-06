@@ -6,6 +6,9 @@ use MaarchCourrier\Core\Domain\Problem\Problem;
 
 class UserUpdateInMaarchParapheurFailedProblem extends Problem
 {
+    /**
+     * @param array $content
+     */
     public function __construct(array $content)
     {
         parent::__construct(

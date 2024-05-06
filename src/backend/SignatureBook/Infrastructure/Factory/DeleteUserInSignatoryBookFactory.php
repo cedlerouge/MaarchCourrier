@@ -9,6 +9,9 @@ use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 
 class DeleteUserInSignatoryBookFactory
 {
+    /**
+     * @return DeleteUserInSignatoryBook
+     */
     public static function create(): DeleteUserInSignatoryBook
     {
         $currentUser = new CurrentUserInformations();

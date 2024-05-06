@@ -13,6 +13,10 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
     public int $id;
     private SignatureServiceConfig $config;
 
+    /**
+     * @param SignatureServiceConfig $config
+     * @return SignatureBookUserServiceInterface
+     */
     public function setConfig(SignatureServiceConfig $config): SignatureBookUserServiceInterface
     {
         $this->config = $config;

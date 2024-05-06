@@ -12,6 +12,11 @@ use MaarchCourrier\SignatureBook\Domain\Problem\UserDeletionInMaarchParapheurFai
 
 class DeleteUserInSignatoryBook
 {
+    /**
+     * @param SignatureBookUserServiceInterface $signatureBookUserService
+     * @param CurrentUserInterface $currentUser
+     * @param SignatureServiceConfigLoaderInterface $signatureServiceConfigLoader
+     */
     public function __construct(
         private readonly SignatureBookUserServiceInterface $signatureBookUserService,
         private readonly CurrentUserInterface $currentUser,

@@ -13,6 +13,11 @@ use MaarchCourrier\SignatureBook\Domain\Problem\UserUpdateInMaarchParapheurFaile
 
 class CreateAndUpdateUserInSignatoryBook
 {
+    /**
+     * @param SignatureBookUserServiceInterface $signatureBookUserService
+     * @param CurrentUserInterface $currentUser
+     * @param SignatureServiceConfigLoaderInterface $signatureServiceConfigLoader
+     */
     public function __construct(
         private readonly SignatureBookUserServiceInterface $signatureBookUserService,
         private readonly CurrentUserInterface $currentUser,
@@ -21,10 +26,12 @@ class CreateAndUpdateUserInSignatoryBook
     }
 
     /**
-     * @throws SignatureBookNoConfigFoundProblem
+     * @param UserInterface $user
+     * @return UserInterface
      * @throws CurrentTokenIsNotFoundProblem
-     * @throws UserUpdateInMaarchParapheurFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
      * @throws UserCreateInMaarchParapheurFailedProblem
+     * @throws UserUpdateInMaarchParapheurFailedProblem
      */
     public function createAndUpdateUser(UserInterface $user): UserInterface
     {

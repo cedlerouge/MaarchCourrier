@@ -57,55 +57,90 @@ class User implements UserInterface
         $this->id = $id;
     }
 
+    /**
+     * @return array
+     */
     public function getExternalId(): array
     {
         return $this->externalId;
     }
 
+    /**
+     * @param array $externalId
+     * @return $this
+     */
     public function setExternalId(array $externalId): User
     {
         $this->externalId = $externalId;
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getFirstname(): string
     {
         return $this->firstname;
     }
 
+    /**
+     * @param string $firstname
+     * @return UserInterface
+     */
     public function setFirstname(string $firstname): UserInterface
     {
         $this->firstname = $firstname;
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getLastname(): string
     {
         return $this->lastname;
     }
 
+    /**
+     * @param string $lastname
+     * @return UserInterface
+     */
     public function setLastname(string $lastname): UserInterface
     {
         $this->lastname = $lastname;
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getMail(): string
     {
         return $this->mail;
     }
 
+    /**
+     * @param string $mail
+     * @return UserInterface
+     */
     public function setMail(string $mail): UserInterface
     {
         $this->mail = $mail;
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getLogin(): string
     {
         return $this->login;
     }
 
+    /**
+     * @param string $login
+     * @return UserInterface
+     */
     public function setLogin(string $login): UserInterface
     {
         $this->login = $login;

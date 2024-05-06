@@ -19,6 +19,7 @@ class DeleteUserInSignatoryBookTest extends TestCase
     private CurrentUserInformationsMock $currentUserInformationsMock;
     private DeleteUserInSignatoryBook $deleteUserInSignatoryBook;
     private SignatureServiceJsonConfigLoaderMock $signatureServiceJsonConfigLoaderMock;
+
     protected function setUp(): void
     {
         $this->signatureBookUserServiceMock = new MaarchParapheurUserServiceMock();
@@ -32,8 +33,10 @@ class DeleteUserInSignatoryBookTest extends TestCase
     }
 
     /**
+     * @return void
      * @throws CurrentTokenIsNotFoundProblem
-     * @throws UserDeletionInMaarchParapheurFailedProblem|SignatureBookNoConfigFoundProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     * @throws UserDeletionInMaarchParapheurFailedProblem
      */
     public function testTheUserIsDeletedInMaarchParapheurSoIGetTrueWhichIsReturned(): void
     {
@@ -52,6 +55,7 @@ class DeleteUserInSignatoryBookTest extends TestCase
     }
 
     /**
+     * @return void
      * @throws CurrentTokenIsNotFoundProblem
      * @throws SignatureBookNoConfigFoundProblem
      * @throws UserDeletionInMaarchParapheurFailedProblem

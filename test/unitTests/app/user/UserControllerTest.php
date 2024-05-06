@@ -1,16 +1,17 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 namespace MaarchCourrier\Tests\app\user;
 
 use Entity\controllers\EntityController;
 use Entity\models\EntityModel;
+use Exception;
 use Firebase\JWT\JWT;
 use MaarchCourrier\Tests\CourrierTestCase;
 use Parameter\controllers\ParameterController;
@@ -45,6 +46,10 @@ class UserControllerTest extends CourrierTestCase
         file_put_contents('config/config.json', json_encode($config, JSON_PRETTY_PRINT));
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testGet()
     {
         $userController = new UserController();
@@ -52,7 +57,7 @@ class UserControllerTest extends CourrierTestCase
         //  READ
         $request = $this->createRequest('GET');
 
-        $response     = $userController->get($request, new Response());
+        $response = $userController->get($request, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -77,10 +82,10 @@ class UserControllerTest extends CourrierTestCase
         }
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $userController->get($request, new Response());
+        $response = $userController->get($request, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -106,20 +111,23 @@ class UserControllerTest extends CourrierTestCase
 
         // Fail
         $GLOBALS['login'] = 'bbain';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $userController->get($request, new Response());
+        $response = $userController->get($request, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function testCreate()
     {
         $userController = new UserController();
@@ -133,7 +141,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $userController->create($fullRequest, new Response());
+        $response = $userController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         self::$id = $responseBody->id;
@@ -142,7 +150,7 @@ class UserControllerTest extends CourrierTestCase
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->id);
@@ -161,15 +169,9 @@ class UserControllerTest extends CourrierTestCase
             'data'  => [self::$id]
         ]);
 
-        $args = [
-            'userId'    => 'test-ckent',
-            'firstname' => 'TEST-CLARK',
-            'lastname'  => 'TEST-KENT',
-            'mail'      => 'clark@test.zh'
-        ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $userController->create($fullRequest, new Response());
+        $response = $userController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(self::$id, $responseBody['id']);
@@ -183,7 +185,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->create($fullRequest, new Response());
+        $response = $userController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -197,7 +199,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->create($fullRequest, new Response());
+        $response = $userController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -205,18 +207,18 @@ class UserControllerTest extends CourrierTestCase
 
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $userController->create($fullRequest, new Response());
+        $response = $userController->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetById()
@@ -226,7 +228,7 @@ class UserControllerTest extends CourrierTestCase
         //  READ
         $request = $this->createRequest('GET');
 
-        $response     = $userController->getById($request, new Response(), ['id' => self::$id]);
+        $response = $userController->getById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -238,20 +240,23 @@ class UserControllerTest extends CourrierTestCase
         $this->assertSame('TEST-KENT', $responseBody['lastname']);
 
         // Fail
-        $response     = $userController->getById($request, new Response(), ['id' => self::$id * 1000]);
+        $response = $userController->getById($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('User does not exist', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testUpdate()
     {
         $userController = new UserController();
 
         //  UPDATE
         $args = [
-            'user_id'    => 'test-ckent',
+            'user_id'   => 'test-ckent',
             'firstname' => 'TEST-CLARK2',
             'lastname'  => 'TEST-KENT2',
             'mail'      => 'ck@dailyP.com',
@@ -261,13 +266,13 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->update($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->id);
@@ -281,7 +286,7 @@ class UserControllerTest extends CourrierTestCase
 
         // Fail
         $body = [
-            'user_id'    => 'test-ckent',
+            'user_id'   => 'test-ckent',
             'firstname' => 'TEST-CLARK2',
             'lastname'  => 'TEST-KENT2',
             'mail'      => 'ck@dailyP.com',
@@ -290,13 +295,13 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->update($fullRequest, new Response(), ['id' => 'wrong format']);
+        $response = $userController->update($fullRequest, new Response(), ['id' => 'wrong format']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('id must be an integer', $responseBody['errors']);
 
         $body = [
-            'user_id'    => 'test-ckent',
+            'user_id'   => 'test-ckent',
             'firstname' => 'TEST-CLARK2',
             'lastname'  => 'TEST-KENT2',
             'mail'      => 'ck@dailyP.com',
@@ -305,24 +310,27 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->update($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body phone is not correct', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testAddGroup()
     {
         $userController = new UserController();
 
         //  CREATE
         $body = [
-            'groupId'   => 'AGENT',
-            'role'      => 'Douche'
+            'groupId' => 'AGENT',
+            'role'    => 'Douche'
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->addGroup($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->addGroup($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->groups);
@@ -330,7 +338,7 @@ class UserControllerTest extends CourrierTestCase
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->id);
@@ -340,80 +348,84 @@ class UserControllerTest extends CourrierTestCase
 
         // Fail
         $body = [
-            'role'      => 'Douche'
+            'role' => 'Douche'
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->addGroup($fullRequest, new Response(), ['id' => self::$id * 1000]);
+        $response = $userController->addGroup($fullRequest, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
 
-        $response     = $userController->addGroup($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->addGroup($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
 
         $body = [
-            'groupId'   => 'SECRET_AGENT',
-            'role'      => 'Douche'
+            'groupId' => 'SECRET_AGENT',
+            'role'    => 'Douche'
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->addGroup($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->addGroup($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Group not found', $responseBody['errors']);
 
         $body = [
-            'groupId'   => 'AGENT',
-            'role'      => 'Douche'
+            'groupId' => 'AGENT',
+            'role'    => 'Douche'
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->addGroup($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->addGroup($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(_USER_ALREADY_LINK_GROUP, $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
-            'groupId'   => 'COURRIER',
-            'role'      => 'Douche'
+            'groupId' => 'COURRIER',
+            'role'    => 'Douche'
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->addGroup($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->addGroup($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function testUpdateGroup()
     {
         $userController = new UserController();
 
         //  UPDATE
         $args = [
-            'role'      => 'role updated'
+            'role' => 'role updated'
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updateGroup($fullRequest, new Response(), ['id' => self::$id, 'groupId' => 'AGENT']);
+        $response = $userController->updateGroup($fullRequest, new Response(), ['id' => self::$id, 'groupId' => 'AGENT']
+        );
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->id);
@@ -422,24 +434,31 @@ class UserControllerTest extends CourrierTestCase
         $this->assertSame('role updated', $responseBody->groups[0]->role);
 
         // Fail
-        $response     = $userController->updateGroup($fullRequest, new Response(), ['id' => self::$id * 1000]);
+        $response = $userController->updateGroup($fullRequest, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
 
-        $response     = $userController->updateGroup($fullRequest, new Response(), ['id' => self::$id, 'groupId' => 'SECRET_AGENT']);
+        $response = $userController->updateGroup(
+            $fullRequest,
+            new Response(),
+            ['id' => self::$id, 'groupId' => 'SECRET_AGENT']
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Group not found', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testDeleteGroup()
     {
         $userController = new UserController();
 
         //  DELETE
         $request = $this->createRequest('DELETE');
-        $response     = $userController->deleteGroup($request, new Response(), ['id' => self::$id, 'groupId' => 'AGENT']);
+        $response = $userController->deleteGroup($request, new Response(), ['id' => self::$id, 'groupId' => 'AGENT']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->groups);
@@ -448,7 +467,7 @@ class UserControllerTest extends CourrierTestCase
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->id);
@@ -458,29 +477,36 @@ class UserControllerTest extends CourrierTestCase
         // Fail
         $request = $this->createRequest('DELETE');
 
-        $response     = $userController->deleteGroup($request, new Response(), ['id' => self::$id * 1000]);
+        $response = $userController->deleteGroup($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
 
-        $response     = $userController->deleteGroup($request, new Response(), ['id' => self::$id, 'groupId' => 'SECRET_AGENT']);
+        $response = $userController->deleteGroup(
+            $request,
+            new Response(),
+            ['id' => self::$id, 'groupId' => 'SECRET_AGENT']
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Group not found', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testAddEntity()
     {
         $userController = new UserController();
 
         //  CREATE
         $body = [
-            'entityId'  => 'DGS',
-            'role'      => 'Warrior'
+            'entityId' => 'DGS',
+            'role'     => 'Warrior'
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->addEntity($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->addEntity($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->entities);
@@ -488,12 +514,12 @@ class UserControllerTest extends CourrierTestCase
 
         //  CREATE
         $body = [
-            'entityId'  => 'FIN',
-            'role'      => 'Hunter'
+            'entityId' => 'FIN',
+            'role'     => 'Hunter'
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->addEntity($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->addEntity($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->entities);
@@ -501,7 +527,7 @@ class UserControllerTest extends CourrierTestCase
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->id);
@@ -515,38 +541,38 @@ class UserControllerTest extends CourrierTestCase
 
         // Fail
         $body = [
-            'entityId'  => 'SECRET_SERVICE',
-            'role'      => 'Hunter'
+            'entityId' => 'SECRET_SERVICE',
+            'role'     => 'Hunter'
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->addEntity($fullRequest, new Response(), ['id' => self::$id * 1000]);
+        $response = $userController->addEntity($fullRequest, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
 
-        $response     = $userController->addEntity($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->addEntity($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Entity not found', $responseBody['errors']);
 
         $body = [
-            'entityId'  => 'FIN',
-            'role'      => 'Hunter'
+            'entityId' => 'FIN',
+            'role'     => 'Hunter'
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->addEntity($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->addEntity($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(_USER_ALREADY_LINK_ENTITY, $responseBody['errors']);
 
         $body = [
-            'role'      => 'Hunter'
+            'role' => 'Hunter'
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->addEntity($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->addEntity($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
@@ -558,7 +584,7 @@ class UserControllerTest extends CourrierTestCase
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $userController->getEntities($request, new Response(), ['id' => self::$id]);
+        $response = $userController->getEntities($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertIsArray($responseBody['entities']);
@@ -571,12 +597,15 @@ class UserControllerTest extends CourrierTestCase
 
         // Fail
 
-        $response     = $userController->getEntities($request, new Response(), ['id' => self::$id * 1000]);
+        $response = $userController->getEntities($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User does not exist', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testUpdateEntity()
     {
         $userController = new UserController();
@@ -587,24 +616,26 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updateEntity($fullRequest, new Response(), ['id' => self::$id, 'entityId' => 'DGS']);
+        $response = $userController->updateEntity($fullRequest, new Response(), ['id' => self::$id, 'entityId' => 'DGS']
+        );
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         $args = [
-            'user_role'      => 'Rogue'
+            'user_role' => 'Rogue'
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updateEntity($fullRequest, new Response(), ['id' => self::$id, 'entityId' => 'DGS']);
+        $response = $userController->updateEntity($fullRequest, new Response(), ['id' => self::$id, 'entityId' => 'DGS']
+        );
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->id);
@@ -618,29 +649,40 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateEntity($fullRequest, new Response(), ['id' => self::$id * 1000, 'entityId' => 'DGS']);
+        $response = $userController->updateEntity(
+            $fullRequest,
+            new Response(),
+            ['id' => self::$id * 1000, 'entityId' => 'DGS']
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
 
-        $response     = $userController->updateEntity($fullRequest, new Response(), ['id' => self::$id, 'entityId' => 'SECRET_SERVICE']);
+        $response = $userController->updateEntity(
+            $fullRequest,
+            new Response(),
+            ['id' => self::$id, 'entityId' => 'SECRET_SERVICE']
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Entity not found', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testGetUsersById()
     {
         $entityController = new EntityController();
 
         $request = $this->createRequest('GET');
 
-        $entityInfo     = EntityModel::getByEntityId(['entityId' => 'DGS', 'select' => ['id']]);
-        $response       = $entityController->getById($request, new Response(), ['id' => $entityInfo['id']]);
-        $responseBody   = json_decode((string)$response->getBody());
+        $entityInfo = EntityModel::getByEntityId(['entityId' => 'DGS', 'select' => ['id']]);
+        $response = $entityController->getById($request, new Response(), ['id' => $entityInfo['id']]);
+        $responseBody = json_decode((string)$response->getBody());
         $entitySerialId = $responseBody->id;
 
-        $response     = $entityController->getUsersById($request, new Response(), ['id' => $entitySerialId]);
+        $response = $entityController->getUsersById($request, new Response(), ['id' => $entitySerialId]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->users);
@@ -667,11 +709,14 @@ class UserControllerTest extends CourrierTestCase
         $this->assertSame(true, $found);
 
         //ERROR
-        $response     = $entityController->getUsersById($request, new Response(), ['id' => 99989]);
+        $response = $entityController->getUsersById($request, new Response(), ['id' => 99989]);
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Entity not found', $responseBody->errors);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testIsDeletable()
     {
         $userController = new UserController();
@@ -679,7 +724,7 @@ class UserControllerTest extends CourrierTestCase
         //  GET
         $request = $this->createRequest('GET');
 
-        $response     = $userController->isDeletable($request, new Response(), ['id' => self::$id]);
+        $response = $userController->isDeletable($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(true, $responseBody->isDeletable);
@@ -690,7 +735,7 @@ class UserControllerTest extends CourrierTestCase
 
         $user = UserModel::getByLogin(['login' => 'ggrand', 'select' => ['id']]);
 
-        $response     = $userController->isDeletable($request, new Response(), ['id' => $user['id']]);
+        $response = $userController->isDeletable($request, new Response(), ['id' => $user['id']]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(true, $responseBody['isDeletable']);
@@ -700,12 +745,15 @@ class UserControllerTest extends CourrierTestCase
         $this->assertEmpty($responseBody['listInstances']);
 
         // Fail
-        $response     = $userController->isDeletable($request, new Response(), ['id' => self::$id * 1000]);
+        $response = $userController->isDeletable($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testIsEntityDeletable()
     {
         $userController = new UserController();
@@ -713,24 +761,39 @@ class UserControllerTest extends CourrierTestCase
         //  GET
         $request = $this->createRequest('GET');
 
-        $response     = $userController->isEntityDeletable($request, new Response(), ['id' => self::$id, 'entityId' => 'DGS']);
+        $response = $userController->isEntityDeletable(
+            $request,
+            new Response(),
+            ['id' => self::$id, 'entityId' => 'DGS']
+        );
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(false, $responseBody->hasConfidentialityInstances);
         $this->assertSame(false, $responseBody->hasListTemplates);
 
         // Fail
-        $response     = $userController->isEntityDeletable($request, new Response(), ['id' => self::$id * 1000, 'entityId' => 'DGS']);
+        $response = $userController->isEntityDeletable(
+            $request,
+            new Response(),
+            ['id' => self::$id * 1000, 'entityId' => 'DGS']
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
 
-        $response     = $userController->isEntityDeletable($request, new Response(), ['id' => self::$id, 'entityId' => 'SECRET_SERVICE']);
+        $response = $userController->isEntityDeletable(
+            $request,
+            new Response(),
+            ['id' => self::$id, 'entityId' => 'SECRET_SERVICE']
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Entity does not exist', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testUpdatePrimaryEntity()
     {
         $userController = new UserController();
@@ -738,14 +801,18 @@ class UserControllerTest extends CourrierTestCase
         //  UPDATE
         $request = $this->createRequest('PUT');
 
-        $response     = $userController->updatePrimaryEntity($request, new Response(), ['id' => self::$id, 'entityId' => 'FIN']);
+        $response = $userController->updatePrimaryEntity(
+            $request,
+            new Response(),
+            ['id' => self::$id, 'entityId' => 'FIN']
+        );
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->entities);
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->id);
@@ -758,17 +825,28 @@ class UserControllerTest extends CourrierTestCase
         $this->assertSame('N', $responseBody->entities[1]->primary_entity);
 
         // Fail
-        $response     = $userController->updatePrimaryEntity($request, new Response(), ['id' => self::$id * 1000, 'entityId' => 'DGS']);
+        $response = $userController->updatePrimaryEntity(
+            $request,
+            new Response(),
+            ['id' => self::$id * 1000, 'entityId' => 'DGS']
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
 
-        $response     = $userController->updatePrimaryEntity($request, new Response(), ['id' => self::$id, 'entityId' => 'SECRET_SERVICE']);
+        $response = $userController->updatePrimaryEntity(
+            $request,
+            new Response(),
+            ['id' => self::$id, 'entityId' => 'SECRET_SERVICE']
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Entity not found', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testDeleteEntity()
     {
         $userController = new UserController();
@@ -779,7 +857,8 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('DELETE', $body);
 
-        $response     = $userController->deleteEntity($fullRequest, new Response(), ['id' => self::$id, 'entityId' => 'FIN']);
+        $response = $userController->deleteEntity($fullRequest, new Response(), ['id' => self::$id, 'entityId' => 'FIN']
+        );
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->entities);
@@ -791,7 +870,8 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('DELETE', $body);
 
-        $response     = $userController->deleteEntity($fullRequest, new Response(), ['id' => self::$id, 'entityId' => 'DGS']);
+        $response = $userController->deleteEntity($fullRequest, new Response(), ['id' => self::$id, 'entityId' => 'DGS']
+        );
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->entities);
@@ -800,7 +880,7 @@ class UserControllerTest extends CourrierTestCase
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->id);
@@ -809,66 +889,80 @@ class UserControllerTest extends CourrierTestCase
 
         // Fail
         $request = $this->createRequest('DELETE');
-        $response     = $userController->deleteEntity($request, new Response(), ['id' => self::$id * 1000, 'entityId' => 'DGS']);
+        $response = $userController->deleteEntity(
+            $request,
+            new Response(),
+            ['id' => self::$id * 1000, 'entityId' => 'DGS']
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
 
-        $response     = $userController->deleteEntity($request, new Response(), ['id' => self::$id, 'entityId' => 'SECRET_ENTITY']);
+        $response = $userController->deleteEntity(
+            $request,
+            new Response(),
+            ['id' => self::$id, 'entityId' => 'SECRET_ENTITY']
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Entity not found', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testGetStatusByUserId()
     {
         $userController = new UserController();
 
         $request = $this->createRequest('GET');
-        $response     = $userController->getStatusByUserId($request, new Response(), ['userId' => 'test-ckent']);
+        $response = $userController->getStatusByUserId($request, new Response(), ['userId' => 'test-ckent']);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('OK', $responseBody['status']);
 
         // Fail
-        $response     = $userController->getStatusByUserId($request, new Response(), ['userId' => 'test-ckent1234']);
+        $response = $userController->getStatusByUserId($request, new Response(), ['userId' => 'test-ckent1234']);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertNull($responseBody['status']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $userController->getStatusByUserId($request, new Response(), ['userId' => 'test-ckent']);
+        $response = $userController->getStatusByUserId($request, new Response(), ['userId' => 'test-ckent']);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function testUpdateStatus()
     {
         $userController = new UserController();
 
         //  UPDATE
         $args = [
-            'status'    => 'ABS'
+            'status' => 'ABS'
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updateStatus($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->updateStatus($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('ABS', $responseBody->user->status);
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->id);
@@ -876,32 +970,32 @@ class UserControllerTest extends CourrierTestCase
 
         // Fail
         $args = [
-            'status'    => 42 // Wrong format
+            'status' => 42 // Wrong format
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updateStatus($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->updateStatus($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body status is empty or not a string', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
         $args = [
-            'status'    => 'ABS'
+            'status' => 'ABS'
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updateStatus($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->updateStatus($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetStatusByUserIdAfterUpdate()
@@ -909,7 +1003,7 @@ class UserControllerTest extends CourrierTestCase
         $userController = new UserController();
 
         $request = $this->createRequest('GET');
-        $response     = $userController->getStatusByUserId($request, new Response(), ['userId' => 'test-ckent']);
+        $response = $userController->getStatusByUserId($request, new Response(), ['userId' => 'test-ckent']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('ABS', $responseBody->status);
@@ -922,32 +1016,32 @@ class UserControllerTest extends CourrierTestCase
 
         //  UPDATE
         $args = [
-            'description'           => 'User quota',
-            'param_value_int'       => 0
+            'description'     => 'User quota',
+            'param_value_int' => 0
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
         $parameterController->update($fullRequest, new Response(), ['id' => 'user_quota']);
 
         // READ in case of deactivated user_quota
         $request = $this->createRequest('GET');
-        $response       = $userController->get($request, new Response());
-        $responseBody   = json_decode((string)$response->getBody());
+        $response = $userController->get($request, new Response());
+        $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->users);
         $this->assertNull($responseBody->quota->userQuota);
 
         //  UPDATE
         $args = [
-            'description'           => 'User quota',
-            'param_value_int'       => 20
+            'description'     => 'User quota',
+            'param_value_int' => 20
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
         $parameterController->update($fullRequest, new Response(), ['id' => 'user_quota']);
 
         // READ in case of enabled user_quotat
         $request = $this->createRequest('GET');
-        $response       = $userController->get($request, new Response());
-        $responseBody   = json_decode((string)$response->getBody());
+        $response = $userController->get($request, new Response());
+        $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->users);
         $this->assertNotNull($responseBody->quota);
@@ -956,8 +1050,8 @@ class UserControllerTest extends CourrierTestCase
         $this->assertIsInt($responseBody->quota->inactives);
 
         $args = [
-            'description'           => 'User quota',
-            'param_value_int'       => 0
+            'description'     => 'User quota',
+            'param_value_int' => 0
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
         $parameterController->update($fullRequest, new Response(), ['id' => 'user_quota']);
@@ -981,7 +1075,7 @@ class UserControllerTest extends CourrierTestCase
         foreach ($responseBody->emailSignatures as $value) {
             if ($value->title == 'Titre email signature TU 12345') {
                 self::$idEmailSignature = $value->id;
-                $titleEmailSignature    = $value->title;
+                $titleEmailSignature = $value->title;
                 $htmlBodyEmailSignature = $value->html_body;
             }
         }
@@ -997,7 +1091,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $userController->createCurrentUserEmailSignature($fullRequest, new Response());
+        $response = $userController->createCurrentUserEmailSignature($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Bad Request', $responseBody->errors);
@@ -1013,7 +1107,11 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updateCurrentUserEmailSignature($fullRequest, new Response(), ['id' => self::$idEmailSignature]);
+        $response = $userController->updateCurrentUserEmailSignature(
+            $fullRequest,
+            new Response(),
+            ['id' => self::$idEmailSignature]
+        );
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->emailSignature);
@@ -1029,7 +1127,11 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updateCurrentUserEmailSignature($fullRequest, new Response(), ['id' => self::$idEmailSignature]);
+        $response = $userController->updateCurrentUserEmailSignature(
+            $fullRequest,
+            new Response(),
+            ['id' => self::$idEmailSignature]
+        );
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Bad Request', $responseBody->errors);
@@ -1042,7 +1144,7 @@ class UserControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         //  Success
-        $response     = $userController->getCurrentUserEmailSignatures($request, new Response());
+        $response = $userController->getCurrentUserEmailSignatures($request, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -1058,7 +1160,11 @@ class UserControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         //  Success
-        $response     = $userController->getCurrentUserEmailSignatureById($request, new Response(), ['id' => self::$idEmailSignature]);
+        $response = $userController->getCurrentUserEmailSignatureById(
+            $request,
+            new Response(),
+            ['id' => self::$idEmailSignature]
+        );
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -1067,12 +1173,17 @@ class UserControllerTest extends CourrierTestCase
         $this->assertSame('Titre email signature TU 12345 UPDATE', $responseBody['emailSignature']['label']);
 
         // Fail
-        $response     = $userController->getCurrentUserEmailSignatureById($request, new Response(), ['id' => 'wrong format']);
+        $response = $userController->getCurrentUserEmailSignatureById($request, new Response(), ['id' => 'wrong format']
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body param id is empty or not an integer', $responseBody['errors']);
 
-        $response     = $userController->getCurrentUserEmailSignatureById($request, new Response(), ['id' => self::$idEmailSignature * 1000]);
+        $response = $userController->getCurrentUserEmailSignatureById(
+            $request,
+            new Response(),
+            ['id' => self::$idEmailSignature * 1000]
+        );
         $this->assertSame(404, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Signature not found', $responseBody['errors']);
@@ -1084,8 +1195,12 @@ class UserControllerTest extends CourrierTestCase
 
         //  DELETE
         $request = $this->createRequest('DELETE');
-        $response       = $userController->deleteCurrentUserEmailSignature($request, new Response(), ['id' => self::$idEmailSignature]);
-        $responseBody   = json_decode((string)$response->getBody());
+        $response = $userController->deleteCurrentUserEmailSignature(
+            $request,
+            new Response(),
+            ['id' => self::$idEmailSignature]
+        );
+        $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->emailSignatures);
 
@@ -1094,7 +1209,7 @@ class UserControllerTest extends CourrierTestCase
         foreach ($responseBody->emailSignatures as $value) {
             if ($value->title == 'Titre email signature TU 12345 UPDATE') {
                 // Check If Signature Really Deleted
-                $titleEmailSignature    = $value->title;
+                $titleEmailSignature = $value->title;
                 $htmlBodyEmailSignature = $value->html_body;
             }
         }
@@ -1102,6 +1217,9 @@ class UserControllerTest extends CourrierTestCase
         $this->assertSame('', $htmlBodyEmailSignature);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testSuspend()
     {
         $userController = new UserController();
@@ -1109,7 +1227,7 @@ class UserControllerTest extends CourrierTestCase
         $request = $this->createRequest('PUT');
 
         //  Success
-        $response     = $userController->suspend($request, new Response(), ['id' => self::$id]);
+        $response = $userController->suspend($request, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
         // set status OK
@@ -1118,30 +1236,33 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateStatus($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->updateStatus($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('OK', $responseBody['user']['status']);
 
         // Fail
-        $response     = $userController->suspend($request, new Response(), ['id' => self::$id * 1000]);
+        $response = $userController->suspend($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
 
         $user = UserModel::getByLogin(['login' => 'bbain', 'select' => ['id']]);
 
-        $response     = $userController->suspend($request, new Response(), ['id' => $user['id']]);
+        $response = $userController->suspend($request, new Response(), ['id' => $user['id']]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User is still present in listInstances', $responseBody['errors']);
 
-        $response     = $userController->suspend($request, new Response(), ['id' => 15]);
+        $response = $userController->suspend($request, new Response(), ['id' => 15]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User is still present in listTemplates', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testUpdateCurrentUserPreferences()
     {
         $userController = new UserController();
@@ -1153,7 +1274,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateCurrentUserPreferences($fullRequest, new Response());
+        $response = $userController->updateCurrentUserPreferences($fullRequest, new Response());
         $this->assertSame(204, $response->getStatusCode());
 
         // Fail
@@ -1162,12 +1283,15 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateCurrentUserPreferences($fullRequest, new Response());
+        $response = $userController->updateCurrentUserPreferences($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body preferences[documentEdition] is not allowed', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testAddSignature()
     {
         $userController = new UserController();
@@ -1183,7 +1307,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->addSignature($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->addSignature($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -1200,13 +1324,13 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->addSignature($fullRequest, new Response(), ['id' => self::$id * 1000]);
+        $response = $userController->addSignature($fullRequest, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
 
 
-        $response     = $userController->addSignature($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->addSignature($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
@@ -1221,25 +1345,28 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->addSignature($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->addSignature($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(_WRONG_FILE_TYPE, $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $userController->addSignature($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->addSignature($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function testGetImageContent()
     {
         $userController = new UserController();
@@ -1247,54 +1374,81 @@ class UserControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         //  Success
-        $response     = $userController->getImageContent($request, new Response(), ['id' => self::$id, 'signatureId' => self::$signatureId]);
+        $response = $userController->getImageContent(
+            $request,
+            new Response(),
+            ['id' => self::$id, 'signatureId' => self::$signatureId]
+        );
         $this->assertSame(200, $response->getStatusCode());
         $headers = $response->getHeaders();
 
         $this->assertSame('image/png', $headers['Content-Type'][0]);
 
         // Fail
-        $response     = $userController->getImageContent($request, new Response(), ['id' => 'wrong format', 'signatureId' => 'wrong format']);
+        $response = $userController->getImageContent(
+            $request,
+            new Response(),
+            ['id' => 'wrong format', 'signatureId' => 'wrong format']
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
 
-        $response     = $userController->getImageContent($request, new Response(), ['id' => self::$id * 1000, 'signatureId' => self::$signatureId]);
+        $response = $userController->getImageContent(
+            $request,
+            new Response(),
+            ['id' => self::$id * 1000, 'signatureId' => self::$signatureId]
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
 
 
-        $response     = $userController->getImageContent($request, new Response(), ['id' => self::$id, 'signatureId' => self::$signatureId * 1000]);
+        $response = $userController->getImageContent(
+            $request,
+            new Response(),
+            ['id' => self::$id, 'signatureId' => self::$signatureId * 1000]
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Signature does not exist', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $userController->getImageContent($request, new Response(), ['id' => self::$id, 'signatureId' => self::$signatureId]);
+        $response = $userController->getImageContent(
+            $request,
+            new Response(),
+            ['id' => self::$id, 'signatureId' => self::$signatureId]
+        );
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function testUpdateSignature()
     {
         $userController = new UserController();
 
         //  Success
         $body = [
-            'label'  => 'Signature1 - UPDATED'
+            'label' => 'Signature1 - UPDATED'
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateSignature($fullRequest, new Response(), ['id' => self::$id, 'signatureId' => self::$signatureId]);
+        $response = $userController->updateSignature(
+            $fullRequest,
+            new Response(),
+            ['id' => self::$id, 'signatureId' => self::$signatureId]
+        );
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -1306,31 +1460,46 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateSignature($fullRequest, new Response(), ['id' => self::$id * 1000, 'signatureId' => self::$signatureId]);
+        $response = $userController->updateSignature(
+            $fullRequest,
+            new Response(),
+            ['id' => self::$id * 1000, 'signatureId' => self::$signatureId]
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
 
 
-        $response     = $userController->updateSignature($fullRequest, new Response(), ['id' => self::$id, 'signatureId' => self::$signatureId * 1000]);
+        $response = $userController->updateSignature(
+            $fullRequest,
+            new Response(),
+            ['id' => self::$id, 'signatureId' => self::$signatureId * 1000]
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $userController->updateSignature($fullRequest, new Response(), ['id' => self::$id, 'signatureId' => self::$signatureId]);
+        $response = $userController->updateSignature(
+            $fullRequest,
+            new Response(),
+            ['id' => self::$id, 'signatureId' => self::$signatureId]
+        );
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function testDeleteSignature()
     {
         $userController = new UserController();
@@ -1338,7 +1507,11 @@ class UserControllerTest extends CourrierTestCase
         $request = $this->createRequest('DELETE');
 
         //  Success
-        $response     = $userController->deleteSignature($request, new Response(), ['id' => self::$id, 'signatureId' => self::$signatureId]);
+        $response = $userController->deleteSignature(
+            $request,
+            new Response(),
+            ['id' => self::$id, 'signatureId' => self::$signatureId]
+        );
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -1346,25 +1519,36 @@ class UserControllerTest extends CourrierTestCase
         $this->assertEmpty($responseBody['signatures']);
 
         // Fail
-        $response     = $userController->deleteSignature($request, new Response(), ['id' => self::$id * 1000, 'signatureId' => self::$signatureId]);
+        $response = $userController->deleteSignature(
+            $request,
+            new Response(),
+            ['id' => self::$id * 1000, 'signatureId' => self::$signatureId]
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $userController->deleteSignature($request, new Response(), ['id' => self::$id, 'signatureId' => self::$signatureId]);
+        $response = $userController->deleteSignature(
+            $request,
+            new Response(),
+            ['id' => self::$id, 'signatureId' => self::$signatureId]
+        );
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function testSendAccountActivationNotification()
     {
         $userController = new UserController();
@@ -1372,16 +1556,27 @@ class UserControllerTest extends CourrierTestCase
         $request = $this->createRequest('PUT');
 
         //  Success
-        $response     = $userController->sendAccountActivationNotification($request, new Response(), ['id' => self::$id, 'signatureId' => self::$signatureId]);
+        $response = $userController->sendAccountActivationNotification(
+            $request,
+            new Response(),
+            ['id' => self::$id, 'signatureId' => self::$signatureId]
+        );
         $this->assertSame(204, $response->getStatusCode());
 
         // Fail
-        $response     = $userController->sendAccountActivationNotification($request, new Response(), ['id' => self::$id * 1000, 'signatureId' => self::$signatureId]);
+        $response = $userController->sendAccountActivationNotification(
+            $request,
+            new Response(),
+            ['id' => self::$id * 1000, 'signatureId' => self::$signatureId]
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testForgotPassword()
     {
         $userController = new UserController();
@@ -1393,7 +1588,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->forgotPassword($fullRequest, new Response());
+        $response = $userController->forgotPassword($fullRequest, new Response());
         $this->assertSame(204, $response->getStatusCode());
 
         // User exist
@@ -1402,7 +1597,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->forgotPassword($fullRequest, new Response());
+        $response = $userController->forgotPassword($fullRequest, new Response());
         $this->assertSame(204, $response->getStatusCode());
 
         // Fail
@@ -1411,16 +1606,19 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $userController->forgotPassword($fullRequest, new Response());
+        $response = $userController->forgotPassword($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body login is empty', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function testPasswordInitialization()
     {
         $userController = new UserController();
@@ -1439,7 +1637,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->passwordInitialization($fullRequest, new Response());
+        $response = $userController->passwordInitialization($fullRequest, new Response());
         $this->assertSame(204, $response->getStatusCode());
 
         // Fail
@@ -1448,7 +1646,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->passwordInitialization($fullRequest, new Response());
+        $response = $userController->passwordInitialization($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body token or body password is empty', $responseBody['errors']);
@@ -1459,7 +1657,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->passwordInitialization($fullRequest, new Response());
+        $response = $userController->passwordInitialization($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Invalid token', $responseBody['errors']);
@@ -1476,7 +1674,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->passwordInitialization($fullRequest, new Response());
+        $response = $userController->passwordInitialization($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User does not exist', $responseBody['errors']);
@@ -1488,16 +1686,19 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->passwordInitialization($fullRequest, new Response());
+        $response = $userController->passwordInitialization($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Invalid token', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function testUpdateBasketsDisplay()
     {
         $userController = new UserController();
@@ -1515,7 +1716,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => $user['id']]);
+        $response = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => $user['id']]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('success', $responseBody['success']);
@@ -1531,12 +1732,12 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => $user['id']]);
+        $response = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => $user['id']]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('success', $responseBody['success']);
 
-        $response     = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => $user['id']]);
+        $response = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => $user['id']]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Preference already exists', $responseBody['errors']);
@@ -1547,12 +1748,12 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => self::$id * 1000]);
+        $response = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found', $responseBody['errors']);
 
-        $response     = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
@@ -1567,7 +1768,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Element is missing', $responseBody['errors']);
@@ -1583,7 +1784,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Group or basket does not exist', $responseBody['errors']);
@@ -1599,7 +1800,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Group is not linked to this user', $responseBody['errors']);
@@ -1615,12 +1816,15 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => $user['id']]);
+        $response = $userController->updateBasketsDisplay($fullRequest, new Response(), ['id' => $user['id']]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Group is not linked to this basket', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testGetTemplates()
     {
         $userController = new UserController();
@@ -1634,7 +1838,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $request->withQueryParams($query);
 
-        $response     = $userController->getTemplates($fullRequest, new Response());
+        $response = $userController->getTemplates($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsArray($responseBody['templates']);
@@ -1650,6 +1854,9 @@ class UserControllerTest extends CourrierTestCase
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function testUpdateCurrentUserBasketPreferences()
     {
         $userController = new UserController();
@@ -1660,7 +1867,11 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateCurrentUserBasketPreferences($fullRequest, new Response(), ['basketId' => 'MyBasket', 'groupSerialId' => 1]);
+        $response = $userController->updateCurrentUserBasketPreferences(
+            $fullRequest,
+            new Response(),
+            ['basketId' => 'MyBasket', 'groupSerialId' => 1]
+        );
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsArray($responseBody['userBaskets']);
@@ -1671,13 +1882,20 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $userController->updateCurrentUserBasketPreferences($fullRequest, new Response(), ['basketId' => 'MyBasket', 'groupSerialId' => 1]);
+        $response = $userController->updateCurrentUserBasketPreferences(
+            $fullRequest,
+            new Response(),
+            ['basketId' => 'MyBasket', 'groupSerialId' => 1]
+        );
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsArray($responseBody['userBaskets']);
         $this->assertEmpty($responseBody['userBaskets']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testGetDetailledById()
     {
         $userController = new UserController();
@@ -1685,19 +1903,19 @@ class UserControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
-        $response       = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
-        $response       = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -1711,23 +1929,26 @@ class UserControllerTest extends CourrierTestCase
         $this->assertSame('CK', $responseBody['initials']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function testDelete()
     {
         $userController = new UserController();
 
         //  DELETE
         $request = $this->createRequest('DELETE');
-        $response       = $userController->delete($request, new Response(), ['id' => self::$id]);
+        $response = $userController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
         //  READ
         $request = $this->createRequest('GET');
-        $response       = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
-        $responseBody   = json_decode((string)$response->getBody());
+        $response = $userController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->id);
         $this->assertSame('test-ckent', $responseBody->user_id);
@@ -1740,9 +1961,9 @@ class UserControllerTest extends CourrierTestCase
 
         // Fail
         $request = $this->createRequest('DELETE');
-        $response       = $userController->delete($request, new Response(), ['id' => $GLOBALS['id']]);
+        $response = $userController->delete($request, new Response(), ['id' => $GLOBALS['id']]);
         $this->assertSame(403, $response->getStatusCode());
-        $responseBody   = json_decode((string)$response->getBody(), true);
+        $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Can not delete yourself', $responseBody['errors']);
 
         //  REAL DELETE
@@ -1753,6 +1974,9 @@ class UserControllerTest extends CourrierTestCase
         ]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testPasswordManagement()
     {
         $userController = new UserController();
@@ -1761,13 +1985,13 @@ class UserControllerTest extends CourrierTestCase
 
         //  UPDATE PASSWORD
         $args = [
-            'currentPassword'   => 'superadmin',
-            'newPassword'       => 'hcraam',
-            'reNewPassword'     => 'hcraam'
+            'currentPassword' => 'superadmin',
+            'newPassword'     => 'hcraam',
+            'reNewPassword'   => 'hcraam'
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updatePassword($fullRequest, new Response(), ['id' => $user['id']]);
+        $response = $userController->updatePassword($fullRequest, new Response(), ['id' => $user['id']]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
@@ -1778,112 +2002,111 @@ class UserControllerTest extends CourrierTestCase
 
         // Fail
         $args = [
-            'currentPassword'   => 'superadmin',
-            'newPassword'       => 42, // wrong format
-            'reNewPassword'     => 'hcraam'
+            'currentPassword' => 'superadmin',
+            'newPassword'     => 42, // wrong format
+            'reNewPassword'   => 'hcraam'
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updatePassword($fullRequest, new Response(), ['id' => $user['id']]);
+        $response = $userController->updatePassword($fullRequest, new Response(), ['id' => $user['id']]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $userController->updatePassword($fullRequest, new Response(), ['id' => $user['id']]);
+        $response = $userController->updatePassword($fullRequest, new Response(), ['id' => $user['id']]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
         $user = UserModel::getByLogin(['login' => 'ggrand', 'select' => ['id']]);
 
         $args = [
-            'currentPassword'   => 'superadmin',
-            'newPassword'       => 'hcraam',
-            'reNewPassword'     => 'hcraam2'
+            'currentPassword' => 'superadmin',
+            'newPassword'     => 'hcraam',
+            'reNewPassword'   => 'hcraam2'
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updatePassword($fullRequest, new Response(), ['id' => $user['id']]);
+        $response = $userController->updatePassword($fullRequest, new Response(), ['id' => $user['id']]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Not allowed', $responseBody['errors']);
 
         // Passwords not matching
-        $args = [
-            'currentPassword'   => 'superadmin',
-            'newPassword'       => 'hcraam',
-            'reNewPassword'     => 'hcraam2'
-        ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updatePassword($fullRequest, new Response(), ['id' => $GLOBALS['id']]);
+        $response = $userController->updatePassword($fullRequest, new Response(), ['id' => $GLOBALS['id']]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
 
         // wrong current password
         $args = [
-            'currentPassword'   => 'superadmin',
-            'newPassword'       => 'hcraam',
-            'reNewPassword'     => 'hcraam'
+            'currentPassword' => 'superadmin',
+            'newPassword'     => 'hcraam',
+            'reNewPassword'   => 'hcraam'
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updatePassword($fullRequest, new Response(), ['id' => $GLOBALS['id']]);
+        $response = $userController->updatePassword($fullRequest, new Response(), ['id' => $GLOBALS['id']]);
         $this->assertSame(401, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(_WRONG_PSW, $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
         //  UPDATE RESET PASSWORD
         $args = [
-            'currentPassword'   => 'hcraam',
-            'newPassword'       => 'superadmin',
-            'reNewPassword'     => 'superadmin'
+            'currentPassword' => 'hcraam',
+            'newPassword'     => 'superadmin',
+            'reNewPassword'   => 'superadmin'
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updatePassword($fullRequest, new Response(), ['id' => $GLOBALS['id']]);
+        $response = $userController->updatePassword($fullRequest, new Response(), ['id' => $GLOBALS['id']]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
-        $checkPassword = AuthenticationModel::authentication(['login' => $GLOBALS['login'], 'password' => 'superadmin']);
+        $checkPassword = AuthenticationModel::authentication(['login' => $GLOBALS['login'], 'password' => 'superadmin']
+        );
 
         $this->assertSame(true, $checkPassword);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testUpdateProfile()
     {
         $userController = new UserController();
 
         //  UPDATE
         $args = [
-            'firstname'     => 'Wonder',
-            'lastname'      => 'User',
-            'mail'          => 'dev@maarch.org',
-            'initials'      => 'SU'
+            'firstname' => 'Wonder',
+            'lastname'  => 'User',
+            'mail'      => 'dev@maarch.org',
+            'initials'  => 'SU'
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updateProfile($fullRequest, new Response());
+        $response = $userController->updateProfile($fullRequest, new Response());
         $this->assertSame(204, $response->getStatusCode());
 
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $userController->getProfile($request, new Response());
+        $response = $userController->getProfile($request, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('superadmin', $responseBody['user_id']);
@@ -1896,20 +2119,20 @@ class UserControllerTest extends CourrierTestCase
 
         //  UPDATE
         $args = [
-            'firstname'     => 'Super',
-            'lastname'      => 'ADMIN',
-            'mail'          => 'dev@maarch.org',
-            'initials'      => 'SU'
+            'firstname' => 'Super',
+            'lastname'  => 'ADMIN',
+            'mail'      => 'dev@maarch.org',
+            'initials'  => 'SU'
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updateProfile($fullRequest, new Response());
+        $response = $userController->updateProfile($fullRequest, new Response());
         $this->assertSame(204, $response->getStatusCode());
 
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $userController->getProfile($request, new Response());
+        $response = $userController->getProfile($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('superadmin', $responseBody->user_id);
@@ -1920,13 +2143,13 @@ class UserControllerTest extends CourrierTestCase
 
         //  ERRORS
         $args = [
-            'firstname'     => 'Super',
-            'lastname'      => 'ADMIN',
-            'initials'      => 'SU'
+            'firstname' => 'Super',
+            'lastname'  => 'ADMIN',
+            'initials'  => 'SU'
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updateProfile($fullRequest, new Response());
+        $response = $userController->updateProfile($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -1939,7 +2162,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updateProfile($fullRequest, new Response());
+        $response = $userController->updateProfile($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -1952,7 +2175,7 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updateProfile($fullRequest, new Response());
+        $response = $userController->updateProfile($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -1967,34 +2190,38 @@ class UserControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $userController->updateProfile($fullRequest, new Response());
+        $response = $userController->updateProfile($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body phone is not a valid phone number', $responseBody['errors']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testSetRedirectedBasket()
     {
         $userController = new UserController();
 
         $body = [
             [
-                'actual_user_id'    =>  21,
-                'basket_id'         =>  'MyBasket',
-                'group_id'          =>  2
+                'actual_user_id' => 21,
+                'basket_id'      => 'MyBasket',
+                'group_id'       => 2
             ]
         ];
 
         $user_id = UserModel::getByLogin(['login' => 'bbain', 'select' => ['id']]);
         $fullRequest = $this->createRequestWithBody('POST', $body);
-        $response     = $userController->setRedirectedBaskets($fullRequest, new Response(), ['id' => $user_id['id']]);
+        $response = $userController->setRedirectedBaskets($fullRequest, new Response(), ['id' => $user_id['id']]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->baskets);
         $this->assertNotNull($responseBody->redirectedBaskets);
         foreach ($responseBody->redirectedBaskets as $redirectedBasket) {
-            if ($redirectedBasket->actual_user_id == 21 && $redirectedBasket->basket_id == 'MyBasket' && $redirectedBasket->group_id == 2) {
+            if ($redirectedBasket->actual_user_id == 21 && $redirectedBasket->basket_id == 'MyBasket' &&
+                $redirectedBasket->group_id == 2) {
                 self::$redirectId = $redirectedBasket->id;
             }
         }
@@ -2003,51 +2230,48 @@ class UserControllerTest extends CourrierTestCase
 
         $body = [
             [
-                'newUser'       =>  null,
-                'basketId'      =>  'MyBasket',
-                'basketOwner'   =>  'bbain',
-                'virtual'       =>  'Y'
+                'newUser'     => null,
+                'basketId'    => 'MyBasket',
+                'basketOwner' => 'bbain',
+                'virtual'     => 'Y'
             ],
             [
-                'newUser'       =>  'bblier',
-                'basketId'      =>  'EenvBasket',
-                'basketOwner'   =>  'bbain',
-                'virtual'       =>  'Y'
+                'newUser'     => 'bblier',
+                'basketId'    => 'EenvBasket',
+                'basketOwner' => 'bbain',
+                'virtual'     => 'Y'
             ]
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
-        $response     = $userController->setRedirectedBaskets($fullRequest, new Response(), ['id' => $user_id['id']]);
+        $response = $userController->setRedirectedBaskets($fullRequest, new Response(), ['id' => $user_id['id']]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Some data are empty', $responseBody->errors);
 
         $body = [
             [
-                'actual_user_id'    =>  -1,
-                'basket_id'         =>  'MyBasket',
-                'group_id'          =>  2
+                'actual_user_id' => -1,
+                'basket_id'      => 'MyBasket',
+                'group_id'       => 2
             ]
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
-        $response     = $userController->setRedirectedBaskets($fullRequest, new Response(), ['id' => $user_id['id']]);
+        $response = $userController->setRedirectedBaskets($fullRequest, new Response(), ['id' => $user_id['id']]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('User not found', $responseBody->errors);
 
-        $body = [
-            [
-                'actual_user_id'    =>  -1,
-                'basket_id'         =>  'MyBasket',
-                'group_id'          =>  2
-            ]
-        ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
-        $response     = $userController->setRedirectedBaskets($fullRequest, new Response(), ['id' => $user_id['id'] * 1000]);
+        $response = $userController->setRedirectedBaskets($fullRequest, new Response(), ['id' => $user_id['id'] * 1000]
+        );
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('User not found', $responseBody->errors);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testDeleteRedirectedBaskets()
     {
         $userController = new UserController();
@@ -2058,55 +2282,55 @@ class UserControllerTest extends CourrierTestCase
 
         //DELETE MANY WITH ONE ON ERROR
         $body = [
-            'redirectedBasketIds' => [ self::$redirectId, -1 ]
+            'redirectedBasketIds' => [self::$redirectId, -1]
         ];
 
         $fullRequest = $request->withQueryParams($body);
 
-        $response     = $userController->deleteRedirectedBasket($fullRequest, new Response(), ['id' => $user_id['id']]);
+        $response = $userController->deleteRedirectedBasket($fullRequest, new Response(), ['id' => $user_id['id']]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Redirected basket out of perimeter', $responseBody->errors);
 
         //DELETE OK
         $GLOBALS['login'] = 'bbain';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
-            'redirectedBasketIds' => [ self::$redirectId ]
+            'redirectedBasketIds' => [self::$redirectId]
         ];
 
         $fullRequest = $request->withQueryParams($body);
 
-        $response  = $userController->deleteRedirectedBasket($fullRequest, new Response(), ['id' => $user_id['id']]);
+        $response = $userController->deleteRedirectedBasket($fullRequest, new Response(), ['id' => $user_id['id']]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->baskets);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo          = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id']     = $userInfo['id'];
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
         //DELETE NOT OK
         $body = [
-            'redirectedBasketIds' => [ -1 ]
+            'redirectedBasketIds' => [-1]
         ];
 
         $fullRequest = $request->withQueryParams($body);
 
-        $response     = $userController->deleteRedirectedBasket($fullRequest, new Response(), ['id' => $user_id['id']]);
+        $response = $userController->deleteRedirectedBasket($fullRequest, new Response(), ['id' => $user_id['id']]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Redirected basket out of perimeter', $responseBody->errors);
 
-        $body = [
-            'redirectedBasketIds' => [ -1 ]
-        ];
-
         $fullRequest = $request->withQueryParams($body);
 
-        $response     = $userController->deleteRedirectedBasket($fullRequest, new Response(), ['id' => $user_id['id'] * 1000]);
+        $response = $userController->deleteRedirectedBasket(
+            $fullRequest,
+            new Response(),
+            ['id' => $user_id['id'] * 1000]
+        );
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('User not found', $responseBody->errors);
@@ -2117,7 +2341,7 @@ class UserControllerTest extends CourrierTestCase
 
         $fullRequest = $request->withQueryParams($body);
 
-        $response     = $userController->deleteRedirectedBasket($fullRequest, new Response(), ['id' => $user_id['id']]);
+        $response = $userController->deleteRedirectedBasket($fullRequest, new Response(), ['id' => $user_id['id']]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('RedirectedBasketIds is empty or not an array', $responseBody->errors);

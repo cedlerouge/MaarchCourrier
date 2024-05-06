@@ -1107,6 +1107,7 @@ class AuthenticationController
     /**
      * @param array $args
      * @return bool
+     * @throws Exception
      */
     public static function sendAccountActivationNotification(array $args): bool
     {
@@ -1166,6 +1167,7 @@ class AuthenticationController
     /**
      * @param array $args
      * @return bool
+     * @throws Exception
      */
     private static function isUserAuthorized(array $args): bool
     {

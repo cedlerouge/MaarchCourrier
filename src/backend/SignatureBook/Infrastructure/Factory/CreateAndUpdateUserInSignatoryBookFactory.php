@@ -9,6 +9,9 @@ use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 
 class CreateAndUpdateUserInSignatoryBookFactory
 {
+    /**
+     * @return CreateAndUpdateUserInSignatoryBook
+     */
     public function create(): CreateAndUpdateUserInSignatoryBook
     {
         $currentUser = new CurrentUserInformations();
