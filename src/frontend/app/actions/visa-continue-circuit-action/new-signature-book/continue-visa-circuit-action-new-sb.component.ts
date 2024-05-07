@@ -18,7 +18,6 @@ import { SignatureBookService } from '@appRoot/signatureBook/signature-book.serv
 import { ContinueVisaCircuitDataToSendInterface, ContinueVisaCircuitObjectInterface } from "@models/actions.model";
 import { MatSidenav } from "@angular/material/sidenav";
 import { Attachment } from "@models/attachment.model";
-import { SignatureBookConfigInterface } from '@models/signature-book.model';
 
 @Component({
     templateUrl: 'continue-visa-circuit-action-new-sb.component.html',
@@ -130,7 +129,7 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
         const realResSelected: number[] = this.data.resIds.filter(
             (resId: any) => this.resourcesErrors.map((resErr) => resErr.res_id).indexOf(resId) === -1
         );
-        if ((this.data.resource.signatureBookConfig as SignatureBookConfigInterface).isNewInternalParaph && this.digitalCertificate) {
+        if (this.signatureBookService.config.isNewInternalParaph && this.digitalCertificate) {
             this.componentInstance
                 .open()
                 .pipe(
