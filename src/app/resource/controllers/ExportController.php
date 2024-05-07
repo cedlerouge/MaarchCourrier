@@ -380,11 +380,8 @@ class ExportController
                         $copies = ExportController::getCopies(['chunkedResIds' => $aArgs['chunkedResIds']]);
                         $csvContent[] = empty($copies[$resource['res_id']]) ? '' : $copies[$resource['res_id']];
                     } elseif ($value['value'] == 'getDetailLink') {
-                        $csvContent[] = trim(
-                            UrlController::getCoreUrl(),
-                            '/'
-                        ) . '/dist/index.html#/resources/' .
-                            $resource['res_id'];
+                        $csvContent[] = trim(UrlController::getCoreUrl(), '/') .
+                            '/dist/index.html#/resources/' . $resource['res_id'];
                     } elseif ($value['value'] == 'getParentFolder') {
                         $csvContent[] = ExportController::getParentFolderLabel(['res_id' => $resource['res_id']]);
                     } elseif ($value['value'] == 'getFolder') {
@@ -915,7 +912,10 @@ class ExportController
 
             foreach ($listInstances as $listInstance) {
                 if (!empty($listInstance['item_id'])) {
-                    $user = UserModel::getById(['id' => $listInstance['item_id'], 'select' => ['firstname', 'lastname']]);
+                    $user = UserModel::getById([
+                        'id'     => $listInstance['item_id'],
+                        'select' => ['firstname', 'lastname']
+                    ]);
                     if (!empty($aSignatories[$listInstance['res_id']])) {
                         $aSignatories[$listInstance['res_id']] .= "\n";
                     } else {
@@ -997,6 +997,7 @@ class ExportController
     /**
      * @param array $args
      * @return string
+     * @throws Exception
      */
     private static function getFolderLabel(array $args): string
     {
@@ -1026,6 +1027,7 @@ class ExportController
     /**
      * @param array $args
      * @return string
+     * @throws Exception
      */
     private static function getParentFolderLabel(array $args): string
     {
@@ -1098,7 +1100,8 @@ class ExportController
             $customValues = ContactController::getContactCustomField(['contacts' => $customValues]);
             $customValues = implode("\n", $customValues);
         } elseif ($field['type'] == 'banAutocomplete') {
-            $line = "{$customValues[0]['addressNumber']} {$customValues[0]['addressStreet']} {$customValues[0]['addressTown']} ({$customValues[0]['addressPostcode']})";
+            $line = "{$customValues[0]['addressNumber']} {$customValues[0]['addressStreet']}" .
+                " {$customValues[0]['addressTown']} ({$customValues[0]['addressPostcode']})";
             if (!empty($customValues[0]['sector'])) {
                 $line .= " - {$customValues[0]['sector']}";
             }

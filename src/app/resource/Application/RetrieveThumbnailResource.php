@@ -104,7 +104,9 @@ class RetrieveThumbnailResource
             }
 
             if ($tnlDocument != null) {
-                $checkDocserver = $this->resourceRepository->getDocserverDataByDocserverId($tnlDocument->getDocserverId());
+                $checkDocserver =
+                    $this->resourceRepository->getDocserverDataByDocserverId($tnlDocument->getDocserverId());
+
                 $isDocserverEncrypted = $checkDocserver->getIsEncrypted() ?? false;
 
                 $pathToThumbnail = $this->resourceFile->buildFilePath(
@@ -137,6 +139,12 @@ class RetrieveThumbnailResource
         );
     }
 
+    /**
+     * @param int $resId
+     * @param string $type
+     * @param int $version
+     * @return ResourceConverted|null
+     */
     private function getResourceVersion(int $resId, string $type, int $version): ?ResourceConverted
     {
         $document = $this->resourceRepository->getResourceVersion($resId, $type, $version);

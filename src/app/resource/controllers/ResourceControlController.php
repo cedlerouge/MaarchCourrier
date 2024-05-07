@@ -1,16 +1,16 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Resource Control Controller
-* @author dev@maarch.org
-*/
+ * @brief Resource Control Controller
+ * @author dev@maarch.org
+ */
 
 namespace Resource\controllers;
 
@@ -20,6 +20,7 @@ use Convert\models\AdrModel;
 use CustomField\models\CustomFieldModel;
 use Doctype\models\DoctypeModel;
 use Entity\models\EntityModel;
+use Exception;
 use Folder\controllers\FolderController;
 use Group\controllers\PrivilegeController;
 use IndexingModel\models\IndexingModelFieldModel;
@@ -37,7 +38,12 @@ use User\models\UserModel;
 
 class ResourceControlController
 {
-    protected static function controlResource(array $args)
+    /**
+     * @param array $args
+     * @return array|string[]|true
+     * @throws Exception
+     */
+    protected static function controlResource(array $args): array|bool
     {
         $currentUser = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['mode']]);
         $isWebServiceUser = $currentUser['mode'] == 'rest';
@@ -61,7 +67,10 @@ class ResourceControlController
             }
         }
 
-        $indexingModel = IndexingModelModel::getById(['id' => $body['modelId'], 'select' => ['master', 'enabled', 'mandatory_file']]);
+        $indexingModel = IndexingModelModel::getById([
+            'id'     => $body['modelId'],
+            'select' => ['master', 'enabled', 'mandatory_file']
+        ]);
         if (empty($indexingModel)) {
             return ['errors' => 'Body modelId does not exist'];
         } elseif (!$indexingModel['enabled']) {
@@ -122,7 +131,12 @@ class ResourceControlController
         return true;
     }
 
-    protected static function controlUpdateResource(array $args)
+    /**
+     * @param array $args
+     * @return array|string[]|true
+     * @throws Exception
+     */
+    protected static function controlUpdateResource(array $args): array|bool
     {
         $body = $args['body'];
 
@@ -130,7 +144,18 @@ class ResourceControlController
             return ['errors' => 'Body is not set or empty'];
         }
 
-        $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['type_id', 'status', 'model_id', 'format', 'initiator', 'external_id->>\'signatureBookId\' as signaturebookid', 'filename']]);
+        $resource = ResModel::getById([
+            'resId'  => $args['resId'],
+            'select' => [
+                'type_id',
+                'status',
+                'model_id',
+                'format',
+                'initiator',
+                'external_id->>\'signatureBookId\' as signaturebookid',
+                'filename'
+            ]
+        ]);
         if (empty($resource['status'])) {
             return ['errors' => 'Resource status is empty. It can not be modified'];
         }
@@ -140,10 +165,20 @@ class ResourceControlController
         }
 
         if (!empty($body['modelId']) && $resource['model_id'] != $body['modelId']) {
-            if (!PrivilegeController::isResourceInProcess(['userId' => $GLOBALS['id'], 'resId' => $args['resId'], 'canUpdateData' => true, 'canUpdateModel' => true])) {
+            if (
+                !PrivilegeController::isResourceInProcess([
+                    'userId'         => $GLOBALS['id'],
+                    'resId'          => $args['resId'],
+                    'canUpdateData'  => true,
+                    'canUpdateModel' => true
+                ])
+            ) {
                 return ['errors' => 'Model can not be modified'];
             }
-            $indexingModel = IndexingModelModel::getById(['id' => $body['modelId'], 'select' => ['master', 'enabled', 'mandatory_file']]);
+            $indexingModel = IndexingModelModel::getById([
+                'id'     => $body['modelId'],
+                'select' => ['master', 'enabled', 'mandatory_file']
+            ]);
             if (empty($indexingModel)) {
                 return ['errors' => 'Body modelId does not exist'];
             } elseif (!$indexingModel['enabled']) {
@@ -162,7 +197,10 @@ class ResourceControlController
                 return ['errors' => 'Resource is in external signature book, file can not be modified'];
             } elseif (ResourceControlController::isSigned(['resId' => $args['resId']])) {
                 return ['errors' => 'Resource is signed, file can not be modified'];
-            } elseif (!empty($resource['format']) && !ConvertPdfController::canConvert(['extension' => $resource['format']])) {
+            } elseif (
+                !empty($resource['format']) &&
+                !ConvertPdfController::canConvert(['extension' => $resource['format']])
+            ) {
                 return ['errors' => 'Resource is not convertible, file can not be modified'];
             }
             $control = ResourceControlController::controlFileData(['body' => $body]);
@@ -192,7 +230,12 @@ class ResourceControlController
         if (empty($body['modelId'])) {
             $body['modelId'] = $resource['model_id'];
         }
-        $control = ResourceControlController::controlIndexingModelFields(['body' => $body, 'oldDoctypeId' => $resource['type_id'], 'isUpdating' => true, 'resId' => $args['resId']]);
+        $control = ResourceControlController::controlIndexingModelFields([
+            'body'         => $body,
+            'oldDoctypeId' => $resource['type_id'],
+            'isUpdating'   => true,
+            'resId'        => $args['resId']
+        ]);
         if (!empty($control['errors'])) {
             return ['errors' => $control['errors']];
         }
@@ -223,12 +266,16 @@ class ResourceControlController
         return true;
     }
 
-    private static function isSigned(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     */
+    private static function isSigned(array $args): bool
     {
         $signedDocument = AdrModel::getDocuments([
-            'select'    => [1],
-            'where'     => ['res_id = ?', 'type = ?'],
-            'data'      => [$args['resId'], 'SIGN']
+            'select' => [1],
+            'where'  => ['res_id = ?', 'type = ?'],
+            'data'   => [$args['resId'], 'SIGN']
         ]);
 
         if (empty($signedDocument)) {
@@ -238,7 +285,12 @@ class ResourceControlController
         return true;
     }
 
-    public static function controlFileData(array $args)
+    /**
+     * @param array $args
+     * @return array|string[]|true
+     * @throws Exception
+     */
+    public static function controlFileData(array $args): array|bool
     {
         $body = $args['body'];
 
@@ -253,7 +305,9 @@ class ResourceControlController
             }
 
             if (!StoreController::isFileAllowed(['extension' => $body['format'], 'type' => $mimeAndSize['mime']])) {
-                return ['errors' => "Format with this mimeType is not allowed : {$body['format']} {$mimeAndSize['mime']}"];
+                return [
+                    'errors' => "Format with this mimeType is not allowed : {$body['format']} {$mimeAndSize['mime']}"
+                ];
             }
 
             $maximumSize = CoreController::getMaximumAllowedSizeFromPhpIni();
@@ -265,7 +319,12 @@ class ResourceControlController
         return true;
     }
 
-    private static function controlAdjacentData(array $args)
+    /**
+     * @param array $args
+     * @return string[]|true
+     * @throws Exception
+     */
+    private static function controlAdjacentData(array $args): array|bool
     {
         $body = $args['body'];
 
@@ -273,7 +332,11 @@ class ResourceControlController
             if (!Validator::arrayType()->notEmpty()->validate($body['customFields'])) {
                 return ['errors' => 'Body customFields is not an array'];
             }
-            $customFields = CustomFieldModel::get(['select' => ['count(1)'], 'where' => ['id in (?)'], 'data' => [array_keys($body['customFields'])]]);
+            $customFields = CustomFieldModel::get([
+                'select' => ['count(1)'],
+                'where'  => ['id in (?)'],
+                'data'   => [array_keys($body['customFields'])]
+            ]);
             if (count($body['customFields']) != $customFields[0]['count']) {
                 return ['errors' => 'Body customFields : One or more custom fields do not exist'];
             }
@@ -377,24 +440,40 @@ class ResourceControlController
         return true;
     }
 
-    private static function controlIndexingModelFields(array $args)
+    /**
+     * @param array $args
+     * @return string[]|true
+     */
+    private static function controlIndexingModelFields(array $args): array|bool
     {
         $body = $args['body'];
 
-        $indexingModelFields = IndexingModelFieldModel::get(['select' => ['identifier', 'mandatory', 'allowed_values'], 'where' => ['model_id = ?'], 'data' => [$body['modelId']]]);
+        $indexingModelFields = IndexingModelFieldModel::get([
+            'select' => ['identifier', 'mandatory', 'allowed_values'],
+            'where'  => ['model_id = ?'],
+            'data'   => [$body['modelId']]
+        ]);
         foreach ($indexingModelFields as $indexingModelField) {
-            $indexingModelField['allowed_values'] = !empty($indexingModelField['allowed_values']) ? json_decode($indexingModelField['allowed_values'], true) : null;
+            $indexingModelField['allowed_values'] = !empty($indexingModelField['allowed_values'])
+                ? json_decode($indexingModelField['allowed_values'], true)
+                : null;
+
             if ($indexingModelField['allowed_values'] == IndexingModelController::ALLOWED_VALUES_ALL_DOCTYPES) {
-                $indexingModelField['allowed_values'] = null; // setting to null so it is ignored in the rest of this function
+                $indexingModelField['allowed_values'] = null; // setting to null = ignored in the rest of this function
             }
-            if (strpos($indexingModelField['identifier'], 'indexingCustomField_') !== false) {
+            if (str_contains($indexingModelField['identifier'], 'indexingCustomField_')) {
                 $customFieldId = explode('_', $indexingModelField['identifier'])[1];
-                if ($indexingModelField['mandatory'] && empty($body['customFields'][$customFieldId]) && $body['customFields'][$customFieldId] !== 0) {
+                if (
+                    $indexingModelField['mandatory'] &&
+                    empty($body['customFields'][$customFieldId]) &&
+                    $body['customFields'][$customFieldId] !== 0
+                ) {
                     return ['errors' => "Body customFields[{$customFieldId}] is empty"];
                 }
                 if (!empty($body['customFields'][$customFieldId])) {
                     $customField = CustomFieldModel::getById(['id' => $customFieldId, 'select' => ['type', 'values']]);
-                    $possibleValues = empty($customField['values']) ? [] : json_decode($customField['values'], true);
+                    $possibleValues =
+                        empty($customField['values']) ? [] : json_decode($customField['values'], true);
                     if (!empty($possibleValues['table'])) {
                         if (!empty($args['resId'])) {
                             $possibleValues['resId'] = $args['resId'];
@@ -402,7 +481,10 @@ class ResourceControlController
                         $possibleValues = CustomFieldModel::getValuesSQL($possibleValues);
                         $possibleValues = array_column($possibleValues, 'key');
                     }
-                    if (($customField['type'] == 'select' || $customField['type'] == 'radio') && !in_array($body['customFields'][$customFieldId], $possibleValues)) {
+                    if (
+                        ($customField['type'] == 'select' || $customField['type'] == 'radio') &&
+                        !in_array($body['customFields'][$customFieldId], $possibleValues)
+                    ) {
                         return ['errors' => "Body customFields[{$customFieldId}] has wrong value"];
                     } elseif ($customField['type'] == 'checkbox') {
                         if (!is_array($body['customFields'][$customFieldId])) {
@@ -414,7 +496,10 @@ class ResourceControlController
                             }
                         }
                     } elseif ($customField['type'] == 'banAutocomplete') {
-                        if (empty($body['customFields'][$customFieldId][0]) || !is_array($body['customFields'][$customFieldId][0])) {
+                        if (
+                            empty($body['customFields'][$customFieldId][0]) ||
+                            !is_array($body['customFields'][$customFieldId][0])
+                        ) {
                             return ['errors' => "Body customFields[{$customFieldId}] is not an array"];
                         }
                         if (empty($body['customFields'][$customFieldId][0]['longitude'])) {
@@ -426,25 +511,48 @@ class ResourceControlController
                         } elseif (empty($body['customFields'][$customFieldId][0]['addressPostcode'])) {
                             return ['errors' => "Body customFields[{$customFieldId}] addressPostcode is empty"];
                         }
-                    } elseif ($customField['type'] == 'string' && !Validator::stringType()->notEmpty()->validate($body['customFields'][$customFieldId])) {
+                    } elseif (
+                        $customField['type'] == 'string' &&
+                        !Validator::stringType()->notEmpty()->validate($body['customFields'][$customFieldId])
+                    ) {
                         return ['errors' => "Body customFields[{$customFieldId}] is not a string"];
-                    } elseif ($customField['type'] == 'integer' && !Validator::floatVal()->notEmpty()->validate($body['customFields'][$customFieldId])) {
+                    } elseif (
+                        $customField['type'] == 'integer' &&
+                        !Validator::floatVal()->notEmpty()->validate($body['customFields'][$customFieldId])
+                    ) {
                         return ['errors' => "Body customFields[{$customFieldId}] is not a number"];
-                    } elseif ($customField['type'] == 'date' && !Validator::dateTime()->notEmpty()->validate($body['customFields'][$customFieldId])) {
+                    } elseif (
+                        $customField['type'] == 'date' &&
+                        !Validator::dateTime()->notEmpty()->validate($body['customFields'][$customFieldId])
+                    ) {
                         return ['errors' => "Body customFields[{$customFieldId}] is not a date"];
-                    } elseif (!empty($indexingModelField['allowed_values']) && !in_array($body['customFields'][$customFieldId], $indexingModelField['allowed_values'])) {
-                        if (!empty($args['oldDoctypeId']) && $body['customFields'][$customFieldId] == $args['oldDoctypeId']) {
+                    } elseif (
+                        !empty($indexingModelField['allowed_values']) &&
+                        !in_array($body['customFields'][$customFieldId], $indexingModelField['allowed_values'])
+                    ) {
+                        if (
+                            !empty($args['oldDoctypeId']) &&
+                            $body['customFields'][$customFieldId] == $args['oldDoctypeId']
+                        ) {
                             continue;
                         }
-                        return ['errors' => "Body {$indexingModelField['identifier']} is not one of the allowed values"];
+                        return [
+                            'errors' => "Body {$indexingModelField['identifier']} is not one of the allowed values"
+                        ];
                     }
                 }
             } elseif ($indexingModelField['identifier'] == 'destination' && !empty($args['isUpdating'])) {
                 continue;
             } elseif ($indexingModelField['mandatory'] && !isset($body[$indexingModelField['identifier']])) {
                 return ['errors' => "Body {$indexingModelField['identifier']} is not set"];
-            } elseif (!empty($indexingModelField['allowed_values']) && !in_array($body[$indexingModelField['identifier']], $indexingModelField['allowed_values'])) {
-                if (!empty($args['oldDoctypeId']) && $body[$indexingModelField['identifier']] == $args['oldDoctypeId']) {
+            } elseif (
+                !empty($indexingModelField['allowed_values']) &&
+                !in_array($body[$indexingModelField['identifier']], $indexingModelField['allowed_values'])
+            ) {
+                if (
+                    !empty($args['oldDoctypeId']) &&
+                    $body[$indexingModelField['identifier']] == $args['oldDoctypeId']
+                ) {
                     continue;
                 }
                 return ['errors' => "Body {$indexingModelField['identifier']} is not one of the allowed values"];
@@ -454,7 +562,12 @@ class ResourceControlController
         return true;
     }
 
-    private static function controlDates(array $args)
+    /**
+     * @param array $args
+     * @return string[]|true
+     * @throws Exception
+     */
+    private static function controlDates(array $args): array|bool
     {
         $body = $args['body'];
 
@@ -525,15 +638,20 @@ class ResourceControlController
         return true;
     }
 
-    private static function controlDestination(array $args)
+    /**
+     * @param array $args
+     * @return string[]|true
+     * @throws Exception
+     */
+    private static function controlDestination(array $args): array|bool
     {
         $body = $args['body'];
 
         if (!empty($body['destination'])) {
             $groups = UserGroupModel::getWithGroups([
-                'select'    => ['usergroups.indexation_parameters'],
-                'where'     => ['usergroup_content.user_id = ?', 'usergroups.can_index = ?'],
-                'data'      => [$GLOBALS['id'], true]
+                'select' => ['usergroups.indexation_parameters'],
+                'where'  => ['usergroup_content.user_id = ?', 'usergroups.can_index = ?'],
+                'data'   => [$GLOBALS['id'], true]
             ]);
 
             $clauseToProcess = '';
@@ -551,8 +669,15 @@ class ResourceControlController
             }
 
             if (!empty($clauseToProcess)) {
-                $preparedClause = PreparedClauseController::getPreparedClause(['clause' => $clauseToProcess, 'userId' => $GLOBALS['id']]);
-                $preparedEntities = EntityModel::get(['select' => ['id'], 'where' => ['enabled = ?', "entity_id in {$preparedClause}"], 'data' => ['Y']]);
+                $preparedClause = PreparedClauseController::getPreparedClause([
+                    'clause' => $clauseToProcess,
+                    'userId' => $GLOBALS['id']
+                ]);
+                $preparedEntities = EntityModel::get([
+                    'select' => ['id'],
+                    'where'  => ['enabled = ?', "entity_id in {$preparedClause}"],
+                    'data'   => ['Y']
+                ]);
                 $preparedEntities = array_column($preparedEntities, 'id');
                 $allowedEntities = array_merge($allowedEntities, $preparedEntities);
                 $allowedEntities = array_unique($allowedEntities);

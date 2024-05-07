@@ -1,26 +1,32 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief XParaph Controller
-* @author dev@maarch.org
-*/
+ * @brief XParaph Controller
+ * @author dev@maarch.org
+ */
 
 namespace ExternalSignatoryBook\controllers;
 
 use Attachment\models\AttachmentModel;
+use clsTinyButStrong;
 use Convert\controllers\ConvertPdfController;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Exception;
 use History\controllers\HistoryController;
 use Resource\controllers\StoreController;
+use setasign\Fpdi\PdfParser\CrossReference\CrossReferenceException;
+use setasign\Fpdi\PdfParser\Filter\FilterException;
+use setasign\Fpdi\PdfParser\PdfParserException;
+use setasign\Fpdi\PdfParser\Type\PdfTypeException;
+use setasign\Fpdi\PdfReader\PdfReaderException;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Slim\Psr7\Request;
 use Smalot\PdfParser\Element\ElementArray;
@@ -41,17 +47,32 @@ use User\models\UserModel;
 include_once('vendor/tinybutstrong/opentbs/tbs_plugin_opentbs.php');
 
 /**
-    * @codeCoverageIgnore
-*/
+ * @codeCoverageIgnore
+ */
 class XParaphController
 {
-    public static function sendDatas($aArgs)
+    /**
+     * @param $aArgs
+     * @return array[]|string[]
+     * @throws Exception
+     */
+    public static function sendDatas($aArgs): array
     {
         $attachments = AttachmentModel::get([
-            'select'    => [
-                'res_id', 'title', 'docserver_id', 'path', 'filename'],
-            'where'     => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SEND_MASS')", "in_signature_book = 'true'"],
-            'data'      => [$aArgs['resIdMaster'], ['signed_response']]
+            'select' => [
+                'res_id',
+                'title',
+                'docserver_id',
+                'path',
+                'filename'
+            ],
+            'where'  => [
+                "res_id_master = ?",
+                "attachment_type not in (?)",
+                "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SEND_MASS')",
+                "in_signature_book = 'true'"
+            ],
+            'data'   => [$aArgs['resIdMaster'], ['signed_response']]
         ]);
 
         $attachmentToFreeze = [];
@@ -75,20 +96,27 @@ class XParaphController
         }
 
         foreach ($attachments as $value) {
-            $resId      = $value['res_id'];
-            $collId     = 'attachments_coll';
+            $resId = $value['res_id'];
+            $collId = 'attachments_coll';
 
-            $adrInfo       = ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => $collId]);
+            $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => $collId]);
             $docserverInfo = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id']]);
-            $filePath      = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) . $adrInfo['filename'];
+            $filePath = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) .
+                $adrInfo['filename'];
 
-            $docserverType = DocserverTypeModel::getById(['id' => $docserverInfo['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-            $fingerprint = StoreController::getFingerPrint(['filePath' => $filePath, 'mode' => $docserverType['fingerprint_mode']]);
+            $docserverType = DocserverTypeModel::getById(
+                ['id' => $docserverInfo['docserver_type_id'], 'select' => ['fingerprint_mode']]
+            );
+            $fingerprint = StoreController::getFingerPrint(
+                ['filePath' => $filePath, 'mode' => $docserverType['fingerprint_mode']]
+            );
             if ($adrInfo['fingerprint'] != $fingerprint) {
                 return ['error' => 'Fingerprints do not match'];
             }
 
-            $documentToSend = XParaphController::replaceXParaphSignatureField(['pdf' => $filePath, 'attachmentInfo' => $value]);
+            $documentToSend = XParaphController::replaceXParaphSignatureField(
+                ['pdf' => $filePath, 'attachmentInfo' => $value]
+            );
             $filePath = $documentToSend['documentPath'];
             if ($documentToSend['remat']) {
                 $pml = 1;
@@ -96,7 +124,7 @@ class XParaphController
                 $pml = 0;
             }
 
-            $filesize    = filesize($filePath);
+            $filesize = filesize($filePath);
             $fileContent = file_get_contents($filePath);
 
             $xmlStep = '';
@@ -146,24 +174,29 @@ class XParaphController
 
             $isError = $response['response']->children('http://schemas.xmlsoap.org/soap/envelope/')->Body;
             if (!empty($isError->Fault[0])) {
-                $error = $response['response']->children('http://schemas.xmlsoap.org/soap/envelope/')->Body->Fault[0]->children()->detail;
+                $error = $response['response']->children(
+                    'http://schemas.xmlsoap.org/soap/envelope/'
+                )->Body->Fault[0]->children()->detail;
                 return ['error' => (string)$error];
             } else {
-                $depotId = $response['response']->children('SOAP-ENV', true)->Body->children('ns1', true)->XPRF_DeposerResponse->children()->return->children()->depotid;
+                $depotId = $response['response']->children('SOAP-ENV', true)->Body->children(
+                    'ns1',
+                    true
+                )->XPRF_DeposerResponse->children()->return->children()->depotid;
                 $attachmentToFreeze[$collId][$resId] = (string)$depotId;
 
                 $aAttachment = AttachmentModel::getById([
-                    'select'    => ['external_id'],
-                    'id'        => $resId
+                    'select' => ['external_id'],
+                    'id'     => $resId
                 ]);
 
                 $externalId = json_decode($aAttachment[0]['external_id'], true);
                 $externalId['xparaphDepot'] = ['login' => $aArgs['info']['login'], 'siret' => $aArgs['info']['siret']];
 
                 AttachmentModel::update([
-                    'set'       => ['external_id' => json_encode($externalId)],
-                    'where'     => ['res_id = ?'],
-                    'data'      => [$resId]
+                    'set'   => ['external_id' => json_encode($externalId)],
+                    'where' => ['res_id = ?'],
+                    'data'  => [$resId]
                 ]);
             }
         }
@@ -171,11 +204,21 @@ class XParaphController
         return ['sended' => $attachmentToFreeze];
     }
 
-    protected static function replaceXParaphSignatureField(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws CrossReferenceException
+     * @throws FilterException
+     * @throws PdfParserException
+     * @throws PdfTypeException
+     * @throws PdfReaderException
+     * @throws Exception
+     */
+    protected static function replaceXParaphSignatureField(array $aArgs): array
     {
         $parser = new Parser();
-        $pdf    = $parser->parseFile($aArgs['pdf']);
-        $pages  = $pdf->getPages();
+        $pdf = $parser->parseFile($aArgs['pdf']);
+        $pages = $pdf->getPages();
 
         $searchableArray = ["[xParaphSignature]"];
         $pageCount = 0;
@@ -221,10 +264,17 @@ class XParaphController
         }
 
         if (!empty($coordinates)) {
-            $docserverInfo = DocserverModel::getByDocserverId(['docserverId' => $aArgs['attachmentInfo']['docserver_id']]);
-            $filePath      = $docserverInfo['path_template'] . str_replace('#', '/', $aArgs['attachmentInfo']['path']) . $aArgs['attachmentInfo']['filename'];
+            $docserverInfo = DocserverModel::getByDocserverId(
+                ['docserverId' => $aArgs['attachmentInfo']['docserver_id']]
+            );
+            $filePath = $docserverInfo['path_template'] . str_replace(
+                '#',
+                '/',
+                $aArgs['attachmentInfo']['path']
+            ) .
+                $aArgs['attachmentInfo']['filename'];
 
-            $tbs = new \clsTinyButStrong();
+            $tbs = new clsTinyButStrong();
             $tbs->NoErr = true;
             $tbs->PlugIn(TBS_INSTALL, OPENTBS_PLUGIN);
 
@@ -288,7 +338,13 @@ class XParaphController
         }
     }
 
-    private static function strposa(string $haystack, array $needle, int $offset = 0)
+    /**
+     * @param string $haystack
+     * @param array $needle
+     * @param int $offset
+     * @return bool
+     */
+    private static function strposa(string $haystack, array $needle, int $offset = 0): bool
     {
         if (!is_array($needle)) {
             $needle = [$needle];
@@ -301,7 +357,13 @@ class XParaphController
         return false;
     }
 
-    public static function getWorkflow(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public static function getWorkflow(Request $request, Response $response): Response
     {
         $data = $request->getQueryParams();
         foreach (['login', 'siret'] as $value) {
@@ -310,8 +372,8 @@ class XParaphController
             }
         }
 
-        $loadedXml   = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-        $config      = [];
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        $config = [];
         $userGeneric = [];
 
         if (!empty($loadedXml)) {
@@ -345,7 +407,8 @@ class XParaphController
                         <logingen xsi:type="xsd:string">' . $userGeneric['login'] . '</logingen>
                         <password xsi:type="xsd:string">' . $userGeneric['password'] . '</password>
                         <action xsi:type="xsd:string">DETAIL</action>
-                        <scenario xsi:type="xsd:string">' . $config['data']['docutype'] . '-' . $config['data']['docustype'] . '</scenario>
+                        <scenario xsi:type="xsd:string">' . $config['data']['docutype'] . '-' .
+            $config['data']['docustype'] . '</scenario>
                         <version xsi:type="xsd:string">2</version>
                     </params>
                 </urn:XPRF_Initialisation_Deposer>
@@ -361,22 +424,27 @@ class XParaphController
 
         $isError = $curlResponse['response']->children('http://schemas.xmlsoap.org/soap/envelope/')->Body;
         if (!empty($isError->Fault[0])) {
-            $error = $curlResponse['response']->children('http://schemas.xmlsoap.org/soap/envelope/')->Body->Fault[0]->children()->detail;
+            $error = $curlResponse['response']->children(
+                'http://schemas.xmlsoap.org/soap/envelope/'
+            )->Body->Fault[0]->children()->detail;
             return $response->withStatus(403)->withJson(['errors' => $error]);
         } else {
-            $details = $curlResponse['response']->children('SOAP-ENV', true)->Body->children('ns1', true)->XPRF_Initialisation_DeposerResponse->children()->return->children()->Retour_XML;
+            $details = $curlResponse['response']->children('SOAP-ENV', true)->Body->children(
+                'ns1',
+                true
+            )->XPRF_Initialisation_DeposerResponse->children()->return->children()->Retour_XML;
             $xmlData = simplexml_load_string($details);
 
             $userWorkflow = [];
             foreach ($xmlData->SCENARIO->AUTORISATIONS->VISEURS->VISEUR as $value) {
-                $userWorkflow[(string)$value->ACTEUR_LOGIN]["userId"]      = (string)$value->ACTEUR_LOGIN;
+                $userWorkflow[(string)$value->ACTEUR_LOGIN]["userId"] = (string)$value->ACTEUR_LOGIN;
                 $userWorkflow[(string)$value->ACTEUR_LOGIN]["displayName"] = (string)$value->ACTEUR_NOM;
-                $userWorkflow[(string)$value->ACTEUR_LOGIN]["roles"][]     = "visa";
+                $userWorkflow[(string)$value->ACTEUR_LOGIN]["roles"][] = "visa";
             }
             foreach ($xmlData->SCENARIO->AUTORISATIONS->SIGNATAIRES->SIGNATAIRE as $value) {
-                $userWorkflow[(string)$value->ACTEUR_LOGIN]["userId"]      = (string)$value->ACTEUR_LOGIN;
+                $userWorkflow[(string)$value->ACTEUR_LOGIN]["userId"] = (string)$value->ACTEUR_LOGIN;
                 $userWorkflow[(string)$value->ACTEUR_LOGIN]["displayName"] = (string)$value->ACTEUR_NOM;
-                $userWorkflow[(string)$value->ACTEUR_LOGIN]["roles"][]     = "sign";
+                $userWorkflow[(string)$value->ACTEUR_LOGIN]["roles"][] = "sign";
             }
             $workflow = [];
             foreach ($userWorkflow as $value) {
@@ -387,7 +455,12 @@ class XParaphController
         }
     }
 
-    public static function retrieveSignedMails($aArgs)
+    /**
+     * @param $aArgs
+     * @return mixed
+     * @throws Exception
+     */
+    public static function retrieveSignedMails($aArgs): mixed
     {
         $tmpPath = CoreConfigModel::getTmpPath();
 
@@ -395,7 +468,10 @@ class XParaphController
         $depotsBySiret = [];
         foreach ($aArgs['idsToRetrieve'][$version] as $resId => $value) {
             $externalId = json_decode($value['xparaphdepot'], true);
-            $depotsBySiret[$externalId['siret']][$value['external_id']] = ['resId' => $resId, 'login' => $externalId['login']];
+            $depotsBySiret[$externalId['siret']][$value['external_id']] = [
+                'resId' => $resId,
+                'login' => $externalId['login']
+            ];
         }
 
         foreach ($depotsBySiret as $siret => $depotids) {
@@ -413,7 +489,9 @@ class XParaphController
             }
 
             if (!empty($depotids)) {
-                $avancements = XParaphController::getAvancement(['config' => $aArgs['config'], 'depotsIds' => $depotids, 'userGeneric' => $userGeneric]);
+                $avancements = XParaphController::getAvancement(
+                    ['config' => $aArgs['config'], 'depotsIds' => $depotids, 'userGeneric' => $userGeneric]
+                );
             } else {
                 unset($aArgs['idsToRetrieve'][$version]);
                 continue;
@@ -429,14 +507,21 @@ class XParaphController
                     $aArgs['idsToRetrieve'][$version][$resId]['status'] = 'refused';
                     $aArgs['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $state['note']];
 
-                    $processedFile = XParaphController::getFile(['config' => $aArgs['config'], 'depotId' => $value['external_id'], 'userGeneric' => $userGeneric, 'depotLogin' => $xParaphDepot['login']]);
+                    $processedFile = XParaphController::getFile(
+                        [
+                            'config'      => $aArgs['config'],
+                            'depotId'     => $value['external_id'],
+                            'userGeneric' => $userGeneric,
+                            'depotLogin'  => $xParaphDepot['login']
+                        ]
+                    );
                     if (!empty($processedFile['errors'])) {
                         unset($aArgs['idsToRetrieve'][$version][$resId]);
                         continue;
                     }
-                    $file      = base64_decode($processedFile['zip']);
+                    $file = base64_decode($processedFile['zip']);
                     $unzipName = 'tmp_file_' . rand() . '_xParaph_' . rand();
-                    $tmpName   = $unzipName . '.zip';
+                    $tmpName = $unzipName . '.zip';
 
                     file_put_contents($tmpPath . $tmpName, $file);
 
@@ -449,11 +534,18 @@ class XParaphController
                     }
                     unlink($tmpPath . $tmpName);
 
-                    $aArgs['idsToRetrieve'][$version][$resId]['log']       = $log;
+                    $aArgs['idsToRetrieve'][$version][$resId]['log'] = $log;
                     $aArgs['idsToRetrieve'][$version][$resId]['logFormat'] = 'xml';
-                    $aArgs['idsToRetrieve'][$version][$resId]['logTitle']  = '[xParaph Log]';
+                    $aArgs['idsToRetrieve'][$version][$resId]['logTitle'] = '[xParaph Log]';
                 } elseif ($state['id'] == 'validateSignature' || $state['id'] == 'validateOnlyVisa') {
-                    $processedFile = XParaphController::getFile(['config' => $aArgs['config'], 'depotId' => $value['external_id'], 'userGeneric' => $userGeneric, 'depotLogin' => $xParaphDepot['login']]);
+                    $processedFile = XParaphController::getFile(
+                        [
+                            'config'      => $aArgs['config'],
+                            'depotId'     => $value['external_id'],
+                            'userGeneric' => $userGeneric,
+                            'depotLogin'  => $xParaphDepot['login']
+                        ]
+                    );
                     if (!empty($processedFile['errors'])) {
                         unset($aArgs['idsToRetrieve'][$version][$resId]);
                         continue;
@@ -461,9 +553,9 @@ class XParaphController
                     $aArgs['idsToRetrieve'][$version][$resId]['status'] = 'validated';
                     $aArgs['idsToRetrieve'][$version][$resId]['format'] = 'pdf';
 
-                    $file      = base64_decode($processedFile['zip']);
+                    $file = base64_decode($processedFile['zip']);
                     $unzipName = 'tmp_file_' . rand() . '_xParaph_' . rand();
-                    $tmpName   = $unzipName . '.zip';
+                    $tmpName = $unzipName . '.zip';
 
                     file_put_contents($tmpPath . $tmpName, $file);
 
@@ -484,9 +576,9 @@ class XParaphController
                     if ($state['id'] == 'validateOnlyVisa') {
                         $aArgs['idsToRetrieve'][$version][$resId]['onlyVisa'] = true;
                     }
-                    $aArgs['idsToRetrieve'][$version][$resId]['log']       = $log;
+                    $aArgs['idsToRetrieve'][$version][$resId]['log'] = $log;
                     $aArgs['idsToRetrieve'][$version][$resId]['logFormat'] = 'xml';
-                    $aArgs['idsToRetrieve'][$version][$resId]['logTitle']  = '[xParaph Log]';
+                    $aArgs['idsToRetrieve'][$version][$resId]['logTitle'] = '[xParaph Log]';
                 } else {
                     unset($aArgs['idsToRetrieve'][$version][$resId]);
                 }
@@ -497,12 +589,16 @@ class XParaphController
         return $aArgs['idsToRetrieve'];
     }
 
-    public static function getState($aArgs)
+    /**
+     * @param $aArgs
+     * @return array
+     */
+    public static function getState($aArgs): array
     {
         // remove first step. Always deposit
         unset($aArgs['avancement'][0]);
         $state['id'] = 'validateOnlyVisa';
-        $signature   = false;
+        $signature = false;
 
         if (!empty($aArgs['avancement'])) {
             foreach ($aArgs['avancement'] as $step) {
@@ -510,7 +606,7 @@ class XParaphController
                     $state['id'] = 'ACTIVE';
                     break;
                 } elseif ($step['etat'] == 'KO') {
-                    $state['id']   = 'refused';
+                    $state['id'] = 'refused';
                     $state['note'] = $step['note'];
                     break;
                 }
@@ -523,14 +619,19 @@ class XParaphController
         }
 
         if ($signature) {
-            $state['id']   = 'validateSignature';
+            $state['id'] = 'validateSignature';
         }
         $state['note'] = $step['note'];
 
         return $state;
     }
 
-    public static function getAvancement($aArgs)
+    /**
+     * @param $aArgs
+     * @return array|mixed
+     * @throws Exception
+     */
+    public static function getAvancement($aArgs): mixed
     {
         $depotIds = '';
 
@@ -566,15 +667,25 @@ class XParaphController
 
         $isError = $curlResponse['response']->children('http://schemas.xmlsoap.org/soap/envelope/')->Body;
         if (!empty($isError->Fault[0])) {
-            $error = $curlResponse['response']->children('http://schemas.xmlsoap.org/soap/envelope/')->Body->Fault[0]->children()->detail;
+            $error = $curlResponse['response']->children(
+                'http://schemas.xmlsoap.org/soap/envelope/'
+            )->Body->Fault[0]->children()->detail;
             return ['errors' => $error];
         } else {
-            $details = $curlResponse['response']->children('SOAP-ENV', true)->Body->children('ns1', true)->XPRF_AvancementDepotResponse->children()->return;
+            $details = $curlResponse['response']->children('SOAP-ENV', true)->Body->children(
+                'ns1',
+                true
+            )->XPRF_AvancementDepotResponse->children()->return;
             return json_decode($details, true);
         }
     }
 
-    public static function getFile($aArgs)
+    /**
+     * @param $aArgs
+     * @return array|mixed
+     * @throws Exception
+     */
+    public static function getFile($aArgs): mixed
     {
         $xmlPostString = '<?xml version="1.0" encoding="utf-8"?>
         <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:parafwsdl">
@@ -601,15 +712,26 @@ class XParaphController
 
         $isError = $curlResponse['response']->children('http://schemas.xmlsoap.org/soap/envelope/')->Body;
         if (!empty($isError->Fault[0])) {
-            $error = $curlResponse['response']->children('http://schemas.xmlsoap.org/soap/envelope/')->Body->Fault[0]->children()->detail;
+            $error = $curlResponse['response']->children(
+                'http://schemas.xmlsoap.org/soap/envelope/'
+            )->Body->Fault[0]->children()->detail;
             return ['errors' => $error];
         } else {
-            $details = $curlResponse['response']->children('SOAP-ENV', true)->Body->children('ns1', true)->XPRF_getFilesResponse->children()->return;
+            $details = $curlResponse['response']->children('SOAP-ENV', true)->Body->children(
+                'ns1',
+                true
+            )->XPRF_getFilesResponse->children()->return;
             return json_decode($details, true);
         }
     }
 
-    public function deleteXparaphAccount(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function deleteXparaphAccount(Request $request, Response $response): Response
     {
         $data = $request->getQueryParams();
         foreach (['login', 'siret'] as $value) {
@@ -618,7 +740,10 @@ class XParaphController
             }
         }
 
-        $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['external_id', 'id', 'firstname', 'lastname']]);
+        $user = UserModel::getById([
+            'id'     => $GLOBALS['id'],
+            'select' => ['external_id', 'id', 'firstname', 'lastname']
+        ]);
         if (empty($user)) {
             return $response->withStatus(400)->withJson(['errors' => 'User not found']);
         }
@@ -633,11 +758,12 @@ class XParaphController
                 UserModel::updateExternalId(['id' => $user['id'], 'externalId' => json_encode($externalId)]);
                 $accountFound = true;
                 HistoryController::add([
-                    'tableName'    => 'users',
-                    'recordId'     => $GLOBALS['id'],
-                    'eventType'    => 'UP',
-                    'eventId'      => 'userModification',
-                    'info'         => _USER_UPDATED . " {$user['firstname']} {$user['lastname']}. " . _XPARAPH_ACCOUNT_CREATED
+                    'tableName' => 'users',
+                    'recordId'  => $GLOBALS['id'],
+                    'eventType' => 'UP',
+                    'eventId'   => 'userModification',
+                    'info'      => _USER_UPDATED . " {$user['firstname']} {$user['lastname']}. " .
+                        _XPARAPH_ACCOUNT_CREATED
                 ]);
 
                 break;
@@ -651,7 +777,13 @@ class XParaphController
         }
     }
 
-    public function createXparaphAccount(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function createXparaphAccount(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
         foreach (['login', 'siret'] as $value) {
@@ -660,7 +792,10 @@ class XParaphController
             }
         }
 
-        $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['external_id', 'id', 'firstname', 'lastname']]);
+        $user = UserModel::getById([
+            'id'     => $GLOBALS['id'],
+            'select' => ['external_id', 'id', 'firstname', 'lastname']
+        ]);
         if (empty($user)) {
             return $response->withStatus(400)->withJson(['errors' => 'User not found']);
         }
@@ -671,11 +806,11 @@ class XParaphController
         UserModel::updateExternalId(['id' => $user['id'], 'externalId' => json_encode($externalId)]);
 
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'UP',
-            'eventId'      => 'userModification',
-            'info'         => _USER_UPDATED . " {$user['firstname']} {$user['lastname']}. " . _XPARAPH_ACCOUNT_DELETED
+            'tableName' => 'users',
+            'recordId'  => $GLOBALS['id'],
+            'eventType' => 'UP',
+            'eventId'   => 'userModification',
+            'info'      => _USER_UPDATED . " {$user['firstname']} {$user['lastname']}. " . _XPARAPH_ACCOUNT_DELETED
         ]);
 
         return $response->withStatus(204);
@@ -690,7 +825,7 @@ class XParaphController
      * @return array
      * @throws Exception
      */
-    public static function getTextArrayWithCoordinates(Page $page = null)
+    public static function getTextArrayWithCoordinates(Page $page = null): array
     {
         $contents = $page->get('Contents');
         if ($contents) {
@@ -713,7 +848,7 @@ class XParaphController
                         }
                     }
 
-                    $header   = new Header(array(), $page->getDocument());
+                    $header = new Header(array(), $page->getDocument());
                     $contents = new PDFObject($page->getDocument(), $header, $new_content);
                 }
             } elseif ($contents instanceof ElementArray) {
@@ -725,7 +860,7 @@ class XParaphController
                     $new_content .= $content->getContent() . "\n";
                 }
 
-                $header   = new Header(array(), $page->getDocument());
+                $header = new Header(array(), $page->getDocument());
                 $contents = new PDFObject($page->getDocument(), $header, $new_content);
             }
 
@@ -745,11 +880,11 @@ class XParaphController
      * @return array
      * @throws Exception
      */
-    public static function getTextArrayWithCoordinatesOnPdf(Page $page = null, PDFObject $pdfObject = null)
+    public static function getTextArrayWithCoordinatesOnPdf(Page $page = null, PDFObject $pdfObject = null): array
     {
-        $text                = array();
-        $sections            = $pdfObject->getSectionsText($pdfObject->getContent());
-        $current_font        = new Font($pdfObject->getDocument());
+        $text = array();
+        $sections = $pdfObject->getSectionsText($pdfObject->getContent());
+        $current_font = new Font($pdfObject->getDocument());
 
         $current_position_td = array('x' => false, 'y' => false);
         $current_position_tm = array('x' => false, 'y' => false);
@@ -766,8 +901,8 @@ class XParaphController
                     // move text current point
                     case 'Td':
                         $args = preg_split('/\s/s', $command[PDFObject::COMMAND]);
-                        $y    = array_pop($args);
-                        $x    = array_pop($args);
+                        $y = array_pop($args);
+                        $x = array_pop($args);
 
                         $current_position_tm = array('x' => $x, 'y' => $y);
                         break;
@@ -778,7 +913,7 @@ class XParaphController
 
                     case 'Tf':
                         list($id,) = preg_split('/\s/s', $command[PDFObject::COMMAND]);
-                        $id           = trim($id, '/');
+                        $id = trim($id, '/');
                         $current_font = $page->getFont($id);
                         break;
 
@@ -788,7 +923,7 @@ class XParaphController
                     case 'Tj':
                         $command[PDFObject::COMMAND] = array($command);
                     case 'TJ':
-                        // Skip if not previously defined, should never happened.
+                        // Skip if not previously defined, should never have happened.
                         if (is_null($current_font)) {
                             // Fallback
                             // TODO : Improve
@@ -803,21 +938,21 @@ class XParaphController
                             $text[$current_position_tm['y']]['text'] .= $sub_text;
                             $text[$current_position_tm['y']]['details'][] = [
                                 'text' => $sub_text,
-                                'x' =>  $current_position_tm['x'],
-                                'y' =>  $current_position_tm['y']
+                                'x'    => $current_position_tm['x'],
+                                'y'    => $current_position_tm['y']
                             ];
                         } else {
                             $text[$current_position_tm['y']] = [
-                                'text' => $sub_text,
-                                'x' =>  $current_position_tm['x'],
-                                'y' =>  $current_position_tm['y'],
+                                'text'    => $sub_text,
+                                'x'       => $current_position_tm['x'],
+                                'y'       => $current_position_tm['y'],
                                 'details' => []
                             ];
 
                             $text[$current_position_tm['y']]['details'][] = [
                                 'text' => $sub_text,
-                                'x' =>  $current_position_tm['x'],
-                                'y' =>  $current_position_tm['y']
+                                'x'    => $current_position_tm['x'],
+                                'y'    => $current_position_tm['y']
                             ];
                         }
                         break;
@@ -828,8 +963,8 @@ class XParaphController
 
                     case 'Tm':
                         $args = preg_split('/\s/s', $command[PDFObject::COMMAND]);
-                        $y    = array_pop($args);
-                        $x    = array_pop($args);
+                        $y = array_pop($args);
+                        $x = array_pop($args);
 
                         $current_position_tm = array('x' => $x, 'y' => $y);
                         break;

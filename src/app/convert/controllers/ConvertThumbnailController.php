@@ -19,6 +19,8 @@ use Convert\models\AdrModel;
 use Docserver\controllers\DocserverController;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
+use Exception;
+use ImagickException;
 use Parameter\models\ParameterModel;
 use Resource\controllers\StoreController;
 use Resource\models\ResModel;
@@ -27,12 +29,16 @@ use SrcCore\models\ValidatorModel;
 
 class ConvertThumbnailController
 {
+    /**
+     * @param string $filePath
+     * @return array
+     */
     public static function convertInThumbnail(string $filePath): array
     {
-        $ext            = pathinfo($filePath, PATHINFO_EXTENSION);
-        $filename       = pathinfo($filePath, PATHINFO_FILENAME);
-        $tmpPath        = CoreConfigModel::getTmpPath();
-        $fileNameOnTmp  = rand() . $filename;
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $filename = pathinfo($filePath, PATHINFO_FILENAME);
+        $tmpPath = CoreConfigModel::getTmpPath();
+        $fileNameOnTmp = rand() . $filename;
         $filePathOutput = "{$tmpPath}{$fileNameOnTmp}.png";
 
         if (in_array($ext, ['maarch', 'html'])) {
@@ -45,7 +51,10 @@ class ConvertThumbnailController
         } else {
             $size = '750x900';
             $parameter = ParameterModel::getById(['id' => 'thumbnailsSize', 'select' => ['param_value_string']]);
-            if (!empty($parameter) && preg_match('/^[0-9]{3,4}[x][0-9]{3,4}$/', $parameter['param_value_string'])) {
+            if (
+                !empty($parameter) &&
+                preg_match('/^[0-9]{3,4}[x][0-9]{3,4}$/', $parameter['param_value_string'])
+            ) {
                 $size = $parameter['param_value_string'];
             }
             $command = "convert -thumbnail {$size} -background white -alpha remove "
@@ -56,6 +65,11 @@ class ConvertThumbnailController
         return ['return' => $return, 'output' => $output, 'filePathOutput' => $filePathOutput];
     }
 
+    /**
+     * @param string $fileContent
+     * @param string $extension
+     * @return array|string[]
+     */
     public static function convertFromFileContent(string $fileContent, string $extension): array
     {
         if (empty($fileContent)) {
@@ -86,7 +100,12 @@ class ConvertThumbnailController
         return ['fileContent' => $resource];
     }
 
-    public static function convert(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return string[]|true
+     * @throws Exception
+     */
+    public static function convert(array $aArgs): array|bool
     {
         ValidatorModel::notEmpty($aArgs, ['resId', 'type']);
         ValidatorModel::stringType($aArgs, ['type', 'fileContent', 'extension']);
@@ -108,20 +127,35 @@ class ConvertThumbnailController
                 $version = $resource['version'];
 
                 $convertedDocument = AdrModel::getDocuments([
-                    'select'    => ['id', 'docserver_id', 'path', 'filename', 'fingerprint'],
-                    'where'     => ['res_id = ?', 'type in (?)', 'version = ?'],
-                    'data'      => [$aArgs['resId'], ['PDF', 'SIGN'], $resource['version']],
-                    'orderBy'   => ["type='SIGN' DESC"],
-                    'limit'     => 1
+                    'select'  => ['id', 'docserver_id', 'path', 'filename', 'fingerprint'],
+                    'where'   => ['res_id = ?', 'type in (?)', 'version = ?'],
+                    'data'    => [$aArgs['resId'], ['PDF', 'SIGN'], $resource['version']],
+                    'orderBy' => ["type='SIGN' DESC"],
+                    'limit'   => 1
                 ]);
                 $convertedDocument = $convertedDocument[0] ?? null;
                 if (!empty($convertedDocument) && empty($convertedDocument['fingerprint'])) {
-                    $docserver = DocserverModel::getByDocserverId(['docserverId' => $convertedDocument['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
-                    $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $convertedDocument['path']) . $convertedDocument['filename'];
+                    $docserver = DocserverModel::getByDocserverId([
+                        'docserverId' => $convertedDocument['docserver_id'],
+                        'select'      => ['path_template', 'docserver_type_id']
+                    ]);
+                    $pathToDocument = $docserver['path_template'] .
+                        str_replace('#', DIRECTORY_SEPARATOR, $convertedDocument['path']) .
+                        $convertedDocument['filename'];
                     if (is_file($pathToDocument)) {
-                        $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-                        $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
-                        AdrModel::updateDocumentAdr(['set' => ['fingerprint' => $fingerprint], 'where' => ['id = ?'], 'data' => [$convertedDocument['id']]]);
+                        $docserverType = DocserverTypeModel::getById([
+                            'id'     => $docserver['docserver_type_id'],
+                            'select' => ['fingerprint_mode']
+                        ]);
+                        $fingerprint = StoreController::getFingerPrint([
+                            'filePath' => $pathToDocument,
+                            'mode'     => $docserverType['fingerprint_mode']
+                        ]);
+                        AdrModel::updateDocumentAdr([
+                            'set'   => ['fingerprint' => $fingerprint],
+                            'where' => ['id = ?'],
+                            'data'  => [$convertedDocument['id']]
+                        ]);
                         $convertedDocument['fingerprint'] = $fingerprint;
                     }
                 }
@@ -132,18 +166,33 @@ class ConvertThumbnailController
                 }
 
                 $convertedDocument = AdrModel::getConvertedDocumentById([
-                    'select'    => ['id', 'docserver_id','path', 'filename', 'fingerprint'],
-                    'resId'     => $aArgs['resId'],
-                    'collId'    => 'attachment',
-                    'type'      => 'PDF'
+                    'select' => ['id', 'docserver_id', 'path', 'filename', 'fingerprint'],
+                    'resId'  => $aArgs['resId'],
+                    'collId' => 'attachment',
+                    'type'   => 'PDF'
                 ]);
                 if (!empty($convertedDocument) && empty($convertedDocument['fingerprint'])) {
-                    $docserver = DocserverModel::getByDocserverId(['docserverId' => $convertedDocument['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
-                    $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $convertedDocument['path']) . $convertedDocument['filename'];
+                    $docserver = DocserverModel::getByDocserverId([
+                        'docserverId' => $convertedDocument['docserver_id'],
+                        'select'      => ['path_template', 'docserver_type_id']
+                    ]);
+                    $pathToDocument = $docserver['path_template'] .
+                        str_replace('#', DIRECTORY_SEPARATOR, $convertedDocument['path']) .
+                        $convertedDocument['filename'];
                     if (is_file($pathToDocument)) {
-                        $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-                        $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
-                        AdrModel::updateAttachmentAdr(['set' => ['fingerprint' => $fingerprint], 'where' => ['id = ?'], 'data' => [$convertedDocument['id']]]);
+                        $docserverType = DocserverTypeModel::getById([
+                            'id'     => $docserver['docserver_type_id'],
+                            'select' => ['fingerprint_mode']
+                        ]);
+                        $fingerprint = StoreController::getFingerPrint([
+                            'filePath' => $pathToDocument,
+                            'mode'     => $docserverType['fingerprint_mode']
+                        ]);
+                        AdrModel::updateAttachmentAdr([
+                            'set'   => ['fingerprint' => $fingerprint],
+                            'where' => ['id = ?'],
+                            'data'  => [$convertedDocument['id']]
+                        ]);
                         $convertedDocument['fingerprint'] = $fingerprint;
                     }
                 }
@@ -153,8 +202,13 @@ class ConvertThumbnailController
                 return true;
             }
 
-            $docserver = DocserverModel::getByDocserverId(['docserverId' => $convertedDocument['docserver_id'], 'select' => ['path_template']]);
-            $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $convertedDocument['path']) . $convertedDocument['filename'];
+            $docserver = DocserverModel::getByDocserverId([
+                'docserverId' => $convertedDocument['docserver_id'],
+                'select'      => ['path_template']
+            ]);
+            $pathToDocument = $docserver['path_template'] .
+                str_replace('#', DIRECTORY_SEPARATOR, $convertedDocument['path']) .
+                $convertedDocument['filename'];
             if (!file_exists($pathToDocument)) {
                 return ['errors' => '[ConvertThumbnail] Document does not exist on docserver'];
             }
@@ -172,10 +226,10 @@ class ConvertThumbnailController
         $content = $content['fileContent'];
 
         $storeResult = DocserverController::storeResourceOnDocServer([
-            'collId'            => $aArgs['type'] == 'resource' ? 'letterbox_coll' : 'attachments_coll',
-            'docserverTypeId'   => 'TNL',
-            'encodedResource'   => base64_encode($content),
-            'format'            => 'png'
+            'collId'          => $aArgs['type'] == 'resource' ? 'letterbox_coll' : 'attachments_coll',
+            'docserverTypeId' => 'TNL',
+            'encodedResource' => base64_encode($content),
+            'format'          => 'png'
         ]);
 
         if (!empty($storeResult['errors'])) {
@@ -184,27 +238,33 @@ class ConvertThumbnailController
 
         if ($aArgs['type'] == 'resource') {
             AdrModel::createDocumentAdr([
-                'resId'         => $aArgs['resId'],
-                'type'          => 'TNL',
-                'docserverId'   => $storeResult['docserver_id'],
-                'path'          => $storeResult['destination_dir'],
-                'filename'      => $storeResult['file_destination_name'],
-                'version'       => $version
+                'resId'       => $aArgs['resId'],
+                'type'        => 'TNL',
+                'docserverId' => $storeResult['docserver_id'],
+                'path'        => $storeResult['destination_dir'],
+                'filename'    => $storeResult['file_destination_name'],
+                'version'     => $version
             ]);
         } else {
             AdrModel::createAttachAdr([
-                'resId'         => $aArgs['resId'],
-                'type'          => 'TNL',
-                'docserverId'   => $storeResult['docserver_id'],
-                'path'          => $storeResult['destination_dir'],
-                'filename'      => $storeResult['file_destination_name']
+                'resId'       => $aArgs['resId'],
+                'type'        => 'TNL',
+                'docserverId' => $storeResult['docserver_id'],
+                'path'        => $storeResult['destination_dir'],
+                'filename'    => $storeResult['file_destination_name']
             ]);
         }
 
         return true;
     }
 
-    public static function convertOnePage(array $args)
+    /**
+     * @param array $args
+     * @return array|string[]|true
+     * @throws ImagickException
+     * @throws Exception
+     */
+    public static function convertOnePage(array $args): array|bool
     {
         ValidatorModel::notEmpty($args, ['resId', 'page', 'type']);
         ValidatorModel::intVal($args, ['resId', 'page']);
@@ -225,23 +285,26 @@ class ConvertThumbnailController
 
         if ($args['type'] == 'resource') {
             $convertedDocument = AdrModel::getDocuments([
-                'select'    => ['id', 'docserver_id', 'path', 'filename', 'fingerprint'],
-                'where'     => ['res_id = ?', 'type in (?)', 'version = ?'],
-                'data'      => [$args['resId'], ['PDF', 'SIGN'], $resource['version']],
-                'orderBy'   => ["type='SIGN' DESC"],
-                'limit'     => 1
+                'select'  => ['id', 'docserver_id', 'path', 'filename', 'fingerprint'],
+                'where'   => ['res_id = ?', 'type in (?)', 'version = ?'],
+                'data'    => [$args['resId'], ['PDF', 'SIGN'], $resource['version']],
+                'orderBy' => ["type='SIGN' DESC"],
+                'limit'   => 1
             ]);
             $convertedDocument = $convertedDocument[0] ?? null;
         } elseif ($args['type'] == 'attachment') {
             $convertedDocument = AdrModel::getConvertedDocumentById([
-                'select'    => ['id', 'docserver_id','path', 'filename', 'fingerprint'],
-                'resId'     => $args['resId'],
-                'collId'    => 'attachment',
-                'type'      => 'PDF'
+                'select' => ['id', 'docserver_id', 'path', 'filename', 'fingerprint'],
+                'resId'  => $args['resId'],
+                'collId' => 'attachment',
+                'type'   => 'PDF'
             ]);
         }
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $convertedDocument['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
+        $docserver = DocserverModel::getByDocserverId([
+            'docserverId' => $convertedDocument['docserver_id'],
+            'select'      => ['path_template', 'docserver_type_id']
+        ]);
         if (empty($docserver['path_template']) || !is_dir($docserver['path_template'])) {
             return ['errors' => 'Docserver does not exist'];
         }
@@ -264,21 +327,25 @@ class ConvertThumbnailController
         $fileNameOnTmp = rand() . $filename;
 
         $convertPage = $args['page'] - 1;
-        $command = "convert -density 500x500 -quality 100 -resize 1000x -background white -alpha remove "
-            . escapeshellarg($pathToDocument) . "[{$convertPage}] " . escapeshellarg("{$tmpPath}{$fileNameOnTmp}.png");
+        $command = "convert -density 500x500 -quality 100 -resize 1000x -background white -alpha remove " .
+            escapeshellarg($pathToDocument) . "[{$convertPage}] " .
+            escapeshellarg("{$tmpPath}{$fileNameOnTmp}.png");
         exec($command . ' 2>&1', $output, $return);
 
         if ($return !== 0) {
-            return ['errors' => "[ConvertThumbnail] Convert command failed for page {$args['page']} : " . implode(" ", $output)];
+            return [
+                'errors' => "[ConvertThumbnail] Convert command failed for page {$args['page']} : " .
+                    implode(" ", $output)
+            ];
         }
 
         $content = file_get_contents("{$tmpPath}{$fileNameOnTmp}.png");
 
         $storeResult = DocserverController::storeResourceOnDocServer([
-            'collId'            => $args['type'] == 'resource' ? 'letterbox_coll' : 'attachments_coll',
-            'docserverTypeId'   => 'TNL',
-            'encodedResource'   => base64_encode($content),
-            'format'            => 'png'
+            'collId'          => $args['type'] == 'resource' ? 'letterbox_coll' : 'attachments_coll',
+            'docserverTypeId' => 'TNL',
+            'encodedResource' => base64_encode($content),
+            'format'          => 'png'
         ]);
         if (!empty($storeResult['errors'])) {
             return ['errors' => $storeResult['errors']];
@@ -292,20 +359,20 @@ class ConvertThumbnailController
                 'data'  => [$args['resId'], 'TNL' . $args['page'], $resource['version']]
             ]);
             AdrModel::createDocumentAdr([
-                'resId'         => $args['resId'],
-                'type'          => 'TNL' . $args['page'],
-                'docserverId'   => $storeResult['docserver_id'],
-                'path'          => $storeResult['destination_dir'],
-                'filename'      => $storeResult['file_destination_name'],
-                'version'       => $resource['version']
+                'resId'       => $args['resId'],
+                'type'        => 'TNL' . $args['page'],
+                'docserverId' => $storeResult['docserver_id'],
+                'path'        => $storeResult['destination_dir'],
+                'filename'    => $storeResult['file_destination_name'],
+                'version'     => $resource['version']
             ]);
         } else {
             AdrModel::createAttachAdr([
-                'resId'         => $args['resId'],
-                'type'          => 'TNL' . $args['page'],
-                'docserverId'   => $storeResult['docserver_id'],
-                'path'          => $storeResult['destination_dir'],
-                'filename'      => $storeResult['file_destination_name']
+                'resId'       => $args['resId'],
+                'type'        => 'TNL' . $args['page'],
+                'docserverId' => $storeResult['docserver_id'],
+                'path'        => $storeResult['destination_dir'],
+                'filename'    => $storeResult['file_destination_name']
             ]);
         }
 

@@ -23,6 +23,7 @@ use Convert\controllers\ConvertPdfController;
 use Convert\models\AdrModel;
 use Docserver\controllers\DocserverController;
 use Docserver\models\DocserverModel;
+use Exception;
 use Resource\models\ResModel;
 use SrcCore\controllers\LogsController;
 use SrcCore\models\CoreConfigModel;
@@ -34,6 +35,10 @@ ConvertPdfScript::launchConvert($argv);
 
 class ConvertPdfScript
 {
+    /**
+     * @param $args
+     * @return array|void
+     */
     public static function initalize($args)
     {
         $customId = null;
@@ -64,27 +69,48 @@ class ConvertPdfScript
             exit();
         }
 
-        return ['customId' => $customId, 'resId' => $resId, 'type' => $type, 'userId' => $userId, 'coreUrl' => $coreUrl];
+        return [
+            'customId' => $customId,
+            'resId'    => $resId,
+            'type'     => $type,
+            'userId'   => $userId,
+            'coreUrl'  => $coreUrl
+        ];
     }
 
-    public static function convert(array $args)
+    /**
+     * @param array $args
+     * @return array|string[]|true
+     * @throws Exception
+     */
+    public static function convert(array $args): array|bool
     {
         if ($args['type'] == 'resource') {
-            $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['docserver_id', 'path', 'filename', 'format']]);
+            $resource = ResModel::getById([
+                'resId'  => $args['resId'],
+                'select' => ['docserver_id', 'path', 'filename', 'format']
+            ]);
         } else {
-            $resource = AttachmentModel::getById(['id' => $args['resId'], 'select' => ['docserver_id', 'path', 'filename', 'format']]);
+            $resource = AttachmentModel::getById([
+                'id'     => $args['resId'],
+                'select' => ['docserver_id', 'path', 'filename', 'format']
+            ]);
         }
 
         if (empty($resource['docserver_id']) || empty($resource['path']) || empty($resource['filename'])) {
             return ['errors' => 'Resource does not exist'];
         }
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $resource['docserver_id'], 'select' => ['path_template']]);
+        $docserver = DocserverModel::getByDocserverId([
+            'docserverId' => $resource['docserver_id'],
+            'select'      => ['path_template']
+        ]);
         if (empty($docserver['path_template']) || !is_dir($docserver['path_template'])) {
             return ['errors' => 'Docserver does not exist'];
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $resource['path']) . $resource['filename'];
+        $pathToDocument = $docserver['path_template'] .
+            str_replace('#', DIRECTORY_SEPARATOR, $resource['path']) . $resource['filename'];
         if (!is_file($pathToDocument)) {
             return ['errors' => 'Document does not exist on docserver'];
         }
@@ -109,7 +135,11 @@ class ConvertPdfScript
             $converted = false;
             $output = [];
             if (OnlyOfficeController::canConvert(['url' => $args['coreUrl'], 'fullFilename' => $fullFilename])) {
-                $converted = OnlyOfficeController::convert(['fullFilename' => $fullFilename, 'url' => $args['coreUrl'], 'userId' => $args['userId']]);
+                $converted = OnlyOfficeController::convert([
+                    'fullFilename' => $fullFilename,
+                    'url'          => $args['coreUrl'],
+                    'userId'       => $args['userId']
+                ]);
 
                 if (empty($converted['errors'])) {
                     LogsController::add([
@@ -147,10 +177,10 @@ class ConvertPdfScript
 
         $resource = file_get_contents("{$tmpPath}{$fileNameOnTmp}.pdf");
         $storeResult = DocserverController::storeResourceOnDocServer([
-            'collId'            => $args['type'] == 'resource' ? 'letterbox_coll' : 'attachments_coll',
-            'docserverTypeId'   => 'CONVERT',
-            'encodedResource'   => base64_encode($resource),
-            'format'            => 'pdf'
+            'collId'          => $args['type'] == 'resource' ? 'letterbox_coll' : 'attachments_coll',
+            'docserverTypeId' => 'CONVERT',
+            'encodedResource' => base64_encode($resource),
+            'format'          => 'pdf'
         ]);
 
         if (!empty($storeResult['errors'])) {
@@ -159,29 +189,34 @@ class ConvertPdfScript
 
         if ($args['type'] == 'resource') {
             AdrModel::createDocumentAdr([
-                'resId'         => $args['resId'],
-                'type'          => 'PDF',
-                'docserverId'   => $storeResult['docserver_id'],
-                'path'          => $storeResult['destination_dir'],
-                'filename'      => $storeResult['file_destination_name'],
-                'version'       => $args['version'] ?? 1,
-                'fingerprint'   => $storeResult['fingerPrint']
+                'resId'       => $args['resId'],
+                'type'        => 'PDF',
+                'docserverId' => $storeResult['docserver_id'],
+                'path'        => $storeResult['destination_dir'],
+                'filename'    => $storeResult['file_destination_name'],
+                'version'     => $args['version'] ?? 1,
+                'fingerprint' => $storeResult['fingerPrint']
             ]);
         } else {
             AdrModel::createAttachAdr([
-                'resId'         => $args['resId'],
-                'type'          => 'PDF',
-                'docserverId'   => $storeResult['docserver_id'],
-                'path'          => $storeResult['destination_dir'],
-                'filename'      => $storeResult['file_destination_name'],
-                'fingerprint'   => $storeResult['fingerPrint']
+                'resId'       => $args['resId'],
+                'type'        => 'PDF',
+                'docserverId' => $storeResult['docserver_id'],
+                'path'        => $storeResult['destination_dir'],
+                'filename'    => $storeResult['file_destination_name'],
+                'fingerprint' => $storeResult['fingerPrint']
             ]);
         }
 
         return true;
     }
 
-    public static function launchConvert(array $args)
+    /**
+     * @param array $args
+     * @return void
+     * @throws Exception
+     */
+    public static function launchConvert(array $args): void
     {
         $args = ConvertPdfScript::initalize($args);
 
