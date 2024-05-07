@@ -66,7 +66,6 @@ import { SendShippingActionComponent } from './actions/send-shipping-action/send
 import { RedirectInitiatorEntityActionComponent } from './actions/redirect-initiator-entity-action/redirect-initiator-entity-action.component';
 import { closeMailWithAttachmentsOrNotesActionComponent } from './actions/close-mail-with-attachments-or-notes-action/close-mail-with-attachments-or-notes-action.component';
 import { SendSignatureBookActionComponent } from './actions/visa-send-signature-book-action/send-signature-book-action.component';
-import { ContinueVisaCircuitActionComponent } from './actions/visa-continue-circuit-action/continue-visa-circuit-action.component';
 import { ContinueAvisCircuitActionComponent } from './actions/avis-continue-circuit-action/continue-avis-circuit-action.component';
 import { SendAvisWorkflowComponent } from './actions/avis-workflow-send-action/send-avis-workflow-action.component';
 import { SendAvisParallelComponent } from './actions/avis-parallel-send-action/send-avis-parallel-action.component';
@@ -166,6 +165,8 @@ import { CoreDialogComponent } from './core-dialog/core-dialog.component';
 import { DndModule } from 'ngx-drag-drop';
 import { ResourcesListComponent } from './signatureBook/resourcesList/resources-list.component';
 import { SignatureBookHeaderComponent } from './signatureBook/header/signature-book-header.component';
+import { ContinueVisaCircuitActionNewSbComponent } from './actions/visa-continue-circuit-action/new-signature-book/continue-visa-circuit-action-new-sb.component';
+import { ContinueVisaCircuitActionComponent } from './actions/visa-continue-circuit-action/continue-visa-circuit-action.component';
 
 registerLocaleData(localeFr, 'fr-FR');
 @Injectable()
@@ -286,7 +287,6 @@ export class MyHammerConfig extends HammerGestureConfig {
         RedirectInitiatorEntityActionComponent,
         closeMailWithAttachmentsOrNotesActionComponent,
         SendSignatureBookActionComponent,
-        ContinueVisaCircuitActionComponent,
         ContinueAvisCircuitActionComponent,
         SendAvisWorkflowComponent,
         SendAvisParallelComponent,
@@ -322,7 +322,9 @@ export class MyHammerConfig extends HammerGestureConfig {
         IndexingModelValuesSelectorComponent,
         CoreDialogComponent,
         ResourcesListComponent,
-        SignatureBookHeaderComponent
+        SignatureBookHeaderComponent,
+        ContinueVisaCircuitActionNewSbComponent,
+        ContinueVisaCircuitActionComponent
     ],
     exports: [
         SharedModule

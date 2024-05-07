@@ -25,3 +25,19 @@ export interface StampInterface {
      */
     "page": number
 }
+
+export interface SignatureBookConfigInterface {
+    isNewInternalParaph: boolean;
+    url: string;
+}
+
+export class SignatureBookConfig implements SignatureBookConfigInterface {
+    isNewInternalParaph: boolean = false;
+    url: string = '';
+
+    constructor(json: any = null) {
+        if (json) {
+            Object.assign(this, json);
+        }
+    }
+}

@@ -7,13 +7,17 @@ import { HeaderService } from "@service/header.service";
 import { NotificationService } from "@service/notification/notification.service";
 import { catchError, map, of, tap } from "rxjs";
 import { mapAttachment } from "./signature-book.utils";
+import { SignatureBookConfig, SignatureBookConfigInterface } from "@models/signature-book.model";
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class SignatureBookService {
 
     resourcesListIds: number[] = [];
     docsToSign: Attachment[] = [];
     basketLabel: string = '';
+    config = new SignatureBookConfig();
 
     constructor(
         private http: HttpClient,
@@ -22,11 +26,12 @@ export class SignatureBookService {
         private headerService: HeaderService
     ) {}
 
-    getInternalSignatureBookConfig(): Promise<SignatureBookInterface | null> {
+    getInternalSignatureBookConfig(): Promise<SignatureBookConfigInterface | null> {
         return new Promise((resolve) => {
             this.http.get('../rest/signatureBook/config').pipe(
-                tap((data: SignatureBookInterface) => {
-                    resolve(data);
+                tap((config: SignatureBookConfigInterface) => {
+                    this.config = new SignatureBookConfig(config);
+                    resolve(config);
                 }),
                 catchError((err: any) => {
                     this.notifications.handleSoftErrors(err);
@@ -130,16 +135,4 @@ export class SignatureBookService {
             })
         ).subscribe();
     }
-}
-
-// InternalSignatureBook class implementing interface
-
-export interface SignatureBookInterface {
-    isNewInternalParaph: boolean;
-    url: string;
-}
-
-export class SignatureBookConfig implements SignatureBookInterface {
-    isNewInternalParaph: boolean = false;
-    url: string = '';
 }
