@@ -11,6 +11,7 @@
         <id>ixbus</id>
         <tokenAPI></tokenAPI>
         <url></url>
+        <optionSendOfficeDocument>false</optionSendOfficeDocument>
     </signatoryBook>
     <signatoryBook>
         <id>iParapheur</id>
