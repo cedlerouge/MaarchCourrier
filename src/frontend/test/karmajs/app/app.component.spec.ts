@@ -15,6 +15,8 @@ import { Observable, of } from 'rxjs';
 import { AppService } from '@service/app.service';
 import { CoreDialogComponent } from '@appRoot/core-dialog/core-dialog.component';
 import * as langFrJson from '@langs/lang-fr.json';
+import { SignatureBookService } from '@appRoot/signatureBook/signature-book.service';
+import { FiltersListService } from '@service/filtersList.service';
 
 
 class FakeLoader implements TranslateLoader {
@@ -49,7 +51,9 @@ describe('AppComponent', () => {
                 TranslateLoader,
                 TranslateCompiler,
                 TranslateParser,
-                MissingTranslationHandler
+                MissingTranslationHandler,
+                SignatureBookService,
+                FiltersListService
             ],
             declarations: [
                 AppComponent, CoreDialogComponent
