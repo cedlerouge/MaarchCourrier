@@ -167,6 +167,7 @@ import { ResourcesListComponent } from './signatureBook/resourcesList/resources-
 import { SignatureBookHeaderComponent } from './signatureBook/header/signature-book-header.component';
 import { ContinueVisaCircuitActionNewSbComponent } from './actions/visa-continue-circuit-action/new-signature-book/continue-visa-circuit-action-new-sb.component';
 import { ContinueVisaCircuitActionComponent } from './actions/visa-continue-circuit-action/continue-visa-circuit-action.component';
+import { ResourceToolbarComponent } from "@appRoot/signatureBook/resourceToolbar/resource-toolbar.component";
 
 registerLocaleData(localeFr, 'fr-FR');
 @Injectable()
@@ -324,7 +325,8 @@ export class MyHammerConfig extends HammerGestureConfig {
         ResourcesListComponent,
         SignatureBookHeaderComponent,
         ContinueVisaCircuitActionNewSbComponent,
-        ContinueVisaCircuitActionComponent
+        ContinueVisaCircuitActionComponent,
+        ResourceToolbarComponent
     ],
     exports: [
         SharedModule
