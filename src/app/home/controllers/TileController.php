@@ -811,6 +811,7 @@ class TileController
         return true;
     }
 
+    /* STANDBY : We can't create tiles for FAST
     private static function getFastParapheurDetails(array &$tile): void
     {
         if ($tile['view'] == 'summary') {
@@ -819,6 +820,7 @@ class TileController
             $tile['resources'] = FastParapheurController::getResourcesDetails();
         }
     }
+    */
 
     /**
      * @param array $tile
