@@ -103,16 +103,23 @@ class IndexContactsScript
             return false;
         }
 
-        $contactsIndexesDirectory = $ladConfiguration['config']['mercureLadDirectory'] . "/Lexiques/ContactsIdx";
-        $contactsLexiconsDirectory = $ladConfiguration['config']['mercureLadDirectory'] . "/Lexiques/ContactsLexiques";
-
-        if (empty($contactsIndexesDirectory)) {
-            echo "/!\\ contactsIndexesDirectory parameter is empty in configuration file \n";
+        $baseDirectory = $ladConfiguration['config']['mercureLadDirectory'] ?? null;
+        if (!$baseDirectory) {
+            echo "/!\\ Base directory configuration is missing or empty.\n";
             return false;
         }
 
-        if (empty($contactsLexiconsDirectory)) {
-            echo "/!\\ contactsLexiconsDirectory parameter is empty in configuration file \n";
+        $contactsIndexesDirectory = $baseDirectory . "/Lexiques/ContactsIdx";
+        $contactsLexiconsDirectory = $baseDirectory . "/Lexiques/ContactsLexiques";
+
+        // Check if the directories exist or not
+        if (!is_dir($contactsIndexesDirectory)) {
+            echo "/!\\ Contacts Indexes Directory does not exist: {$contactsIndexesDirectory}\n";
+            return false;
+        }
+
+        if (!is_dir($contactsLexiconsDirectory)) {
+            echo "/!\\ Contacts Lexicons Directory does not exist: {$contactsLexiconsDirectory}\n";
             return false;
         }
 
