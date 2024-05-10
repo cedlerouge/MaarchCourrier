@@ -683,7 +683,9 @@ class MergeController
                         } elseif ($args['type'] == 'attachment') {
                             $tbs->MergeField('attachment', ['chrono' => $args['chrono']]);
                         }
-                        $tbs->MergeField('attachments', ['chronoBarCode' => $barcodeFile, 'chronoQrCode' => $qrcodeFile]
+                        $tbs->MergeField(
+                            'attachments',
+                            ['chronoBarCode' => $barcodeFile, 'chronoQrCode' => $qrcodeFile]
                         );
                     }
                 }
