@@ -182,10 +182,10 @@ class IndexContactsScript
 
         echo "0/0";
 
-        foreach ($contactsToIndexes as $key => $c) {
+        foreach ($contactsToIndexes as $key1 => $c) {
             echo "\e[2K"; # clear whole line
             echo "\e[1G"; # move cursor to column 1
-            echo "Indexation contact " . ($key + 1) . "/" . count($contactsToIndexes);
+            echo "Indexation contact " . ($key1 + 1) . "/" . count($contactsToIndexes);
 
             //Suppression de l'ID en cours
             $term = new \Zend_Search_Lucene_Index_Term((int)$c['id'], 'Idx');
@@ -196,15 +196,15 @@ class IndexContactsScript
 
             $cIdx = new Zend_Search_Lucene_Document();
 
-            foreach ($ladConfiguration['contactsIndexation'] as $key => $fieldIndexation) {
+            foreach ($ladConfiguration['contactsIndexation'] as $key2 => $fieldIndexation) {
                 try {
-                    if ($key == "id") {
+                    if ($key2 == "id") {
                         $cIdx->addField(
-                            Zend_Search_Lucene_Field::UnIndexed($fieldIndexation['lucene'], (int)$c['id'])
+                            Zend_Search_Lucene_Field::UnIndexed($fieldIndexation['lucene'], (string)$c['id'])
                         );
                     } else {
                         $cIdx->addField(
-                            Zend_Search_Lucene_Field::text($fieldIndexation['lucene'], $c[$key], 'utf-8')
+                            Zend_Search_Lucene_Field::text($fieldIndexation['lucene'], $c[$key2], 'utf-8')
                         );
                     }
                 } catch (Exception $e) {
@@ -214,8 +214,8 @@ class IndexContactsScript
 
                 //Ajout des informations aux lexiques
                 if (isset($tabLexicon[$fieldIndexation['lexicon']])) {
-                    if (!in_array($c[$key], $tabLexicon[$fieldIndexation['lexicon']]) && !empty($c[$key])) {
-                        $tabLexicon[$fieldIndexation['lexicon']][] = $c[$key];
+                    if (!in_array($c[$key2], $tabLexicon[$fieldIndexation['lexicon']]) && !empty($c[$key2])) {
+                        $tabLexicon[$fieldIndexation['lexicon']][] = $c[$key2];
                     }
                 }
             }
