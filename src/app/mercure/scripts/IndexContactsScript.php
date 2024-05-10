@@ -265,7 +265,7 @@ class IndexContactsScript
             foreach ($tabLexicon as $keyLexicon => $l) {
                 //sort($l);
                 $filePath = $contactsLexiconsDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt";
-                $lexiconFile = fopen($filePath , "w");
+                $lexiconFile = fopen($filePath, "w");
                 if ($lexiconFile === false) {
                     echo "Erreur dans la génération du fichier de lexique : $filePath";
                     return false;
@@ -278,7 +278,7 @@ class IndexContactsScript
             }
 
             $filePath = $contactsLexiconsDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag";
-            $flagFile = fopen($filePath , "w");
+            $flagFile = fopen($filePath, "w");
             if (!$flagFile) {
                 echo "Erreur d'écriture du fichier $filePath !\n";
             } else {
