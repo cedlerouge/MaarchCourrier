@@ -27,6 +27,7 @@ use Zend_Search_Lucene_Analysis_Analyzer;
 use Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive;
 use Zend_Search_Lucene_Document;
 use Zend_Search_Lucene_Field;
+use Zend_Search_Lucene_Index_Term;
 
 // SAMPLE COMMANDS :
 // (in root app)
@@ -114,12 +115,12 @@ class IndexContactsScript
 
         // Check if the directories exist or not
         if (!is_dir($contactsIndexesDirectory)) {
-            echo "/!\\ Contacts Indexes Directory does not exist: {$contactsIndexesDirectory}\n";
+            echo "/!\\ Contacts Indexes Directory does not exist: $contactsIndexesDirectory\n";
             return false;
         }
 
         if (!is_dir($contactsLexiconsDirectory)) {
-            echo "/!\\ Contacts Lexicons Directory does not exist: {$contactsLexiconsDirectory}\n";
+            echo "/!\\ Contacts Lexicons Directory does not exist: $contactsLexiconsDirectory\n";
             return false;
         }
 
@@ -182,8 +183,6 @@ class IndexContactsScript
             'where'   => (!$args['indexAll']) ? ['lad_indexation is false'] : []
         ]);
 
-        $cptIndex = 0;
-
         $listIdToUpdate = [];
         echo "[" . date("Y-m-d H:i:s") . "] Début de l'indexation \n";
 
@@ -195,7 +194,7 @@ class IndexContactsScript
             echo "Indexation contact " . ($key1 + 1) . "/" . count($contactsToIndexes);
 
             //Suppression de l'ID en cours
-            $term = new \Zend_Search_Lucene_Index_Term((int)$c['id'], 'Idx');
+            $term = new Zend_Search_Lucene_Index_Term((int)$c['id'], 'Idx');
             $terms = $index->termDocs($term);
             foreach ($terms as $value) {
                 $index->delete($value);
@@ -246,8 +245,6 @@ class IndexContactsScript
 
                 $listIdToUpdate = [];
             }
-
-            $cptIndex++;
         }
 
         if (count($contactsToIndexes) > 0) {
