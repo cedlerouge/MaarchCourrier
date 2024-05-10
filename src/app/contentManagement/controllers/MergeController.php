@@ -409,7 +409,8 @@ class MergeController
                 if (!empty($value['process_date'])) {
                     $processDate = ' - ' . TextFormatModel::formatDate($value['process_date']);
                 }
-                $opinions .= "{$user['firstname']} {$user['lastname']} ({$primaryEntity['entity_label']}) $processDate\n";
+                $opinions .= "{$user['firstname']} {$user['lastname']} " .
+                    "({$primaryEntity['entity_label']}) $processDate\n";
                 $opinion['firstname' . $opinionCount] = $user['firstname'];
                 $opinion['lastname' . $opinionCount] = $user['lastname'];
                 $opinion['role' . $opinionCount] = $primaryEntity['role'];
