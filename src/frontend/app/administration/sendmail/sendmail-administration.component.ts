@@ -6,7 +6,7 @@ import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { NgForm } from '@angular/forms';
 import { CheckMailServerModalComponent } from './checkMailServer/check-mail-server-modal.component';
-import { catchError, filter, tap } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { FunctionsService } from '@service/functions.service';
 import { of } from 'rxjs';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
@@ -119,7 +119,7 @@ export class SendmailAdministrationComponent implements OnInit {
     onSubmit() {
         return new Promise((resolve) => {
             this.http.put('../rest/configurations/admin_email_server', this.sendmail).pipe(
-                tap((data: any) => {
+                tap(() => {
                     this.sendmailClone = JSON.parse(JSON.stringify(this.sendmail));
                     this.notify.success(this.translate.instant('lang.configurationUpdated'));
                     resolve(true);
@@ -136,7 +136,7 @@ export class SendmailAdministrationComponent implements OnInit {
         return (JSON.stringify(this.sendmailClone) === JSON.stringify(this.sendmail));
     }
 
-    cleanAuthInfo(event: any) {
+    cleanAuthInfo() {
         this.sendmail.passwordAlreadyExists = false;
 
         this.sendmail.user = '';

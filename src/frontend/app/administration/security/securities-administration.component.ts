@@ -103,7 +103,7 @@ export class SecuritiesAdministrationComponent implements OnInit {
             rule.value = this.passwordRules[rule.label].value;
         });
         this.http.put('../rest/passwordRules', { rules: this.passwordRulesList })
-            .subscribe((data: any) => {
+            .subscribe(() => {
                 this.passwordRulesClone = JSON.parse(JSON.stringify(this.passwordRules));
                 this.notify.success(this.translate.instant('lang.passwordRulesUpdated'));
             }, (err: any) => {

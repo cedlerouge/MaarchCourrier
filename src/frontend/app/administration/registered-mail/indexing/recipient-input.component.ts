@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { UntypedFormControl, FormGroup, Validators, FormBuilder } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
@@ -169,7 +169,7 @@ export class RegisteredMailRecipientInputComponent implements OnInit {
         return state;
     }
 
-    toUpperCase(target: string, ev: any) {
+    toUpperCase(target: string) {
         setTimeout(() => {
             const test = this.latinisePipe.transform(this.control.value[target].toUpperCase());
             this.control.value[target] = test;

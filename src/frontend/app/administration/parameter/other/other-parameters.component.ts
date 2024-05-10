@@ -350,7 +350,7 @@ export class OtherParametersComponent implements OnInit {
             this.watermark[elemId].valueChanges
                 .pipe(
                     debounceTime(1000),
-                    tap((value: any) => {
+                    tap(() => {
                         this.saveWatermarkConf();
                     }),
                 ).subscribe();
@@ -360,7 +360,7 @@ export class OtherParametersComponent implements OnInit {
             this.addinOutlookConf[elemId].valueChanges
                 .pipe(
                     debounceTime(1000),
-                    tap((value: any) => {
+                    tap(() => {
                         this.saveAddinOutlookConf();
                     }),
                 ).subscribe();
@@ -448,6 +448,7 @@ export class OtherParametersComponent implements OnInit {
         return typeof value;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     originalOrder = (a: KeyValue<string, any>, b: KeyValue<string, any>): number => 0;
 
     addEditor(id: string) {
@@ -755,10 +756,11 @@ export class OtherParametersComponent implements OnInit {
                 });
             }
         });
-        return objToSend = {
+        objToSend = {
             ... maarchRM,
             externalSAE: externalSAE
         };
+        return objToSend;
     }
 
     setEXternalSaeData(data: any) {

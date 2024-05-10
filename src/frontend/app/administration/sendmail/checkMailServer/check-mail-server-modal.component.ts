@@ -46,7 +46,7 @@ export class CheckMailServerModalComponent implements OnInit {
         };
 
         this.http.post('../rest/emails', email).pipe(
-            tap((data: any) => {
+            tap(() => {
                 this.statusMsg = this.translate.instant('lang.emailSendSuccess', { 0: this.recipient });
                 this.authService.mailServerOnline = true;
                 setTimeout(() => {
