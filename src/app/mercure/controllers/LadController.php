@@ -17,6 +17,7 @@ namespace Mercure\controllers;
 use Configuration\models\ConfigurationModel;
 use Contact\models\ContactModel;
 use DateTime;
+use Exception;
 use Group\controllers\PrivilegeController;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use SrcCore\controllers\LogsController;
@@ -28,7 +29,13 @@ use SrcCore\models\ValidatorModel;
 
 class LadController
 {
-    public function isEnabled(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     */
+    public function isEnabled(Request $request, Response $response): Response
     {
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
         if (empty($configuration)) {
@@ -43,7 +50,14 @@ class LadController
         return $response->withJson(['enabled' => true]);
     }
 
-    public function ladRequest(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function ladRequest(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
@@ -72,7 +86,9 @@ class LadController
 
             $ladConfiguration = CoreConfigModel::getJsonLoaded(['path' => 'config/ladConfiguration.json']);
             if (empty($ladConfiguration)) {
-                return ['errors' => 'LAD configuration file does not exist'];
+                return $response->withStatus(400)->withJson([
+                    'errors' => 'LAD configuration file does not exist'
+                ]);
             }
 
             $ladResult = MwsController::launchLadMws([
@@ -93,7 +109,10 @@ class LadController
         return $response->withJson($ladResult);
     }
 
-    private static function generateTestPdf()
+    /**
+     * @return string
+     */
+    private static function generateTestPdf(): string
     {
         $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
         if (file_exists($libPath)) {
@@ -113,7 +132,14 @@ class LadController
         return $filePathOnTmp;
     }
 
-    public function testLad(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function testLad(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_mercure', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -128,13 +154,15 @@ class LadController
             return $response->withStatus(400)->withJson(['errors' => 'LAD configuration file does not exist']);
         }
 
-        if (!is_dir($ladConfiguration['config']['mercureLadDirectory'])) {
+        $mercureLadDirectory = $ladConfiguration['config']['mercureLadDirectory'];
+
+        if (!is_dir($mercureLadDirectory)) {
             return $response->withStatus(400)->withJson(['errors' => 'Mercure module directory does not exist']);
         }
 
         if (
-            !is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5') ||
-            !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5')
+            !is_file($mercureLadDirectory . DIRECTORY_SEPARATOR . 'Mercure5') ||
+            !is_executable($mercureLadDirectory . DIRECTORY_SEPARATOR . 'Mercure5')
         ) {
             return $response->withStatus(400)->withJson([
                 'errors' => 'Mercure5 exe is not present in the distribution or is not executable'
@@ -142,8 +170,8 @@ class LadController
         }
 
         if (
-            !is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep') ||
-            !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep')
+            !is_file($mercureLadDirectory . DIRECTORY_SEPARATOR . 'ugrep') ||
+            !is_executable($mercureLadDirectory . DIRECTORY_SEPARATOR . 'ugrep')
         ) {
             return $response->withStatus(400)->withJson([
                 'errors' => 'ugrep exe is not present in the distribution or is not executable'
@@ -165,7 +193,13 @@ class LadController
         return $response->withStatus(204);
     }
 
-    public static function launchLad(array $aArgs)
+    /**
+     * @param array $aArgs
+     *
+     * @return array
+     * @throws Exception
+     */
+    public static function launchLad(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['encodedResource', 'extension']);
         ValidatorModel::stringType($aArgs, ['encodedResource', 'extension']);
@@ -180,7 +214,10 @@ class LadController
         $tmpPath = $ladConfiguration['config']['mercureLadDirectory'] . '/IN/' . $customId . DIRECTORY_SEPARATOR;
         if (!is_dir($tmpPath)) {
             mkdir($tmpPath, 0777);
-            mkdir($ladConfiguration['config']['mercureLadDirectory'] . '/OUT/' . $customId . DIRECTORY_SEPARATOR, 0777);
+            mkdir(
+                $ladConfiguration['config']['mercureLadDirectory'] . '/OUT/' . $customId . DIRECTORY_SEPARATOR,
+                0777
+            );
         }
 
         $tmpFilename = 'lad' . rand() . '_' . rand();
@@ -327,7 +364,13 @@ class LadController
         return $aReturn;
     }
 
-    private static function contains($strToCheck, array $arrTags)
+    /**
+     * @param $strToCheck
+     * @param array $arrTags
+     *
+     * @return bool
+     */
+    private static function contains($strToCheck, array $arrTags): bool
     {
         foreach ($arrTags as $tag) {
             if (stripos($strToCheck, $tag) !== false) {
@@ -337,7 +380,8 @@ class LadController
         return false;
     }
 
-    private static function normalizeField($fieldContent, $normalizationRule, $normalizationFormat = null)
+
+    private static function normalizeField($fieldContent, $normalizationRule, $normalizationFormat = null): string
     {
         switch ($normalizationRule) {
             case 'DATE':
@@ -351,7 +395,14 @@ class LadController
         return $result;
     }
 
-    public static function getContactsIndexationState(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public static function getContactsIndexationState(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_mercure', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -398,7 +449,14 @@ class LadController
         ]);
     }
 
-    private static function normalizeDate($content, $format)
+    /**
+     * @param string $content
+     * @param string $format
+     *
+     * @return string
+     * @throws Exception
+     */
+    private static function normalizeDate(string $content, string $format): string
     {
         $result = strtolower($content);
         $result = str_replace(" ", "", $result);
@@ -415,6 +473,11 @@ class LadController
         return $date->format($format);
     }
 
+    /**
+     * @param string $dateString
+     *
+     * @return array|false
+     */
     private static function getElementsDate(string $dateString): array|false
     {
         $strPattern = "/([0-9]|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|" .
@@ -437,7 +500,9 @@ class LadController
 
     /**
      * Remove accents from a string.
+     *
      * @param string $content The input string from which to strip accents.
+     *
      * @return string The string with accents removed.
      */
     private static function stripAccents(string $content): string
