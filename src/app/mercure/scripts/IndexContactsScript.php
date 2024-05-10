@@ -45,6 +45,7 @@ class IndexContactsScript
 {
     /**
      * @param array $args
+     *
      * @return void
      * @throws Exception
      */
@@ -70,13 +71,16 @@ class IndexContactsScript
             $reindexAll = true;
         }
 
-        IndexContactsScript::generateIndex(
-            ['customId' => $customId, 'fileConfig' => $fileConfiguration, 'indexAll' => $reindexAll]
-        );
+        IndexContactsScript::generateIndex([
+            'customId' => $customId,
+            'fileConfig' => $fileConfiguration,
+            'indexAll' => $reindexAll
+        ]);
     }
 
     /**
      * @param array $args
+     *
      * @return bool
      * @throws Exception
      */
@@ -145,18 +149,10 @@ class IndexContactsScript
                 $tabLexicon[$fieldIndexation['lexicon']] = [];
 
                 //Initialiser le lexique si le fichier Lexique existe déjà
-                if (
-                    !$args['indexAll'] &&
-                    is_file(
-                        $contactsLexiconsDirectory . DIRECTORY_SEPARATOR . $fieldIndexation['lexicon'] . ".txt"
-                    )
-                ) {
-                    $lexique = fopen(
-                        $contactsLexiconsDirectory . DIRECTORY_SEPARATOR .
-                        $fieldIndexation['lexicon'] . ".txt",
-                        "r"
-                    );
+                $filePath = $contactsLexiconsDirectory . DIRECTORY_SEPARATOR . $fieldIndexation['lexicon'] . ".txt";
 
+                if (!$args['indexAll'] && is_file($filePath)) {
+                    $lexique = fopen($filePath, "r");
                     while (($entreeLexique = fgets($lexique)) !== false) {
                         if (!empty($entreeLexique)) {
                             $tabLexicon[$fieldIndexation['lexicon']][] = trim($entreeLexique);
@@ -203,7 +199,9 @@ class IndexContactsScript
                             Zend_Search_Lucene_Field::UnIndexed($fieldIndexation['lucene'], (int)$c['id'])
                         );
                     } else {
-                        $cIdx->addField(Zend_Search_Lucene_Field::text($fieldIndexation['lucene'], $c[$key], 'utf-8'));
+                        $cIdx->addField(
+                            Zend_Search_Lucene_Field::text($fieldIndexation['lucene'], $c[$key], 'utf-8')
+                        );
                     }
                 } catch (Exception $e) {
                     echo $e->getMessage();
@@ -258,13 +256,10 @@ class IndexContactsScript
             echo "[" . date("Y-m-d H:i:s") . "] Ecriture des lexiques \n";
             foreach ($tabLexicon as $keyLexicon => $l) {
                 //sort($l);
-                $lexiconFile = fopen(
-                    $contactsLexiconsDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt",
-                    "w"
-                );
+                $filePath = $contactsLexiconsDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt";
+                $lexiconFile = fopen($filePath , "w");
                 if ($lexiconFile === false) {
-                    echo "Erreur dans la génération du fichier de lexique : " . $contactsLexiconsDirectory .
-                        DIRECTORY_SEPARATOR . $keyLexicon . ".txt";
+                    echo "Erreur dans la génération du fichier de lexique : $filePath";
                     return false;
                 }
 
@@ -274,13 +269,10 @@ class IndexContactsScript
                 fclose($lexiconFile);
             }
 
-            $flagFile = fopen(
-                $contactsLexiconsDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag",
-                "w"
-            );
+            $filePath = $contactsLexiconsDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag";
+            $flagFile = fopen($filePath , "w");
             if (!$flagFile) {
-                echo "Erreur d'écriture du fichier " . $contactsLexiconsDirectory . DIRECTORY_SEPARATOR .
-                    "lastindexation.flag" . " !\n";
+                echo "Erreur d'écriture du fichier $filePath !\n";
             } else {
                 fwrite($flagFile, date("d-m-Y H:i:s"));
                 fclose($flagFile);
