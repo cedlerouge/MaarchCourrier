@@ -26,7 +26,6 @@ use Doctype\models\DoctypeModel;
 use Entity\models\EntityModel;
 use Entity\models\ListTemplateModel;
 use Exception;
-use ExternalSignatoryBook\controllers\FastParapheurController;
 use Folder\controllers\FolderController;
 use Folder\models\FolderModel;
 use Folder\models\ResourceFolderModel;
@@ -623,7 +622,7 @@ class TileController
                 $chunkedResources = array_chunk($allResources, 5000);
                 foreach ($chunkedResources as $chunkedResource) {
                     $chunkResources = ResModel::get([
-                        'select'  => ["COUNT({$type})", $type],
+                        'select'  => ["COUNT($type)", $type],
                         'where'   => ['res_id in (?)'],
                         'data'    => [$chunkedResource],
                         'groupBy' => [$type],
@@ -728,7 +727,7 @@ class TileController
             if (empty($allResources[$i])) {
                 break;
             }
-            $order .= "WHEN {$allResources[$i]} THEN {$i} ";
+            $order .= "WHEN $allResources[$i] THEN $i ";
         }
         $order .= 'END';
 
@@ -1083,7 +1082,7 @@ class TileController
             if (empty($allResources[$i])) {
                 break;
             }
-            $order .= "WHEN {$allResources[$i]} THEN {$i} ";
+            $order .= "WHEN $allResources[$i] THEN $i ";
             $resIds[] = ['res_id' => $allResources[$i]];
         }
         $order .= 'END';
