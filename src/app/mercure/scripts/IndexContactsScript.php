@@ -39,7 +39,11 @@ use Zend_Search_Lucene_Field;
 // --reindexAll : Re-index all contacts database (optionnal);
 
 // phpcs:ignore
-IndexContactsScript::initalize($argv);
+try {
+    IndexContactsScript::initalize($argv);
+} catch (Exception $e) {
+    echo "[Exception] {$e->getMessage()}";
+}
 
 class IndexContactsScript
 {
