@@ -166,6 +166,7 @@ import { CoreDialogComponent } from './core-dialog/core-dialog.component';
 import { DndModule } from 'ngx-drag-drop';
 import { ResourcesListComponent } from './signatureBook/resourcesList/resources-list.component';
 import { SignatureBookHeaderComponent } from './signatureBook/header/signature-book-header.component';
+import { ResourceToolbarComponent } from "@appRoot/signatureBook/resourceToolbar/resource-toolbar.component";
 
 registerLocaleData(localeFr, 'fr-FR');
 @Injectable()
@@ -322,7 +323,8 @@ export class MyHammerConfig extends HammerGestureConfig {
         IndexingModelValuesSelectorComponent,
         CoreDialogComponent,
         ResourcesListComponent,
-        SignatureBookHeaderComponent
+        SignatureBookHeaderComponent,
+        ResourceToolbarComponent
     ],
     exports: [
         SharedModule

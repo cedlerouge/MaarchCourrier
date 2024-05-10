@@ -11,6 +11,7 @@ import { mapAttachment } from "./signature-book.utils";
 @Injectable()
 export class SignatureBookService {
 
+    toolBarActive = false;
     resourcesListIds: number[] = [];
     docsToSign: Attachment[] = [];
     basketLabel: string = '';

@@ -3,6 +3,7 @@ import { ActionsService } from '@appRoot/actions/actions.service';
 
 import { Attachment, AttachmentInterface } from '@models/attachment.model';
 import { FunctionsService } from '@service/functions.service';
+import { SignatureBookService } from "@appRoot/signatureBook/signature-book.service";
 
 @Component({
     selector: 'app-maarch-sb-tabs',
@@ -15,7 +16,11 @@ export class MaarchSbTabsComponent implements OnInit {
 
     selectedId: number = 0;
 
-    constructor(public functionsService: FunctionsService, private actionsService: ActionsService) {}
+    constructor(
+        public functionsService: FunctionsService,
+        private actionsService: ActionsService,
+        public signatureBookService: SignatureBookService,
+    ) {}
 
     ngOnInit(): void {
         if (this.documents.length > 0) {
@@ -31,6 +36,9 @@ export class MaarchSbTabsComponent implements OnInit {
     }
 
     selectDocument(i: number, attachment: AttachmentInterface): void {
+        if (this.position == 'left') {
+            this.signatureBookService.toolBarActive = false;
+        }
         this.selectedId = i;
         this.actionsService.emitActionWithData({
             id: 'attachmentSelected',
