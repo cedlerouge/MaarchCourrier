@@ -20,6 +20,7 @@ use Convert\controllers\FullTextController;
 use Convert\models\AdrModel;
 use Docserver\controllers\DocserverController;
 use Docserver\models\DocserverModel;
+use Exception;
 use Resource\models\ResModel;
 use SrcCore\controllers\LogsController;
 use Respect\Validation\Validator;
@@ -30,7 +31,14 @@ use SrcCore\models\ValidatorModel;
 
 class OcrController
 {
-    public function ocrRequest(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function ocrRequest(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
@@ -47,7 +55,7 @@ class OcrController
         }
 
         $configuration = json_decode($configuration['value'], true);
-        if (empty($configuration['enabledOcr']) || !$configuration['enabledOcr']) {
+        if (empty($configuration['enabledOcr'] ?? null) || !$configuration['enabledOcr']) {
             return $response->withStatus(200)->withJson(['message' => 'Mercure OCR is not enabled']);
         }
 
@@ -115,7 +123,7 @@ class OcrController
         ]);
 
         if (!empty($storeResult['errors'])) {
-            return ['errors' => "[OcrController] {$storeResult['errors']}"];
+            return $response->withStatus(400)->withJson(['message' => "[OcrController] {$storeResult['errors']}"]);
         }
         if ($collId == 'letterbox_coll') {
             $document = AdrModel::getConvertedDocumentById([
@@ -183,7 +191,13 @@ class OcrController
         ]);
     }
 
-    private static function launchOcrTesseract(array $aArgs)
+    /**
+     * @param array $aArgs
+     *
+     * @return array
+     * @throws Exception
+     */
+    private static function launchOcrTesseract(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['collId', 'resId']);
         ValidatorModel::stringType($aArgs, ['collId']);
@@ -275,7 +289,7 @@ class OcrController
                 'tableName' => $tablename,
                 'recordId'  => $aArgs['resId'],
                 'eventType' => "OCR Tesseract - Error during OCR conversion",
-                'eventId'   => "command : { $cmdConvertTiff }, output : { $outputConvert }"
+                'eventId'   => "command : { $cmdConvertTiff }, output : { " . json_encode($outputConvert) . " }"
             ]);
 
             return [
