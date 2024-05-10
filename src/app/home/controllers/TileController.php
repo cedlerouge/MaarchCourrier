@@ -73,6 +73,7 @@ class TileController
     /**
      * @param Request $request
      * @param Response $response
+     *
      * @return Response
      * @throws Exception
      */
@@ -98,6 +99,7 @@ class TileController
      * @param Request $request
      * @param Response $response
      * @param array $args
+     *
      * @return Response
      * @throws Exception
      */
@@ -124,6 +126,7 @@ class TileController
     /**
      * @param Request $request
      * @param Response $response
+     *
      * @return Response
      * @throws Exception
      */
@@ -190,6 +193,7 @@ class TileController
      * @param Request $request
      * @param Response $response
      * @param array $args
+     *
      * @return Response
      * @throws Exception
      */
@@ -242,6 +246,7 @@ class TileController
      * @param Request $request
      * @param Response $response
      * @param array $args
+     *
      * @return Response
      * @throws Exception
      */
@@ -271,6 +276,7 @@ class TileController
     /**
      * @param Request $request
      * @param Response $response
+     *
      * @return Response
      */
     public function updatePositions(Request $request, Response $response): Response
@@ -309,10 +315,11 @@ class TileController
 
     /**
      * @param array $args
+     *
      * @return array|bool
      * @throws Exception
      */
-    private static function controlParameters(array $args): array|bool
+    private static function controlParameters(array $args)
     {
         if (in_array($args['type'], ['basket', 'folder', 'shortcut', 'searchTemplate'])) {
             if (!Validator::arrayType()->notEmpty()->validate($args['parameters'] ?? null)) {
@@ -372,6 +379,7 @@ class TileController
 
     /**
      * @param array $tile
+     *
      * @return bool
      * @throws Exception
      */
@@ -400,7 +408,8 @@ class TileController
             } elseif ($groupBasket[0]['list_event'] == 'documentDetails') {
                 $tile['basketRoute'] = '/resources/:resId';
             } elseif ($groupBasket[0]['list_event'] == 'signatureBookAction') {
-                $tile['basketRoute'] = '/signatureBook/users/:userId/groups/:groupId/baskets/:basketId/resources/:resId';
+                $route = '/signatureBook/users/:userId/groups/:groupId/baskets/:basketId/resources/:resId';
+                $tile['basketRoute'] = $route;
             }
         } elseif ($tile['type'] == 'folder') {
             $folder = FolderModel::getById(['select' => ['label'], 'id' => $tile['parameters']['folderId']]);
@@ -438,10 +447,11 @@ class TileController
 
     /**
      * @param array $tile
+     *
      * @return array|bool
      * @throws Exception
      */
-    private static function getDetails(array &$tile): array|bool
+    private static function getDetails(array &$tile)
     {
         if ($tile['type'] == 'basket') {
             $control = TileController::getBasketDetails($tile);
@@ -504,10 +514,11 @@ class TileController
 
     /**
      * @param array $tile
+     *
      * @return array|bool
      * @throws Exception
      */
-    private static function getBasketDetails(array &$tile): array|bool
+    private static function getBasketDetails(array &$tile)
     {
         $basket = BasketModel::getById(
             ['select' => ['basket_clause', 'basket_id'], 'id' => $tile['parameters']['basketId']]
@@ -545,6 +556,7 @@ class TileController
      * @param array $tile
      * @param $allResources
      * @param string $order
+     *
      * @return bool
      * @throws Exception
      */
@@ -698,6 +710,7 @@ class TileController
 
     /**
      * @param array $tile
+     *
      * @return void
      * @throws Exception
      */
@@ -724,10 +737,11 @@ class TileController
 
     /**
      * @param array $tile
+     *
      * @return array|bool
      * @throws Exception
      */
-    private static function getMaarchParapheurDetails(array &$tile): array|bool
+    private static function getMaarchParapheurDetails(array &$tile)
     {
         $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['external_id']]);
 
@@ -797,10 +811,6 @@ class TileController
         return true;
     }
 
-    /**
-     * @param array $tile
-     * @return void
-     */
     private static function getFastParapheurDetails(array &$tile): void
     {
         if ($tile['view'] == 'summary') {
@@ -812,10 +822,11 @@ class TileController
 
     /**
      * @param array $tile
+     *
      * @return array|true
      * @throws Exception
      */
-    private static function getShortcutDetails(array &$tile): array|bool
+    private static function getShortcutDetails(array &$tile)
     {
         $tile['resourcesNumber'] = null;
 
@@ -944,10 +955,11 @@ class TileController
 
     /**
      * @param array $tile
+     *
      * @return array|true
      * @throws Exception
      */
-    private static function getSearchTemplateDetails(array &$tile): array|bool
+    private static function getSearchTemplateDetails(array &$tile)
     {
         $searchTemplate = SearchTemplateModel::get(
             [
