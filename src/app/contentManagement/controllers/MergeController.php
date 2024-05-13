@@ -53,7 +53,6 @@ class MergeController
 
     /**
      * @param array $args
-     *
      * @return array
      * @throws Exception
      */
@@ -145,7 +144,6 @@ class MergeController
 
     /**
      * @param array $args
-     *
      * @return array
      * @throws Exception
      */
@@ -394,7 +392,8 @@ class MergeController
             ]);
             $visibleNotes = NoteModel::getByUserIdForResource([
                 'select' => ['user_id', 'note_text'],
-                'resId' => $args['resId'], 'userId' => $GLOBALS['id']
+                'resId'  => $args['resId'],
+                'userId' => $GLOBALS['id']
             ]);
             $visibleNotes = array_reverse($visibleNotes);
             $opinionCount = 1;
@@ -402,7 +401,7 @@ class MergeController
                 $valueUserId = $value['delegate'] ?? $value['item_id'];
                 $user = UserModel::getById(['id' => $valueUserId, 'select' => ['firstname', 'lastname']]);
                 $primaryEntity = UserModel::getPrimaryEntityById([
-                    'id' => $valueUserId,
+                    'id'     => $valueUserId,
                     'select' => ['entities.entity_label', 'users_entities.user_role as role']
                 ]);
                 $processDate = null;
@@ -447,7 +446,7 @@ class MergeController
                 if ($value['item_type'] == 'user_id') {
                     $user = UserModel::getById(['id' => $value['item_id'], 'select' => ['firstname', 'lastname']]);
                     $primaryentity = UserModel::getPrimaryEntityById([
-                        'id' => $value['item_id'],
+                        'id'     => $value['item_id'],
                         'select' => ['entities.entity_label']
                     ]);
                     $label = "{$user['firstname']} {$user['lastname']} ({$primaryentity['entity_label']})";
@@ -542,7 +541,7 @@ class MergeController
         $transmissions = [];
         if (!empty($args['recipientId']) && !empty($args['recipientType'])) {
             $currentTransmission = MergeController::formatPerson([
-                'id' => $args['recipientId'],
+                'id'   => $args['recipientId'],
                 'type' => $args['recipientType']
             ]);
             $transmissions['currentContact_lastname'] = $currentTransmission['lastname'] ?? null;
@@ -554,7 +553,7 @@ class MergeController
         $trKey = 1;
         while (!empty($args["transmissionRecipientId{$trKey}"])) {
             $recipientTransmission = MergeController::formatPerson([
-                'id' => $args["transmissionRecipientId$trKey"],
+                'id'   => $args["transmissionRecipientId$trKey"],
                 'type' => $args["transmissionRecipientType$trKey"]
             ]);
             $transmissions["lastname$trKey"] = $recipientTransmission['lastname'] ?? null;
@@ -602,7 +601,6 @@ class MergeController
 
     /**
      * @param array $args
-     *
      * @return array
      * @throws Exception
      */
@@ -718,10 +716,9 @@ class MergeController
 
     /**
      * @param array $args
-     *
      * @return false|mixed|string
      */
-    public static function mergeNotification(array $args)
+    public static function mergeNotification(array $args): mixed
     {
         $templateInfo = TemplateModel::getById(['id' => $args['templateId']]);
         $templateInfo['template_content'] = str_replace('###', ';', $templateInfo['template_content']);
@@ -766,10 +763,9 @@ class MergeController
 
     /**
      * @param array $args
-     *
      * @return false|mixed|string
      */
-    public static function mergeGlobalEmailSignature(array $args)
+    public static function mergeGlobalEmailSignature(array $args): mixed
     {
         $tmpPath = CoreConfigModel::getTmpPath();
         $pathToTemplate = $tmpPath . 'tmp_template_' . rand() . '_' . rand() . '.html';
@@ -783,12 +779,12 @@ class MergeController
         $datasources['user'] = [
             UserModel::getById([
                 'select' => ['firstname', 'lastname', 'mail', 'phone', 'initials'],
-                'id' => $GLOBALS['id']
+                'id'     => $GLOBALS['id']
             ])
         ];
         $datasources['userPrimaryEntity'] = [
             UserModel::getPrimaryEntityById([
-                'id' => $GLOBALS['id'],
+                'id'     => $GLOBALS['id'],
                 'select' => ['entities.*', 'users_entities.user_role as role']
             ])
         ];
@@ -813,11 +809,10 @@ class MergeController
 
     /**
      * @param array $args
-     *
      * @return array|string[]|true
      * @throws Exception
      */
-    public static function mergeAction(array $args)
+    public static function mergeAction(array $args): array|bool
     {
         ValidatorModel::notEmpty($args, ['resId', 'type']);
         ValidatorModel::intVal($args, ['resId']);
@@ -852,7 +847,7 @@ class MergeController
 
             $docserver = DocserverModel::getByDocserverId([
                 'docserverId' => $document['docserver_id'],
-                'select' => ['path_template', 'docserver_type_id']
+                'select'      => ['path_template', 'docserver_type_id']
             ]);
             if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
                 return ['errors' => 'Docserver does not exist'];
@@ -892,7 +887,7 @@ class MergeController
 
             $docserver = DocserverModel::getByDocserverId([
                 'docserverId' => $document['docserver_id'],
-                'select' => ['path_template', 'docserver_type_id']
+                'select'      => ['path_template', 'docserver_type_id']
             ]);
             if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
                 return ['errors' => 'Docserver does not exist'];
@@ -1020,7 +1015,6 @@ class MergeController
 
     /**
      * @param array $args
-     *
      * @return array
      * @throws Exception
      */

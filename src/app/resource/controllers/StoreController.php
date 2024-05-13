@@ -36,7 +36,7 @@ class StoreController
 {
     /**
      * @param array $args
-     * @return array|string[]
+     * @return array
      */
     public static function storeResource(array $args): array
     {

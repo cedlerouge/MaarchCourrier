@@ -96,7 +96,9 @@ class MwsController
 
         if ($curlResponse['code'] != 200) {
             if ($curlResponse['code'] == 404) {
-                return $response->withStatus(404)->withJson(['errors' => 'Page not found', 'lang' => 'pageNotFound']);
+                return $response->withStatus(404)->withJson(
+                    ['errors' => 'Page not found', 'lang' => 'pageNotFound']
+                );
             } elseif ($curlResponse['code'] == 400) {
                 return $response->withStatus(400)->withJson([
                     'errors' => 'Identifiants invalides',

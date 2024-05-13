@@ -21,6 +21,7 @@ use Configuration\models\ConfigurationModel;
 use Convert\models\AdrModel;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
+use DOMDocument;
 use Email\models\EmailModel;
 use Entity\models\EntityModel;
 use Exception;
@@ -50,7 +51,6 @@ class EmailController
     /**
      * @param Request $request
      * @param Response $response
-     *
      * @return Response
      * @throws Exception
      */
@@ -74,11 +74,10 @@ class EmailController
 
     /**
      * @param array $args
-     *
      * @return array|int
      * @throws Exception
      */
-    public static function createEmail(array $args)
+    public static function createEmail(array $args): array|int
     {
         ValidatorModel::notEmpty($args, ['userId', 'data']);
         ValidatorModel::intVal($args, ['userId']);
@@ -94,7 +93,8 @@ class EmailController
         }
 
         $configuration = ConfigurationModel::getByPrivilege([
-            'privilege' => 'admin_email_server', 'select' => ['value']
+            'privilege' => 'admin_email_server',
+            'select'    => ['value']
         ]);
         $configuration = json_decode($configuration['value'], true);
         if (empty($configuration)) {
@@ -141,7 +141,7 @@ class EmailController
                 if (
                     PrivilegeController::hasPrivilege([
                         'privilegeId' => 'admin_email_server',
-                        'userId' => $GLOBALS['id']
+                        'userId'      => $GLOBALS['id']
                     ])
                 ) {
                     $online = !empty($isSent['success']) ? 'true' : 'false';
@@ -218,7 +218,6 @@ class EmailController
      * @param Request $request
      * @param Response $response
      * @param array $args
-     *
      * @return Response
      * @throws Exception
      */
@@ -258,7 +257,7 @@ class EmailController
                 if (!empty($convertedResource[0])) {
                     $docserver = DocserverModel::getByDocserverId([
                         'docserverId' => $convertedResource[0]['docserver_id'],
-                        'select' => ['path_template']
+                        'select'      => ['path_template']
                     ]);
                     $pathToDocument = $docserver['path_template'] .
                         str_replace('#', DIRECTORY_SEPARATOR, $convertedResource[0]['path']) .
@@ -283,7 +282,7 @@ class EmailController
         if (!empty($document['attachments'])) {
             foreach ($document['attachments'] as $key => $attachment) {
                 $attachmentInfo = AttachmentModel::getById([
-                    'id' => $attachment['id'],
+                    'id'     => $attachment['id'],
                     'select' => ['title', 'format', 'filesize']
                 ]);
 
@@ -300,7 +299,7 @@ class EmailController
                     if (!empty($convertedResource[0])) {
                         $docserver = DocserverModel::getByDocserverId([
                             'docserverId' => $convertedResource[0]['docserver_id'],
-                            'select' => ['path_template']
+                            'select'      => ['path_template']
                         ]);
                         $pathToDocument = $docserver['path_template'] .
                             str_replace('#', DIRECTORY_SEPARATOR, $convertedResource[0]['path']) .
@@ -322,8 +321,8 @@ class EmailController
         if (!empty($document['notes'])) {
             $notes = NoteModel::get([
                 'select' => ['id', 'note_text', 'user_id'],
-                'where' => ['id in (?)'],
-                'data' => [$document['notes']]
+                'where'  => ['id in (?)'],
+                'data'   => [$document['notes']]
             ]);
             $notes = array_column($notes, null, 'id');
             foreach ($document['notes'] as $key => $noteId) {
@@ -369,7 +368,6 @@ class EmailController
      * @param Request $request
      * @param Response $response
      * @param array $args
-     *
      * @return Response
      * @throws Exception
      */
@@ -384,7 +382,7 @@ class EmailController
 
         $configuration = ConfigurationModel::getByPrivilege([
             'privilege' => 'admin_email_server',
-            'select' => ['value']
+            'select'    => ['value']
         ]);
         $configuration = json_decode($configuration['value'], true);
         if (empty($configuration)) {
@@ -473,7 +471,6 @@ class EmailController
      * @param Request $request
      * @param Response $response
      * @param array $args
-     *
      * @return Response
      * @throws Exception
      */
@@ -519,7 +516,6 @@ class EmailController
      * @param Request $request
      * @param Response $response
      * @param array $args
-     *
      * @return Response
      * @throws Exception
      */
@@ -580,7 +576,6 @@ class EmailController
     /**
      * @param Request $request
      * @param Response $response
-     *
      * @return Response
      * @throws Exception
      */
@@ -594,7 +589,6 @@ class EmailController
      * @param Request $request
      * @param Response $response
      * @param array $args
-     *
      * @return Response
      * @throws Exception
      */
@@ -694,7 +688,7 @@ class EmailController
             if (!empty($convertedAttachment[0])) {
                 $docserver = DocserverModel::getByDocserverId([
                     'docserverId' => $convertedAttachment[0]['docserver_id'],
-                    'select' => ['path_template']
+                    'select'      => ['path_template']
                 ]);
                 $pathToDocument = $docserver['path_template'] .
                     str_replace('#', DIRECTORY_SEPARATOR, $convertedAttachment[0]['path']) .
@@ -727,8 +721,8 @@ class EmailController
         $userEntities = array_column($userEntities, 'entity_id');
         $rawNotes = NoteModel::get([
             'select' => ['id', 'note_text', 'user_id'],
-            'where' => ['identifier = ?'],
-            'data' => [$args['resId']]
+            'where'  => ['identifier = ?'],
+            'data'   => [$args['resId']]
         ]);
         foreach ($rawNotes as $rawNote) {
             $allowed = false;
@@ -737,8 +731,8 @@ class EmailController
             } else {
                 $noteEntities = NoteEntityModel::get([
                     'select' => ['item_id'],
-                    'where' => ['note_id = ?'],
-                    'data' => [$rawNote['id']]
+                    'where'  => ['note_id = ?'],
+                    'data'   => [$rawNote['id']]
                 ]);
                 if (!empty($noteEntities)) {
                     foreach ($noteEntities as $noteEntity) {
@@ -768,9 +762,9 @@ class EmailController
 
     /**
      * @param array $args
-     *
-     * @return array
+     * @return array|string[]
      * @throws \PHPMailer\PHPMailer\Exception
+     * @throws Exception
      */
     public static function sendEmail(array $args): array
     {
@@ -796,7 +790,7 @@ class EmailController
 
         $configuration = ConfigurationModel::getByPrivilege([
             'privilege' => 'admin_email_server',
-            'select' => ['value']
+            'select'    => ['value']
         ]);
         $configuration = json_decode($configuration['value'], true);
         if (empty($configuration)) {
@@ -861,7 +855,7 @@ class EmailController
         if ($email['is_html'] && !empty($email['body'])) {
             $phpmailer->isHTML(true);
 
-            $dom = new \DOMDocument();
+            $dom = new DOMDocument();
             $internalErrors = libxml_use_internal_errors(true);
             $dom->loadHTML($email['body'], LIBXML_NOWARNING);
             libxml_use_internal_errors($internalErrors);
@@ -916,7 +910,7 @@ class EmailController
                 }
 
                 $title = TextFormatModel::formatFilename([
-                    'filename' => $messageExchange['reference'],
+                    'filename'  => $messageExchange['reference'],
                     'maxLength' => 30
                 ]);
 
@@ -926,7 +920,7 @@ class EmailController
             $email['document'] = json_decode($email['document'], true);
             if ($email['document']['isLinked']) {
                 $encodedDocument = ResController::getEncodedDocument([
-                    'resId' => $email['document']['id'],
+                    'resId'    => $email['document']['id'],
                     'original' => $email['document']['original']
                 ]);
                 if (empty($encodedDocument['errors'])) {
@@ -939,7 +933,7 @@ class EmailController
             if (!empty($email['document']['attachments'])) {
                 foreach ($email['document']['attachments'] as $attachment) {
                     $encodedDocument = AttachmentController::getEncodedDocument([
-                        'id' => $attachment['id'],
+                        'id'       => $attachment['id'],
                         'original' => $attachment['original']
                     ]);
                     if (empty($encodedDocument['errors'])) {
@@ -964,7 +958,7 @@ class EmailController
         $phpmailer->Timeout = 30;
         $phpmailer->SMTPDebug = 1;
         $phpmailer->Debugoutput = function ($str) {
-            if (strpos($str, 'SMTP ERROR') !== false) {
+            if (str_contains($str, 'SMTP ERROR')) {
                 HistoryController::add([
                     'tableName' => 'emails',
                     'recordId'  => 'email',
@@ -995,7 +989,6 @@ class EmailController
 
     /**
      * @param array $args
-     *
      * @return array[]
      * @throws Exception
      */
@@ -1003,7 +996,7 @@ class EmailController
     {
         $currentUser = UserModel::getById([
             'select' => ['firstname', 'lastname', 'mail', 'user_id'],
-            'id' => $args['userId']
+            'id'     => $args['userId']
         ]);
 
         $availableEmails = [
@@ -1066,7 +1059,6 @@ class EmailController
 
     /**
      * @param array $args
-     *
      * @return array|string[]
      * @throws Exception
      */

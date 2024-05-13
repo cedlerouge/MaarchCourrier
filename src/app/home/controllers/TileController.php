@@ -318,7 +318,7 @@ class TileController
      * @return array|bool
      * @throws Exception
      */
-    private static function controlParameters(array $args)
+    private static function controlParameters(array $args): array|bool
     {
         if (in_array($args['type'], ['basket', 'folder', 'shortcut', 'searchTemplate'])) {
             if (!Validator::arrayType()->notEmpty()->validate($args['parameters'] ?? null)) {
@@ -379,10 +379,10 @@ class TileController
     /**
      * @param array $tile
      *
-     * @return bool
+     * @return void
      * @throws Exception
      */
-    private static function getShortDetails(array &$tile): bool
+    private static function getShortDetails(array &$tile): void
     {
         if ($tile['type'] == 'basket') {
             $basket = BasketModel::getById([
@@ -416,7 +416,7 @@ class TileController
         } elseif ($tile['type'] == 'externalSignatoryBook') {
             $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
             if (empty($loadedXml)) {
-                return false;
+                return;
             }
             $enabledExternalSignatoryBook = (string)$loadedXml->signatoryBookEnabled;
             if ($enabledExternalSignatoryBook == 'maarchParapheur') {
@@ -440,8 +440,6 @@ class TileController
             ]);
             $tile['label'] = "{$searchTemplate[0]['label']}";
         }
-
-        return true;
     }
 
     /**
@@ -450,7 +448,7 @@ class TileController
      * @return array|bool
      * @throws Exception
      */
-    private static function getDetails(array &$tile)
+    private static function getDetails(array &$tile): array|bool
     {
         if ($tile['type'] == 'basket') {
             $control = TileController::getBasketDetails($tile);
@@ -517,7 +515,7 @@ class TileController
      * @return array|bool
      * @throws Exception
      */
-    private static function getBasketDetails(array &$tile)
+    private static function getBasketDetails(array &$tile): array|bool
     {
         $basket = BasketModel::getById(
             ['select' => ['basket_clause', 'basket_id'], 'id' => $tile['parameters']['basketId']]
@@ -556,10 +554,10 @@ class TileController
      * @param $allResources
      * @param string $order
      *
-     * @return bool
+     * @return void
      * @throws Exception
      */
-    private static function getResourcesDetails(array &$tile, $allResources, string $order = ''): bool
+    private static function getResourcesDetails(array &$tile, $allResources, string $order = ''): void
     {
         $allResources = array_column($allResources, 'res_id');
         if ($tile['view'] == 'summary') {
@@ -703,8 +701,6 @@ class TileController
                 }
             }
         }
-
-        return true;
     }
 
     /**
@@ -740,7 +736,7 @@ class TileController
      * @return array|bool
      * @throws Exception
      */
-    private static function getMaarchParapheurDetails(array &$tile)
+    private static function getMaarchParapheurDetails(array &$tile): array|bool
     {
         $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['external_id']]);
 
@@ -827,7 +823,7 @@ class TileController
      * @return array|true
      * @throws Exception
      */
-    private static function getShortcutDetails(array &$tile)
+    private static function getShortcutDetails(array &$tile): array|bool
     {
         $tile['resourcesNumber'] = null;
 
@@ -960,7 +956,7 @@ class TileController
      * @return array|true
      * @throws Exception
      */
-    private static function getSearchTemplateDetails(array &$tile)
+    private static function getSearchTemplateDetails(array &$tile): array|bool
     {
         $searchTemplate = SearchTemplateModel::get(
             [

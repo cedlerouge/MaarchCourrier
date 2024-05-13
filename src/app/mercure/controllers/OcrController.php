@@ -123,16 +123,19 @@ class OcrController
         ]);
 
         if (!empty($storeResult['errors'])) {
-            return $response->withStatus(400)->withJson(['message' => "[OcrController] {$storeResult['errors']}"]);
+            return $response->withStatus(400)->withJson(
+                ['message' => "[OcrController] {$storeResult['errors']}"]
+            );
         }
-        if ($collId == 'letterbox_coll') {
-            $document = AdrModel::getConvertedDocumentById([
-                'select' => ['docserver_id', 'path', 'filename', 'fingerprint'],
-                'resId'  => $body['resId'],
-                'collId' => $collId,
-                'type'   => 'PDF'
-            ]);
 
+        $document = AdrModel::getConvertedDocumentById([
+            'select' => ['docserver_id', 'path', 'filename', 'fingerprint'],
+            'resId'  => $body['resId'],
+            'collId' => $collId,
+            'type'   => 'PDF'
+        ]);
+
+        if ($collId == 'letterbox_coll') {
             if (empty($document)) {
                 AdrModel::createDocumentAdr([
                     'resId'       => $body['resId'],
@@ -153,32 +156,24 @@ class OcrController
                     'data'  => [$body['resId'], 'PDF', $body['version'] ?? 1]
                 ]);
             }
-        } else {
-            $document = AdrModel::getConvertedDocumentById([
-                'select' => ['docserver_id', 'path', 'filename', 'fingerprint'],
-                'resId'  => $body['resId'],
-                'collId' => $collId,
-                'type'   => 'PDF'
+        } elseif (empty($document)) {
+            AdrModel::createAttachAdr([
+                'resId'       => $body['resId'],
+                'type'        => 'PDF',
+                'docserverId' => $storeResult['docserver_id'],
+                'path'        => $storeResult['destination_dir'],
+                'filename'    => $storeResult['file_destination_name'],
+                'fingerprint' => $storeResult['fingerPrint']
             ]);
-            if (empty($document)) {
-                AdrModel::createAttachAdr([
-                    'resId'       => $body['resId'],
-                    'type'        => 'PDF',
-                    'docserverId' => $storeResult['docserver_id'],
-                    'path'        => $storeResult['destination_dir'],
-                    'filename'    => $storeResult['file_destination_name'],
-                    'fingerprint' => $storeResult['fingerPrint']
-                ]);
-            } else {
-                AdrModel::updateAttachmentAdr([
-                    'set'   => [
-                        'fingerprint' => $storeResult['fingerPrint'],
-                        'filename'    => $storeResult['file_destination_name']
-                    ],
-                    'where' => ['res_id = ?', 'type = ?'],
-                    'data'  => [$body['resId'], 'PDF']
-                ]);
-            }
+        } else {
+            AdrModel::updateAttachmentAdr([
+                'set'   => [
+                    'fingerprint' => $storeResult['fingerPrint'],
+                    'filename'    => $storeResult['file_destination_name']
+                ],
+                'where' => ['res_id = ?', 'type = ?'],
+                'data'  => [$body['resId'], 'PDF']
+            ]);
         }
 
         FullTextController::indexDocument(['resId' => $body['resId'], 'collId' => $collId]);
@@ -197,8 +192,9 @@ class OcrController
      * @return array
      * @throws Exception
      */
-    private static function launchOcrTesseract(array $aArgs): array
-    {
+    private static function launchOcrTesseract(
+        array $aArgs
+    ): array {
         ValidatorModel::notEmpty($aArgs, ['collId', 'resId']);
         ValidatorModel::stringType($aArgs, ['collId']);
         ValidatorModel::intVal($aArgs, ['resId']);

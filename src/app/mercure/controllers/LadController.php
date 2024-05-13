@@ -317,7 +317,7 @@ class LadController
             if (is_file($outXmlFilename)) {
                 $outputXml = CoreConfigModel::getXmlLoaded(['path' => $outXmlFilename]);
                 foreach ($outputXml->status as $status) {
-                    if (strpos(strtolower($status), 'quota exceeded') !== false) {
+                    if (str_contains(strtolower($status), 'quota exceeded')) {
                         return ['errors' => 'Number of LAD request exceeded, please contact Maarch'];
                     }
                 }
@@ -380,7 +380,13 @@ class LadController
         return false;
     }
 
-
+    /**
+     * @param $fieldContent
+     * @param $normalizationRule
+     * @param $normalizationFormat
+     * @return string
+     * @throws Exception
+     */
     private static function normalizeField($fieldContent, $normalizationRule, $normalizationFormat = null): string
     {
         switch ($normalizationRule) {
@@ -619,6 +625,10 @@ class LadController
         return str_replace($search, $replace, $content);
     }
 
+    /**
+     * @param string $dateString
+     * @return string
+     */
     private static function replaceMonth(string $dateString): string
     {
         $search = [

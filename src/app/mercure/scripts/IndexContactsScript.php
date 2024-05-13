@@ -41,7 +41,7 @@ use Zend_Search_Lucene_Index_Term;
 
 // phpcs:ignore
 try {
-    IndexContactsScript::initalize($argv);
+    IndexContactsScript::initialize($argv);
 } catch (Exception $e) {
     echo "[Exception] {$e->getMessage()}";
 }
@@ -54,7 +54,7 @@ class IndexContactsScript
      * @return void
      * @throws Exception
      */
-    public static function initalize(array $args): void
+    public static function initialize(array $args): void
     {
         $customId = '';
         $fileConfiguration = '';
@@ -77,9 +77,9 @@ class IndexContactsScript
         }
 
         IndexContactsScript::generateIndex([
-            'customId' => $customId,
+            'customId'   => $customId,
             'fileConfig' => $fileConfiguration,
-            'indexAll' => $reindexAll
+            'indexAll'   => $reindexAll
         ]);
     }
 
