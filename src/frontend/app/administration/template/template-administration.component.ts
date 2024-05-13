@@ -236,7 +236,7 @@ export class TemplateAdministrationComponent implements OnInit, OnDestroy {
                 theme_advanced_toolbar_location: 'top',
                 theme_styles: 'Header 1=header1;Header 2=header2;Header 3=header3;Table Row=tableRow1',
                 setup: (ed: any) => {
-                    ed.on('keyup', (e: any) => {
+                    ed.on('keyup', () => {
                         if (this.template.type === 'HTML' && tinymce.get('templateHtml') != null) {
                             this.template.file.content = tinymce.get('templateHtml').getContent();
                         }
@@ -244,7 +244,7 @@ export class TemplateAdministrationComponent implements OnInit, OnDestroy {
                             this.template.file.electronic.content = tinymce.get('templateOfficeHtml').getContent();
                         }
                     });
-                    ed.on('change', (e: any) => {
+                    ed.on('change', () => {
                         if (this.template.type === 'HTML' && tinymce.get('templateHtml') != null) {
                             this.template.file.content = tinymce.get('templateHtml').getContent();
                         }

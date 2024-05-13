@@ -140,7 +140,7 @@ export class ShippingAdministrationComponent implements OnInit {
         this.loading = true;
         if (this.creationMode) {
             this.http.post('../rest/administration/shippings', this.shipping)
-                .subscribe((data: any) => {
+                .subscribe(() => {
                     this.shippingClone = JSON.parse(JSON.stringify(this.shipping));
                     this.notify.success(this.translate.instant('lang.shippingAdded'));
                     this.router.navigate(['/administration/shippings']);
@@ -149,7 +149,7 @@ export class ShippingAdministrationComponent implements OnInit {
                 });
         } else {
             this.http.put('../rest/administration/shippings/' + this.shipping.id, this.shipping)
-                .subscribe((data: any) => {
+                .subscribe(() => {
                     this.shippingClone = JSON.parse(JSON.stringify(this.shipping));
                     this.notify.success(this.translate.instant('lang.shippingUpdated'));
                     this.router.navigate(['/administration/shippings']);

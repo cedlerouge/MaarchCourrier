@@ -78,11 +78,11 @@
     </mat-dialog-content>
     <span class="divider-modal"></span>
     <mat-dialog-actions>
-        <button mat-raised-button color="warn" *ngIf="data.user.actionMode == 'delete' && isDeletable"
+        <button mat-raised-button color="warn" *ngIf="data.user.actionMode === 'delete' && isDeletable"
             type="submit" class="btn btn-danger" (click)="onSubmit()"
             [disabled]="!isValid()">{{'lang.delete' | translate}}
             {{'lang.user' | translate}}</button>
-        <button mat-raised-button color="primary" *ngIf="data.user.actionMode == 'suspend' && isDeletable"
+        <button mat-raised-button color="primary" *ngIf="data.user.actionMode === 'suspend' && isDeletable"
             type="submit" (click)="onSubmit()" [disabled]="!isValid()">{{'lang.suspend' | translate}}
             {{'lang.user' | translate}}</button>
         <button mat-raised-button color="default" *ngIf="!data.isDeletable" type="submit"

@@ -13,7 +13,6 @@ import { FunctionsService } from '@service/functions.service';
 import { of } from 'rxjs';
 import { AdministrationService } from '../administration.service';
 
-declare let tinymce: any;
 
 @Component({
     templateUrl: 'tags-administration.component.html'
