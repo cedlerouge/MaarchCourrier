@@ -21,7 +21,7 @@ use SimpleXMLElement;
 
 class CoreConfigModel
 {
-    protected static mixed $customId;
+    protected static $customId;
 
     /**
      * @return mixed|string
