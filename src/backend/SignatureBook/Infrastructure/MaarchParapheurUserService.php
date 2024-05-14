@@ -24,7 +24,7 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
     }
 
     /**
-     * @param array $ids
+     * @param int $id
      * @param string $accessToken
      * @return true
      * @throws Exception
@@ -41,7 +41,7 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
             ]
         ]);
 
-        if ($response['code'] != 200) {
+        if ($response['code'] === 200) {
             return true;
         } else {
             return $response['errors'];
@@ -74,7 +74,7 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
             'body'       => json_encode($userDetails),
         ]);
 
-        if ($response['code'] == 200) {
+        if ($response['code'] === 200) {
             return $response['response']['id'];
         } else {
             return $response['errors'] ??
@@ -140,7 +140,7 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
                 'Accept: application/json',
             ]
         ]);
-        if ($response['code'] === 200) {
+        if ($response['code'] === 204) {
             return true;
         } else {
             return $response['errors'] ?? ['errors' => 'Failed to delete the user in Maarch Parapheur.'];
