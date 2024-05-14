@@ -147,11 +147,17 @@ describe('ContinueVisaCircuitActionNewSbComponent', (() => {
             const containerTitle = nativeElement.querySelector('.docs-title').querySelector('span');
             const containerContent = nativeElement.querySelector('.docs-container').querySelectorAll('.content');
             const emptyStampWarn = nativeElement.querySelectorAll('.empty-stamp-warn');
+            const toggleVisaWorkflowBtn = nativeElement.querySelector('button[name=toggleVisaWorkflow]');
+
+            toggleVisaWorkflowBtn.click();
 
             expect(container.length).toEqual(1);
             expect(containerTitle.innerHTML.trim()).toEqual('4 document(s) à signer');
             expect(containerContent.length).toEqual(4);
             expect(emptyStampWarn.length).toEqual(2);
+            expect(nativeElement.querySelector('.visa-workflow-sidenav')).toBeDefined();
+            expect(nativeElement.querySelector('.show-hide-workflow').querySelector('span').innerHTML.trim()).toEqual('Voir le circuit de visa');
+
         }));
     }));
 }));

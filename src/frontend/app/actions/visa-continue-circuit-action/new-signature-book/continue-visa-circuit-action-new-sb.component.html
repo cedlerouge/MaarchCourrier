@@ -27,6 +27,7 @@
                     </div>
                     <button *ngIf="data.resIds.length === 1"
                         mat-icon-button
+                        name="toggleVisaWorkflow"
                         [attr.aria-hidden]="true"
                         [title]="'lang.toggleVisaWorkflow' | translate"
                         (click)="snav2.toggle()">
