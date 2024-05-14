@@ -18,8 +18,6 @@ import * as langFrJson from '@langs/lang-fr.json';
 import { FiltersListService } from "@service/filtersList.service";
 import { ChangeDetectorRef } from "@angular/core";
 
-
-
 class FakeLoader implements TranslateLoader {
     getTranslation(): Observable<any> {
         return of({ lang: langFrJson });
@@ -114,6 +112,16 @@ describe('ContinueVisaCircuitActionNewSbComponent', (() => {
             };
             req.flush(mockResponse);
 
+            spyOn(component, 'checkSignatureBook').and.returnValue(Promise.resolve({ resourcesInformations: {
+                warning: [
+                    {
+                        "alt_identifier": "MAARCH/2023A/47",
+                        "res_id": 146,
+                        "reason": "userHasntSigned"
+                    }
+                ]
+            } }));
+
             // Ensure async operations are completed
             flush();
             tick();  // Advance time to ensure async operations are processed
@@ -123,16 +131,27 @@ describe('ContinueVisaCircuitActionNewSbComponent', (() => {
 
             // Trigger change detection
             fixture.detectChanges();
+            tick();
 
             // Verify that the component processed the response correctly
             expect(component.resourcesWarnings).toEqual([]);
             expect(component.resourcesErrors).toEqual([]);
             expect(component.noResourceToProcess).toBe(null);
+            expect(component.digitalCertificate).toBeTrue();
+
+            fixture.detectChanges();
 
             // Verify DOM updates
             const nativeElement = fixture.nativeElement;
-            const container = nativeElement.querySelector('.div-container');
-            expect(container).toBeDefined();
+            const container = nativeElement.querySelectorAll('.div-container');
+            const containerTitle = nativeElement.querySelector('.docs-title').querySelector('span');
+            const containerContent = nativeElement.querySelector('.docs-container').querySelectorAll('.content');
+            const emptyStampWarn = nativeElement.querySelectorAll('.empty-stamp-warn');
+
+            expect(container.length).toEqual(1);
+            expect(containerTitle.innerHTML.trim()).toEqual('4 document(s) à signer');
+            expect(containerContent.length).toEqual(4);
+            expect(emptyStampWarn.length).toEqual(2);
         }));
     }));
 }));
@@ -158,7 +177,17 @@ function setDatas(component: ContinueVisaCircuitActionNewSbComponent): void {
                     "isConverted": true,
                     "canModify": false,
                     "canDelete": false,
-                    "stamps": []
+                    "stamps": [
+                        {
+                            "encodedImage": "iVBORw0KGgoBBBNSUhEUgAAAVAAAABKCAYAAADt0gyQAAAgAElEQVR4nOydd5RUVbq3687M1euMcyeq11HHUUFAx...",
+                            "width": 36,
+                            "height": 9,
+                            "positionX": 19.430252100840338,
+                            "positionY": 38.192399049881224,
+                            "page": 2,
+                            "type": "PNG"
+                        }
+                    ]
                 },
                 {
                     "resId": 57,
@@ -197,7 +226,17 @@ function setDatas(component: ContinueVisaCircuitActionNewSbComponent): void {
                     "isConverted": true,
                     "canModify": false,
                     "canDelete": false,
-                    "stamps": []
+                    "stamps": [
+                        {
+                            "encodedImage": "iVBORw0KGgoAAAANSUhEUgAAAVAAAABKCAYAAADt0gyQAAAgAElEQVR4nOydd5RUVbq3687M1euMcyeq11HHUUFAx...",
+                            "width": 56.470588235294116,
+                            "height": 8.788598574821853,
+                            "positionX": 19.430252100840338,
+                            "positionY": 38.192399049881224,
+                            "page": 1,
+                            "type": "PNG"
+                        }
+                    ]
                 }
             ]
         }
