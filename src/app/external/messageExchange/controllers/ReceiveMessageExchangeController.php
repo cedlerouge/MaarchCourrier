@@ -189,7 +189,7 @@ class ReceiveMessageExchangeController
      * @return array|string|string[]
      * @throws Exception
      */
-    public function createFile(array $aArgs = []): array|string
+    public static function createFile(array $aArgs = []): array|string
     {
         if (!self::checkNeededParameters(['data' => $aArgs, 'needed' => ['base64', 'extension', 'size']])) {
             return ['errors' => 'Bad Request : base64, extension or size argument is missing'];
