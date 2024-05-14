@@ -544,7 +544,7 @@ class UserController
                 ->setFirstname($body['firstname'])
                 ->setLastname($body['lastname'])
                 ->setMail($body['mail'])
-                ->setPhone($body['phone'])
+                ->setPhone($body['phone'] ?? '')
                 ->setExternalId($body['external_id']);
 
             $createUserFactory = new CreateAndUpdateUserInSignatoryBookFactory();
@@ -995,6 +995,7 @@ class UserController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function updateProfile(Request $request, Response $response): Response
     {

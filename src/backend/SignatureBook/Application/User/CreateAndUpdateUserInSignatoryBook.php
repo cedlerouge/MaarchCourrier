@@ -46,8 +46,10 @@ class CreateAndUpdateUserInSignatoryBook
             throw new CurrentTokenIsNotFoundProblem();
         }
 
-        if (!empty($user->getExternalId())) {
-            if ($this->signatureBookUserService->doesUserExists($user->getExternalId(), $accessToken)) {
+        $externalId = (int)array_values($user->getExternalId());
+
+        if (!empty($externalId)) {
+            if ($this->signatureBookUserService->doesUserExists($externalId, $accessToken)) {
                 $userIsUpdated = $this->signatureBookUserService->updateUser($user, $accessToken);
                 if (!empty($userIsUpdated['errors'])) {
                     throw new UserUpdateInMaarchParapheurFailedProblem($userIsUpdated);

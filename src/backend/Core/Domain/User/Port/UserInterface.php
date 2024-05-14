@@ -99,8 +99,8 @@ interface UserInterface
     public function getPhone(): string;
 
     /**
-     * @param string $phone
+     * @param string|null $phone
      * @return UserInterface
      */
-    public function setPhone(string $phone): UserInterface;
+    public function setPhone(?string $phone): UserInterface;
 }

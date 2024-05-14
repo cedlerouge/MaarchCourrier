@@ -28,11 +28,11 @@ interface SignatureBookUserServiceInterface
     public function deleteUser(UserInterface $user, string $accessToken): array|bool;
 
     /**
-     * @param array $ids
+     * @param int $id
      * @param string $accessToken
      * @return bool
      */
-    public function doesUserExists(array $ids, string $accessToken): bool;
+    public function doesUserExists(int $id, string $accessToken): bool;
 
     /**
      * @param SignatureServiceConfig $config

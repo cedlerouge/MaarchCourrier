@@ -29,17 +29,16 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
      * @return true
      * @throws Exception
      */
-    public function doesUserExists(array $ids, string $accessToken): bool
+    public function doesUserExists(int $id, string $accessToken): bool
     {
         $response = CurlModel::exec([
-            'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users',
+            'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users/' . $id,
             'bearerAuth' => ['token' => $accessToken],
             'method'     => 'GET',
             'headers'    => [
                 'content-type: application/json',
                 'Accept: application/json',
-            ],
-            'body'       => json_encode($ids),
+            ]
         ]);
 
         if ($response['code'] != 200) {
@@ -135,7 +134,7 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
                 '/'
             ) . '/rest/users/' . $externalId['internalParapheur'],
             'bearerAuth' => ['token' => $accessToken],
-            'method'     => 'PUT',
+            'method'     => 'DELETE',
             'headers'    => [
                 'content-type: application/json',
                 'Accept: application/json',

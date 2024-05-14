@@ -156,10 +156,10 @@ class User implements UserInterface
     }
 
     /**
-     * @param string $phone
+     * @param string|null $phone
      * @return UserInterface
      */
-    public function setPhone(string $phone): UserInterface
+    public function setPhone(?string $phone): UserInterface
     {
         $this->phone = $phone;
         return $this;

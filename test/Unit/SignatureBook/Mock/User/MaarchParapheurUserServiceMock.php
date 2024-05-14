@@ -53,11 +53,11 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
     }
 
     /**
-     * @param array $ids
+     * @param int $id
      * @param string $accessToken
      * @return bool
      */
-    public function doesUserExists(array $ids, string $accessToken): bool
+    public function doesUserExists(int $id, string $accessToken): bool
     {
         if (!$this->userExists) {
             return false;
