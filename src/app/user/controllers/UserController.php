@@ -37,6 +37,10 @@ use Group\controllers\PrivilegeController;
 use Group\models\GroupModel;
 use History\controllers\HistoryController;
 use History\models\HistoryModel;
+use MaarchCourrier\SignatureBook\Infrastructure\Factory\CreateAndUpdateUserInSignatoryBookFactory;
+use MaarchCourrier\SignatureBook\Infrastructure\Factory\DeleteUserInSignatoryBookFactory;
+use MaarchCourrier\SignatureBook\Infrastructure\SignatureBookConfigLoader;
+use MaarchCourrier\User\Domain\User;
 use Notification\controllers\NotificationsEventsController;
 use Parameter\models\ParameterModel;
 use Resource\controllers\ResController;
@@ -301,7 +305,9 @@ class UserController
             ) ||
             !preg_match("/^[\w.@-]*$/", $body['userId'])
         ) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body userId is empty, not a string or not valid']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body userId is empty, not a string or not valid']
+            );
         } elseif (
             !Validator::stringType()->length(1, 255)->notEmpty()->validate(
                 $body['firstname'] ?? null
@@ -337,13 +343,34 @@ class UserController
         }
 
         $loggingMethod = CoreConfigModel::getLoggingMethod();
-        $existingUser = UserModel::getByLowerLogin(['login' => $body['userId'], 'select' => ['id', 'status', 'mail']]);
+        $existingUser = UserModel::getByLowerLogin(['login' => $body['userId']]);
+        $sbcl = new SignatureBookConfigLoader();
+        $user = null;
 
         if (!empty($existingUser) && $existingUser['status'] == 'DEL') {
+            $body = $existingUser;
+
+            if ($sbcl->getConfig()->isNewInternalParaph()) {
+                $user = (new User())
+                    ->setFirstname($body['firstname'])
+                    ->setLastname($body['lastname'])
+                    ->setMail($body['mail'])
+                    ->setLogin($body['user_id'])
+                    ->setExternalId([]);
+
+                $createUserFactory = new CreateAndUpdateUserInSignatoryBookFactory();
+                $createUser = $createUserFactory->create();
+                $user = $createUser->createAndUpdateUser($user);
+                $user = [
+                    'external_id' => json_encode($user->getExternalId()),
+                ];
+            }
+
             UserModel::update([
                 'set'   => [
-                    'status'   => 'OK',
-                    'password' => AuthenticationModel::getPasswordHash(AuthenticationModel::generatePassword()),
+                    'status'      => 'OK',
+                    'password'    => AuthenticationModel::getPasswordHash(AuthenticationModel::generatePassword()),
+                    'external_id' => $user['external_id']
                 ],
                 'where' => ['id = ?'],
                 'data'  => [$existingUser['id']]
@@ -387,7 +414,32 @@ class UserController
         }
         $body['preferences'] = json_encode($preferences);
 
-        $id = UserModel::create(['user' => $body]);
+        if ($sbcl->getConfig()->isNewInternalParaph()) {
+            $user = (new User())
+                ->setFirstname($body['firstname'])
+                ->setLastname($body['lastname'])
+                ->setMail($body['mail'])
+                ->setLogin($body['userId'])
+                ->setExternalId([]);
+
+            $createUserFactory = new CreateAndUpdateUserInSignatoryBookFactory();
+            $createUser = $createUserFactory->create();
+            $user = $createUser->createAndUpdateUser($user);
+            $user = [
+                'firstname'   => $user->getFirstname(),
+                'lastname'    => $user->getLastname(),
+                'mail'        => $user->getMail(),
+                'userId'      => $user->getLogin(),
+                'external_id' => json_encode($user->getExternalId()),
+                'initials'    => $body['initials'] ?? '',
+                'phone'       => $body['phone'] ?? '',
+                'mode'        => $body['mode'],
+                'preferences' => $body['preferences'],
+            ];
+        }
+
+
+        $id = UserModel::create(['user' => $user ?? $body]);
 
         $userQuota = ParameterModel::getById(['id' => 'user_quota', 'select' => ['param_value_int']]);
         if (!empty($userQuota['param_value_int'])) {
@@ -468,7 +520,7 @@ class UserController
         ];
 
         if (PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])) {
-            $set['phone'] = $body['phone'];
+            $set['phone'] = $body['phone'] ?? '';
         }
 
         if (!empty($body['status']) && $body['status'] == 'OK') {
@@ -503,6 +555,21 @@ class UserController
         }
 
         $userQuota = ParameterModel::getById(['id' => 'user_quota', 'select' => ['param_value_int']]);
+
+        $sbcl = new SignatureBookConfigLoader();
+        $user = null;
+        if ($sbcl->getConfig()->isNewInternalParaph()) {
+            $user = (new User())
+                ->setFirstname($body['firstname'])
+                ->setLastname($body['lastname'])
+                ->setMail($body['mail'])
+                ->setPhone($body['phone'] ?? '')
+                ->setExternalId($body['external_id']);
+
+            $createUserFactory = new CreateAndUpdateUserInSignatoryBookFactory();
+            $updateUser = $createUserFactory->create();
+            $updateUser->createAndUpdateUser($user);
+        }
 
         UserModel::update([
             'set'   => $set,
@@ -764,7 +831,9 @@ class UserController
             return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
         }
 
-        $user = UserModel::getById(['id' => $args['id'], 'select' => ['firstname', 'lastname', 'user_id', 'mode']]);
+        $user = UserModel::getById(
+            ['id' => $args['id'], 'select' => ['firstname', 'lastname', 'user_id', 'mode', 'external_id']]
+        );
         if (
             in_array($user['mode'], ['root_visible', 'root_invisible']) &&
             !UserController::isRoot(['id' => $GLOBALS['id']])
@@ -831,6 +900,18 @@ class UserController
             'data'  => [$args['id']]
         ]);
 
+        $sbcl = new SignatureBookConfigLoader();
+        $externalId = json_decode($user['external_id'], true);
+        if ($sbcl->getConfig()->isNewInternalParaph()) {
+            if ($externalId['internalParapheur'] !== null) {
+                $userDel = (new User())
+                    ->setExternalId($externalId);
+
+                $deletedUserFactory = new DeleteUserInSignatoryBookFactory();
+                $deleteUser = $deletedUserFactory->create();
+                $deleteUser->deleteUser($userDel);
+            }
+        }
         UserModel::delete(['id' => $args['id']]);
 
         HistoryController::add([
@@ -933,6 +1014,7 @@ class UserController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function updateProfile(Request $request, Response $response): Response
     {
@@ -978,6 +1060,7 @@ class UserController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function updateCurrentUserFeatureTour(Request $request, Response $response): Response
     {
@@ -1011,6 +1094,7 @@ class UserController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function updateCurrentUserPreferences(Request $request, Response $response): Response
     {
@@ -2257,6 +2341,7 @@ class UserController
      * @param Response $response
      * @param array $aArgs
      * @return Response
+     * @throws Exception
      */
     public function updateCurrentUserBasketPreferences(Request $request, Response $response, array $aArgs): Response
     {
@@ -2860,6 +2945,7 @@ class UserController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function forgotPassword(Request $request, Response $response): Response
     {
@@ -2921,6 +3007,7 @@ class UserController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function passwordInitialization(Request $request, Response $response): Response
     {

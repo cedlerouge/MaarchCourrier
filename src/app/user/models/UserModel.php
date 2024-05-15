@@ -1,43 +1,54 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief User Model
-* @author dev@maarch.org
-*/
+ * @brief User Model
+ * @author dev@maarch.org
+ */
 
 namespace User\models;
 
+use Exception;
 use SrcCore\models\AuthenticationModel;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 
 class UserModel
 {
-    public static function get(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function get(array $aArgs): array
     {
         ValidatorModel::arrayType($aArgs, ['select', 'where', 'data', 'orderBy']);
         ValidatorModel::intType($aArgs, ['limit']);
 
         $aUsers = DatabaseModel::select([
-            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
-            'table'     => ['users'],
-            'where'     => empty($aArgs['where']) ? [] : $aArgs['where'],
-            'data'      => empty($aArgs['data']) ? [] : $aArgs['data'],
-            'order_by'  => empty($aArgs['orderBy']) ? [] : $aArgs['orderBy'],
-            'limit'     => empty($aArgs['limit']) ? 0 : $aArgs['limit']
+            'select'   => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+            'table'    => ['users'],
+            'where'    => empty($aArgs['where']) ? [] : $aArgs['where'],
+            'data'     => empty($aArgs['data']) ? [] : $aArgs['data'],
+            'order_by' => empty($aArgs['orderBy']) ? [] : $aArgs['orderBy'],
+            'limit'    => empty($aArgs['limit']) ? 0 : $aArgs['limit']
         ]);
 
         return $aUsers;
     }
 
-    public static function getById(array $args)
+    /**
+     * @param array $args
+     * @return array|mixed
+     * @throws Exception
+     */
+    public static function getById(array $args): mixed
     {
         ValidatorModel::notEmpty($args, ['id']);
         ValidatorModel::intVal($args, ['id']);
@@ -48,10 +59,10 @@ class UserModel
         }
 
         $user = DatabaseModel::select([
-            'select'    => empty($args['select']) ? ['*'] : $args['select'],
-            'table'     => ['users'],
-            'where'     => $where,
-            'data'      => [$args['id']]
+            'select' => empty($args['select']) ? ['*'] : $args['select'],
+            'table'  => ['users'],
+            'where'  => $where,
+            'data'   => [$args['id']]
         ]);
 
         if (empty($user[0])) {
@@ -61,16 +72,21 @@ class UserModel
         return $user[0];
     }
 
-    public static function getByExternalId(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array|mixed
+     * @throws Exception
+     */
+    public static function getByExternalId(array $aArgs): mixed
     {
         ValidatorModel::notEmpty($aArgs, ['externalId', 'externalName']);
         ValidatorModel::intVal($aArgs, ['externalId']);
 
         $aUser = DatabaseModel::select([
-            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
-            'table'     => ['users'],
-            'where'     => ['external_id->>\'' . $aArgs['externalName'] . '\' = ?'],
-            'data'      => [$aArgs['externalId']]
+            'select' => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+            'table'  => ['users'],
+            'where'  => ['external_id->>\'' . $aArgs['externalName'] . '\' = ?'],
+            'data'   => [$aArgs['externalId']]
         ]);
 
         if (empty($aUser)) {
@@ -80,11 +96,19 @@ class UserModel
         return $aUser[0];
     }
 
-    public static function create(array $args)
+    /**
+     * @param array $args
+     * @return int
+     * @throws Exception
+     */
+    public static function create(array $args): int
     {
         ValidatorModel::notEmpty($args, ['user']);
         ValidatorModel::notEmpty($args['user'], ['userId', 'firstname', 'lastname']);
-        ValidatorModel::stringType($args['user'], ['userId', 'firstname', 'lastname', 'mail', 'initials', 'phone', 'preferences', 'password']);
+        ValidatorModel::stringType(
+            $args['user'],
+            ['userId', 'firstname', 'lastname', 'mail', 'initials', 'phone', 'preferences', 'password', 'external_id']
+        );
 
         if (empty($args['user']['password'])) {
             $args['user']['password'] = AuthenticationModel::generatePassword();
@@ -105,14 +129,20 @@ class UserModel
                 'preferences'                => $args['user']['preferences'],
                 'mode'                       => empty($args['user']['mode']) ? 'standard' : $args['user']['mode'],
                 'password'                   => AuthenticationModel::getPasswordHash($args['user']['password']),
-                'password_modification_date' => 'CURRENT_TIMESTAMP'
+                'password_modification_date' => 'CURRENT_TIMESTAMP',
+                'external_id'                => $args['user']['external_id']
             ]
         ]);
 
         return $nextSequenceId;
     }
 
-    public static function update(array $args)
+    /**
+     * @param array $args
+     * @return true
+     * @throws Exception
+     */
+    public static function update(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['set', 'where', 'data']);
         ValidatorModel::arrayType($args, ['set', 'where', 'data']);
@@ -127,27 +157,37 @@ class UserModel
         return true;
     }
 
-    public static function delete(array $args)
+    /**
+     * @param array $args
+     * @return true
+     * @throws Exception
+     */
+    public static function delete(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['id']);
         ValidatorModel::intVal($args, ['id']);
 
         DatabaseModel::update([
-            'table'     => 'users',
-            'set'       => [
-                'status'    => 'DEL',
+            'table'   => 'users',
+            'set'     => [
+                'status' => 'DEL',
             ],
-            'postSet'   => [
-                'external_id' => 'external_id - \'maarchParapheur\''
+            'postSet' => [
+                'external_id' => 'external_id - \'maarchParapheur\' - \'internalParapheur\''
             ],
-            'where'     => ['id = ?'],
-            'data'      => [$args['id']]
+            'where'   => ['id = ?'],
+            'data'    => [$args['id']]
         ]);
 
         return true;
     }
 
-    public static function getByLogin(array $args)
+    /**
+     * @param array $args
+     * @return array|mixed
+     * @throws Exception
+     */
+    public static function getByLogin(array $args): mixed
     {
         ValidatorModel::notEmpty($args, ['login']);
         ValidatorModel::stringType($args, ['login']);
@@ -165,10 +205,10 @@ class UserModel
         }
 
         $user = DatabaseModel::select([
-            'select'    => empty($args['select']) ? ['*'] : $args['select'],
-            'table'     => ['users'],
-            'where'     => $where,
-            'data'      => [$args['login']]
+            'select' => empty($args['select']) ? ['*'] : $args['select'],
+            'table'  => ['users'],
+            'where'  => $where,
+            'data'   => [$args['login']]
         ]);
 
         if (empty($user)) {
@@ -181,16 +221,21 @@ class UserModel
         return $user[0];
     }
 
-    public static function getByLowerLogin(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array|mixed
+     * @throws Exception
+     */
+    public static function getByLowerLogin(array $aArgs): mixed
     {
         ValidatorModel::notEmpty($aArgs, ['login']);
         ValidatorModel::stringType($aArgs, ['login']);
 
         $aUser = DatabaseModel::select([
-            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
-            'table'     => ['users'],
-            'where'     => ['lower(user_id) = lower(?)'],
-            'data'      => [$aArgs['login']]
+            'select' => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+            'table'  => ['users'],
+            'where'  => ['lower(user_id) = lower(?)'],
+            'data'   => [$aArgs['login']]
         ]);
 
         if (empty($aUser)) {
@@ -200,78 +245,103 @@ class UserModel
         return $aUser[0];
     }
 
-    public static function getByEmail(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getByEmail(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['mail']);
         ValidatorModel::stringType($aArgs, ['mail']);
 
         $aUser = DatabaseModel::select([
-            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
-            'table'     => ['users'],
-            'where'     => ['mail = ? and status = ?'],
-            'data'      => [$aArgs['mail'], 'OK'],
-            'limit'     => 1
+            'select' => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+            'table'  => ['users'],
+            'where'  => ['mail = ? and status = ?'],
+            'data'   => [$aArgs['mail'], 'OK'],
+            'limit'  => 1
         ]);
 
         return $aUser;
     }
 
-    public static function updateExternalId(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return true
+     * @throws Exception
+     */
+    public static function updateExternalId(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['id', 'externalId']);
         ValidatorModel::intVal($aArgs, ['id']);
         ValidatorModel::json($aArgs, ['externalId']);
         DatabaseModel::update([
-            'table'     => 'users',
-            'set'       => [
+            'table' => 'users',
+            'set'   => [
                 'external_id' => !empty(json_decode($aArgs['externalId'])) ? $aArgs['externalId'] : '{}'
             ],
-            'where'     => ['id = ?'],
-            'data'      => [$aArgs['id']]
+            'where' => ['id = ?'],
+            'data'  => [$aArgs['id']]
         ]);
 
         return true;
     }
 
-    public static function updatePassword(array $args)
+    /**
+     * @param array $args
+     * @return true
+     * @throws Exception
+     */
+    public static function updatePassword(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['id', 'password']);
         ValidatorModel::intVal($args, ['id']);
         ValidatorModel::stringType($args, ['password']);
 
         DatabaseModel::update([
-            'table'     => 'users',
-            'set'       => [
-                'password'                      => AuthenticationModel::getPasswordHash($args['password']),
-                'password_modification_date'    => 'CURRENT_TIMESTAMP'
+            'table' => 'users',
+            'set'   => [
+                'password'                   => AuthenticationModel::getPasswordHash($args['password']),
+                'password_modification_date' => 'CURRENT_TIMESTAMP'
             ],
-            'where'     => ['id = ?'],
-            'data'      => [$args['id']]
+            'where' => ['id = ?'],
+            'data'  => [$args['id']]
         ]);
 
         return true;
     }
 
-    public static function resetPassword(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return true
+     * @throws Exception
+     */
+    public static function resetPassword(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['id', 'password']);
         ValidatorModel::intVal($aArgs, ['id']);
 
         DatabaseModel::update([
-            'table'     => 'users',
-            'set'       => [
-                'password'                      => AuthenticationModel::getPasswordHash($aArgs['password']),
-                'password_modification_date'    => 'CURRENT_TIMESTAMP',
-                'reset_token'                   => null
+            'table' => 'users',
+            'set'   => [
+                'password'                   => AuthenticationModel::getPasswordHash($aArgs['password']),
+                'password_modification_date' => 'CURRENT_TIMESTAMP',
+                'reset_token'                => null
             ],
-            'where'     => ['id = ?'],
-            'data'      => [$aArgs['id']]
+            'where' => ['id = ?'],
+            'data'  => [$aArgs['id']]
         ]);
 
         return true;
     }
 
-    public static function getLabelledUserById(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return string
+     * @throws Exception
+     */
+    public static function getLabelledUserById(array $aArgs): string
     {
         ValidatorModel::intVal($aArgs, ['id']);
         ValidatorModel::stringType($aArgs, ['login']);
@@ -290,18 +360,23 @@ class UserModel
         return $labelledUser;
     }
 
-    public static function getCurrentConsigneById(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return mixed|string
+     * @throws Exception
+     */
+    public static function getCurrentConsigneById(array $aArgs): mixed
     {
         ValidatorModel::notEmpty($aArgs, ['resId']);
         ValidatorModel::intVal($aArgs, ['resId']);
 
         $aReturn = DatabaseModel::select([
-            'select'    => ['process_comment'],
-            'table'     => ['listinstance'],
-            'where'     => ['res_id = ?', 'process_date is null', 'item_mode in (?)'],
-            'data'      => [$aArgs['resId'], ['visa', 'sign']],
-            'order_by'  => ['listinstance_id ASC'],
-            'limit'     => 1
+            'select'   => ['process_comment'],
+            'table'    => ['listinstance'],
+            'where'    => ['res_id = ?', 'process_date is null', 'item_mode in (?)'],
+            'data'     => [$aArgs['resId'], ['visa', 'sign']],
+            'order_by' => ['listinstance_id ASC'],
+            'limit'    => 1
         ]);
 
         if (empty($aReturn[0])) {
@@ -311,17 +386,27 @@ class UserModel
         return $aReturn[0]['process_comment'];
     }
 
-    public static function getPrimaryEntityById(array $args)
+    /**
+     * @param array $args
+     * @return array|mixed
+     * @throws Exception
+     */
+    public static function getPrimaryEntityById(array $args): mixed
     {
         ValidatorModel::notEmpty($args, ['id', 'select']);
         ValidatorModel::intVal($args, ['id']);
         ValidatorModel::arrayType($args, ['select']);
 
         $entity = DatabaseModel::select([
-            'select'    => $args['select'],
-            'table'     => ['users, users_entities, entities'],
-            'where'     => ['users.id = users_entities.user_id', 'users_entities.entity_id = entities.entity_id', 'users.id = ?', 'users_entities.primary_entity = ?'],
-            'data'      => [$args['id'], 'Y']
+            'select' => $args['select'],
+            'table'  => ['users, users_entities, entities'],
+            'where'  => [
+                'users.id = users_entities.user_id',
+                'users_entities.entity_id = entities.entity_id',
+                'users.id = ?',
+                'users_entities.primary_entity = ?'
+            ],
+            'data'   => [$args['id'], 'Y']
         ]);
 
         if (empty($entity[0])) {
@@ -331,16 +416,31 @@ class UserModel
         return $entity[0];
     }
 
-    public static function getNonPrimaryEntitiesById(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getNonPrimaryEntitiesById(array $args): array
     {
         ValidatorModel::notEmpty($args, ['id']);
         ValidatorModel::intVal($args, ['id']);
 
         $entities = DatabaseModel::select([
-            'select'    => ['users_entities.entity_id', 'entities.entity_label', 'users_entities.user_role', 'users_entities.primary_entity'],
-            'table'     => ['users, users_entities, entities'],
-            'where'     => ['users.id = users_entities.user_id', 'users_entities.entity_id = entities.entity_id', 'users.id = ?', 'users_entities.primary_entity = ?'],
-            'data'      => [$args['id'], 'N']
+            'select' => [
+                'users_entities.entity_id',
+                'entities.entity_label',
+                'users_entities.user_role',
+                'users_entities.primary_entity'
+            ],
+            'table'  => ['users, users_entities, entities'],
+            'where'  => [
+                'users.id = users_entities.user_id',
+                'users_entities.entity_id = entities.entity_id',
+                'users.id = ?',
+                'users_entities.primary_entity = ?'
+            ],
+            'data'   => [$args['id'], 'N']
         ]);
 
         if (empty($entities)) {
@@ -350,57 +450,94 @@ class UserModel
         return $entities;
     }
 
-    public static function getGroupsById(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getGroupsById(array $args): array
     {
         ValidatorModel::notEmpty($args, ['id']);
         ValidatorModel::intVal($args, ['id']);
 
         $aGroups = DatabaseModel::select([
-            'select'    => ['usergroups.id', 'usergroups.can_index', 'usergroups.group_id', 'usergroups.group_desc', 'usergroups.indexation_parameters', 'usergroup_content.role', 'security.maarch_comment', 'security.where_clause'],
-            'table'     => ['usergroup_content, usergroups, security'],
-            'where'     => ['usergroup_content.group_id = usergroups.id', 'usergroup_content.user_id = ?','usergroups.group_id = security.group_id'],
-            'data'      => [$args['id']]
+            'select' => [
+                'usergroups.id',
+                'usergroups.can_index',
+                'usergroups.group_id',
+                'usergroups.group_desc',
+                'usergroups.indexation_parameters',
+                'usergroup_content.role',
+                'security.maarch_comment',
+                'security.where_clause'
+            ],
+            'table'  => ['usergroup_content, usergroups, security'],
+            'where'  => [
+                'usergroup_content.group_id = usergroups.id',
+                'usergroup_content.user_id = ?',
+                'usergroups.group_id = security.group_id'
+            ],
+            'data'   => [$args['id']]
         ]);
 
         return $aGroups;
     }
 
-    public static function getEntitiesById(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getEntitiesById(array $args): array
     {
         ValidatorModel::notEmpty($args, ['id', 'select']);
         ValidatorModel::intVal($args, ['id']);
         ValidatorModel::arrayType($args, ['select', 'orderBy']);
 
         $entities = DatabaseModel::select([
-            'select'    => $args['select'],
-            'table'     => ['users, users_entities, entities'],
-            'where'     => ['users.id = users_entities.user_id', 'users_entities.entity_id = entities.entity_id', 'users.id = ?'],
-            'data'      => [$args['id']],
-            'order_by'  => empty($args['orderBy']) ? [] : $args['orderBy'],
+            'select'   => $args['select'],
+            'table'    => ['users, users_entities, entities'],
+            'where'    => [
+                'users.id = users_entities.user_id',
+                'users_entities.entity_id = entities.entity_id',
+                'users.id = ?'
+            ],
+            'data'     => [$args['id']],
+            'order_by' => empty($args['orderBy']) ? [] : $args['orderBy'],
         ]);
 
         return $entities;
     }
 
-    public static function updateStatus(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return true
+     * @throws Exception
+     */
+    public static function updateStatus(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['id', 'status']);
         ValidatorModel::intVal($aArgs, ['id']);
         ValidatorModel::stringType($aArgs, ['status']);
 
         DatabaseModel::update([
-            'table'     => 'users',
-            'set'       => [
-                'status'    => $aArgs['status']
+            'table' => 'users',
+            'set'   => [
+                'status' => $aArgs['status']
             ],
-            'where'     => ['id = ?'],
-            'data'      => [$aArgs['id']]
+            'where' => ['id = ?'],
+            'data'  => [$aArgs['id']]
         ]);
 
         return true;
     }
 
-    public static function hasGroup(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return bool
+     * @throws Exception
+     */
+    public static function hasGroup(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['id', 'groupId']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -416,7 +553,12 @@ class UserModel
         return false;
     }
 
-    public static function hasEntity(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    public static function hasEntity(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['id', 'entityId']);
         ValidatorModel::intVal($args, ['id']);

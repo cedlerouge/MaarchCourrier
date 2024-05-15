@@ -1038,8 +1038,8 @@ class AuthenticationController
                 ]
             );
             $externalId = json_decode($user['external_id'], true);
-            if ($externalId['maarchParapheur'] ?? null) {
-                $user['external_id'] = $externalId['maarchParapheur'];
+            if ($externalId['internalParapheur'] ?? null) {
+                $user['external_id'] = $externalId['internalParapheur'];
             } else {
                 $user = UserModel::getById(
                     [
@@ -1107,6 +1107,7 @@ class AuthenticationController
     /**
      * @param array $args
      * @return bool
+     * @throws Exception
      */
     public static function sendAccountActivationNotification(array $args): bool
     {
@@ -1166,6 +1167,7 @@ class AuthenticationController
     /**
      * @param array $args
      * @return bool
+     * @throws Exception
      */
     private static function isUserAuthorized(array $args): bool
     {
