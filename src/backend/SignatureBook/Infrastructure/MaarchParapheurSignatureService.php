@@ -14,6 +14,7 @@
 
 namespace MaarchCourrier\SignatureBook\Infrastructure;
 
+use Exception;
 use Firebase\JWT\JWT;
 use MaarchCourrier\Core\Domain\Curl\CurlRequest;
 use MaarchCourrier\Core\Infrastructure\Curl\CurlService;
@@ -36,27 +37,28 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
 
     /**
      * @param int $documentId
-     * @param string $hashSignature
-     * @param array $signatures
-     * @param string $certificate
-     * @param string $signatureContentLength
-     * @param string $signatureFieldName
+     * @param string|null $hashSignature
+     * @param array|null $signatures
+     * @param string|null $certificate
+     * @param string|null $signatureContentLength
+     * @param string|null $signatureFieldName
      * @param string|null $tmpUniqueId
      * @param string $accessToken
-     * @param string $cookieSession
+     * @param string|null $cookieSession
      * @param array $resourceToSign
      * @return array|bool
+     * @throws Exception
      */
     public function applySignature(
         int $documentId,
-        string $hashSignature,
-        array $signatures,
-        string $certificate,
-        string $signatureContentLength,
-        string $signatureFieldName,
+        ?string $hashSignature,
+        ?array $signatures,
+        ?string $certificate,
+        ?string $signatureContentLength,
+        ?string $signatureFieldName,
         ?string $tmpUniqueId,
         string $accessToken,
-        string $cookieSession,
+        ?string $cookieSession,
         array $resourceToSign
     ): array|bool {
         $payloadToken = $resourceToSign;

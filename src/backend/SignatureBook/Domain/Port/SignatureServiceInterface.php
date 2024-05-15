@@ -20,14 +20,14 @@ interface SignatureServiceInterface
 
     public function applySignature(
         int $documentId,
-        string $hashSignature,
-        array $signatures,
-        string $certificate,
-        string $signatureContentLength,
-        string $signatureFieldName,
+        ?string $hashSignature,
+        ?array $signatures,
+        ?string $certificate,
+        ?string $signatureContentLength,
+        ?string $signatureFieldName,
         ?string $tmpUniqueId,
         string $accessToken,
-        string $cookieSession,
+        ?string $cookieSession,
         array $resourceToSign
     ): array|bool;
 

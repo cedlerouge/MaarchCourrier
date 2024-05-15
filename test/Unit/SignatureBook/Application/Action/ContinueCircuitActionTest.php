@@ -84,14 +84,20 @@ class ContinueCircuitActionTest extends TestCase
 
 
     /**
+     * @return void
      * @throws CurrentTokenIsNotFoundProblem
-     * @throws SignatureNotAppliedProblem
-     * @throws SignatureBookNoConfigFoundProblem
      * @throws DataToBeSentToTheParapheurAreEmptyProblem
+     * @throws NoDocumentsInSignatureBookForThisId
+     * @throws SignatureBookNoConfigFoundProblem
+     * @throws SignatureNotAppliedProblem
      */
     public function testTheNewInternalParapheurIsEnabled(): void
     {
-        $result = $this->continueCircuitAction->execute(1, ["1" => [$this->dataMainDocument]], []);
+        $result = $this->continueCircuitAction->execute(
+            1,
+            ["digitalCertificate" => true, "1" => [$this->dataMainDocument]],
+            []
+        );
         self::assertTrue($result);
     }
 
@@ -102,7 +108,7 @@ class ContinueCircuitActionTest extends TestCase
     {
         $result = $this->continueCircuitAction->execute(
             1,
-            ["1" => [$this->dataMainDocument, $this->dataAttachment]],
+            ["digitalCertificate" => true, "1" => [$this->dataMainDocument, $this->dataAttachment]],
             []
         );
         self::assertTrue($result);
@@ -138,13 +144,18 @@ class ContinueCircuitActionTest extends TestCase
     }
 
     /**
-     * @throws Exception
+     * @return void
+     * @throws CurrentTokenIsNotFoundProblem
+     * @throws DataToBeSentToTheParapheurAreEmptyProblem
+     * @throws NoDocumentsInSignatureBookForThisId
+     * @throws SignatureBookNoConfigFoundProblem
+     * @throws SignatureNotAppliedProblem
      */
     public function testCannotSignIfDuringTheApplicationOfTheSignatureAnErrorOccurred(): void
     {
         $this->signatureServiceMock->applySignature = ['errors' => 'An error has occurred'];
         $this->expectException(SignatureNotAppliedProblem::class);
-        $this->continueCircuitAction->execute(1, ["1" => [$this->dataMainDocument]], []);
+        $this->continueCircuitAction->execute(1, ["digitalCertificate" => true, "1" => [$this->dataMainDocument]], []);
     }
 
     /**
@@ -168,6 +179,6 @@ class ContinueCircuitActionTest extends TestCase
                 ['resId', 'hashSignature, signatureContentLength, signatureFieldName']
             )
         );
-        $this->continueCircuitAction->execute(1, ["1" => [$dataMainDocument]], []);
+        $this->continueCircuitAction->execute(1, ["digitalCertificate" => true, "1" => [$dataMainDocument]], []);
     }
 }
