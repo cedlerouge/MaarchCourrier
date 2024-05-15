@@ -1,0 +1,12 @@
+.angular
+.idea
+.git
+custom
+dist
+dist-addin
+node_modules
+plugins/addin-outlook/node_modules
+test/unitTests/build
+vendor
+
+*.log*

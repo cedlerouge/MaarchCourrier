@@ -15,3 +15,6 @@ node_modules/
 vendor/
 coverage/
 plugins/maarch-plugins-*/
+
+docker.local.env
+compose.dev.yml
