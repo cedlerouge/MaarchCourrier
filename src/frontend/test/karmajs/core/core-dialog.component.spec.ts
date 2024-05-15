@@ -17,6 +17,7 @@ import { LatinisePipe } from 'ngx-pipes';
 import { DatePipe } from '@angular/common';
 import { AdministrationService } from '@appRoot/administration/administration.service';
 import { SharedModule } from '@appRoot/app-common.module';
+import { FiltersListService } from '@service/filtersList.service';
 
 describe('CoreDialogComponent', () => {
     let component: CoreDialogComponent;
@@ -44,6 +45,7 @@ describe('CoreDialogComponent', () => {
                 LatinisePipe,
                 DatePipe,
                 AdministrationService,
+                FiltersListService,
                 { provide: MatDialogRef, useValue: {} }
             ],
             declarations: [CoreDialogComponent]

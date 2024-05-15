@@ -49,6 +49,10 @@ import { CheckAcknowledgmentRecordManagementComponent } from './check-acknowledg
 import { FiltersListService } from '@service/filtersList.service';
 import { SessionStorageService } from '@service/session-storage.service';
 import { Action, MessageAction, MessageActionInterface } from '@models/actions.model';
+import { SignatureBookService } from '@appRoot/signatureBook/signature-book.service';
+import { ContinueVisaCircuitActionNewSbComponent } from './visa-continue-circuit-action/new-signature-book/continue-visa-circuit-action-new-sb.component';
+import { MatDialogConfig } from '@angular/material/dialog';
+import { ComponentType } from '@angular/cdk/portal';
 
 @Injectable()
 export class ActionsService implements OnDestroy {
@@ -85,7 +89,8 @@ export class ActionsService implements OnDestroy {
         public headerService: HeaderService,
         private functions: FunctionsService,
         private filtersListService: FiltersListService,
-        private sessionStorage: SessionStorageService
+        private sessionStorage: SessionStorageService,
+        private signatureBookService: SignatureBookService
     ) { }
 
     ngOnDestroy(): void {
@@ -823,13 +828,18 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    continueVisaCircuitAction() {
-        const dialogRef = this.dialog.open(ContinueVisaCircuitActionComponent, {
+    async continueVisaCircuitAction() {
+        const dialogConfig: MatDialogConfig<any> = {
             panelClass: 'maarch-modal',
             autoFocus: false,
             disableClose: true,
             data: this.setDatasActionToSend()
-        });
+        };
+        const component: ComponentType<ContinueVisaCircuitActionNewSbComponent | ContinueVisaCircuitActionComponent> = this.signatureBookService.config.isNewInternalParaph
+            ? ContinueVisaCircuitActionNewSbComponent
+            : ContinueVisaCircuitActionComponent;
+
+        const dialogRef = this.dialog.open(component, dialogConfig);
         dialogRef.afterClosed().pipe(
             tap((resIds: any) => {
                 this.unlockResourceAfterActionModal(resIds);
@@ -1377,4 +1387,5 @@ export class ActionsService implements OnDestroy {
             ).subscribe();
         });
     }
+
 }

@@ -15,6 +15,7 @@ import { IconService } from '@service/icons.service';
 import { HeaderService } from '@service/header.service';
 import { NotificationService } from '@service/notification/notification.service';
 import { AlertComponent } from '@plugins/modal/alert.component';
+import { SignatureBookService } from '@appRoot/signatureBook/signature-book.service';
 
 
 @Component({
@@ -38,20 +39,21 @@ export class CoreDialogComponent implements OnInit {
 
     constructor(
         public http: HttpClient,
-        private router: Router,
-        private authService: AuthService,
-        private translate: TranslateService,
         public dialogRef: MatDialogRef<CoreDialogComponent>,
-        private localeService: LocaleService,
         public sanitizer: DomSanitizer,
-        private iconService: IconService,
         public iconReg: MatIconRegistry,
+        public dialog: MatDialog,
+        private localeService: LocaleService,
+        private iconService: IconService,
         private functionsService: FunctionsService,
         private localStorage: LocalStorageService,
         private pluginManagerService: PluginManagerService,
         private headerService: HeaderService,
         private notify: NotificationService,
-        public dialog: MatDialog,
+        private router: Router,
+        private authService: AuthService,
+        private translate: TranslateService,
+        private signatureBookService: SignatureBookService
     ) {
         this.initializeIcons();
     }
@@ -67,6 +69,8 @@ export class CoreDialogComponent implements OnInit {
         } else {
             await this.applyMinorUpdate();
             this.checkAppSecurity();
+
+            await this.signatureBookService.getInternalSignatureBookConfig();
 
             const tokenInfo = this.authService.getToken();
             if (window.location.hash.indexOf('/reset-password') === -1) {

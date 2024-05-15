@@ -6,7 +6,7 @@ import { Action } from '@models/actions.model';
 import { FunctionsService } from '@service/functions.service';
 import { NotificationService } from '@service/notification/notification.service';
 import { Subscription, catchError, of, tap } from 'rxjs';
-import { SignatureBookConfig, SignatureBookService } from '../signature-book.service';
+import { SignatureBookService } from '../signature-book.service';
 import { UserStampInterface } from '@models/user-stamp.model';
 import { Attachment } from "@models/attachment.model";
 
@@ -31,8 +31,6 @@ export class SignatureBookActionsComponent implements OnInit {
 
     leftActions: Action[] = [];
     rightActions: Action[] = [];
-
-    signatureBookConfig = new SignatureBookConfig();
 
     constructor(
         public http: HttpClient,
@@ -85,7 +83,6 @@ export class SignatureBookActionsComponent implements OnInit {
     }
 
     async processAction(action: any) {
-        this.signatureBookConfig = await this.signatureBookService.getInternalSignatureBookConfig();
         this.http
             .get(`../rest/resources/${this.resId}?light=true`)
             .pipe(
@@ -96,7 +93,7 @@ export class SignatureBookActionsComponent implements OnInit {
                         this.groupId,
                         this.basketId,
                         [this.resId],
-                        { ...data, docsToSign: this.signatureBookService.docsToSign, signatureBookConfig: this.signatureBookConfig },
+                        { ...data, docsToSign: this.signatureBookService.docsToSign },
                         false
                     );
                 }),
