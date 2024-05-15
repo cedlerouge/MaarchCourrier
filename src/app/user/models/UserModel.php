@@ -173,7 +173,7 @@ class UserModel
                 'status' => 'DEL',
             ],
             'postSet' => [
-                'external_id' => 'external_id - \'maarchParapheur\''
+                'external_id' => 'external_id - \'maarchParapheur\' - \'internalParapheur\''
             ],
             'where'   => ['id = ?'],
             'data'    => [$args['id']]

@@ -35,9 +35,7 @@ class User implements UserInterface
     public static function createFromArray(array $array = []): User
     {
         $user = new User();
-
         $user->setId($array['id'] ?? 0);
-
         return $user;
     }
 

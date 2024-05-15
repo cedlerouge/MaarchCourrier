@@ -343,13 +343,36 @@ class UserController
         }
 
         $loggingMethod = CoreConfigModel::getLoggingMethod();
-        $existingUser = UserModel::getByLowerLogin(['login' => $body['userId'], 'select' => ['id', 'status', 'mail']]);
+        $existingUser = UserModel::getByLowerLogin(['login' => $body['userId']]);
+        $sbcl = new SignatureBookConfigLoader();
+        $user = null;
 
         if (!empty($existingUser) && $existingUser['status'] == 'DEL') {
+
+
+            $body = $existingUser;
+
+            if ($sbcl->getConfig()->isNewInternalParaph()) {
+                $user = (new User())
+                    ->setFirstname($body['firstname'])
+                    ->setLastname($body['lastname'])
+                    ->setMail($body['mail'])
+                    ->setLogin($body['user_id'])
+                    ->setExternalId([]);
+
+                $createUserFactory = new CreateAndUpdateUserInSignatoryBookFactory();
+                $createUser = $createUserFactory->create();
+                $user = $createUser->createAndUpdateUser($user);
+                $user = [
+                    'external_id' => json_encode($user->getExternalId()),
+                ];
+            }
+
             UserModel::update([
                 'set'   => [
                     'status'   => 'OK',
                     'password' => AuthenticationModel::getPasswordHash(AuthenticationModel::generatePassword()),
+                    'external_id' => $user['external_id']
                 ],
                 'where' => ['id = ?'],
                 'data'  => [$existingUser['id']]
@@ -393,8 +416,6 @@ class UserController
         }
         $body['preferences'] = json_encode($preferences);
 
-        $sbcl = new SignatureBookConfigLoader();
-        $user = null;
         if ($sbcl->getConfig()->isNewInternalParaph()) {
             $user = (new User())
                 ->setFirstname($body['firstname'])

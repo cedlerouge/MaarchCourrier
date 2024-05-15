@@ -112,7 +112,7 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
             'body'       => json_encode($userDetails),
         ]);
 
-        if ($response['code'] == 200) {
+        if ($response['code'] === 200) {
             return true;
         } else {
             return $response['errors'] ?? ['errors' => 'Failed to update the user in Maarch Parapheur.'];
@@ -140,7 +140,7 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
                 'Accept: application/json',
             ]
         ]);
-        if ($response['code'] === 204) {
+        if ($response['code'] === 200) {
             return true;
         } else {
             return $response['errors'] ?? ['errors' => 'Failed to delete the user in Maarch Parapheur.'];
