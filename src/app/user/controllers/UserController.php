@@ -348,8 +348,6 @@ class UserController
         $user = null;
 
         if (!empty($existingUser) && $existingUser['status'] == 'DEL') {
-
-
             $body = $existingUser;
 
             if ($sbcl->getConfig()->isNewInternalParaph()) {
@@ -370,8 +368,8 @@ class UserController
 
             UserModel::update([
                 'set'   => [
-                    'status'   => 'OK',
-                    'password' => AuthenticationModel::getPasswordHash(AuthenticationModel::generatePassword()),
+                    'status'      => 'OK',
+                    'password'    => AuthenticationModel::getPasswordHash(AuthenticationModel::generatePassword()),
                     'external_id' => $user['external_id']
                 ],
                 'where' => ['id = ?'],
