@@ -51,7 +51,8 @@ import { SessionStorageService } from '@service/session-storage.service';
 import { Action, MessageAction, MessageActionInterface } from '@models/actions.model';
 import { SignatureBookService } from '@appRoot/signatureBook/signature-book.service';
 import { ContinueVisaCircuitActionNewSbComponent } from './visa-continue-circuit-action/new-signature-book/continue-visa-circuit-action-new-sb.component';
-import { MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
+import { MatDialogConfig } from '@angular/material/dialog';
+import { ComponentType } from '@angular/cdk/portal';
 
 @Injectable()
 export class ActionsService implements OnDestroy {
@@ -834,12 +835,11 @@ export class ActionsService implements OnDestroy {
             disableClose: true,
             data: this.setDatasActionToSend()
         };
-        let dialogRef: MatDialogRef<ContinueVisaCircuitActionComponent | ContinueVisaCircuitActionNewSbComponent>;
-        if (this.signatureBookService.config.isNewInternalParaph) {
-            dialogRef = this.dialog.open(ContinueVisaCircuitActionNewSbComponent, dialogConfig);
-        } else {
-            dialogRef = this.dialog.open(ContinueVisaCircuitActionComponent, dialogConfig);
-        }
+        const component: ComponentType<ContinueVisaCircuitActionNewSbComponent | ContinueVisaCircuitActionComponent> = this.signatureBookService.config.isNewInternalParaph
+            ? ContinueVisaCircuitActionNewSbComponent
+            : ContinueVisaCircuitActionComponent;
+
+        const dialogRef = this.dialog.open(component, dialogConfig);
         dialogRef.afterClosed().pipe(
             tap((resIds: any) => {
                 this.unlockResourceAfterActionModal(resIds);
