@@ -137,7 +137,7 @@ describe('ContinueVisaCircuitActionNewSbComponent', (() => {
             expect(component.resourcesWarnings).toEqual([]);
             expect(component.resourcesErrors).toEqual([]);
             expect(component.noResourceToProcess).toBe(null);
-            expect(component.digitalCertificate).toBeTrue();
+            expect(component.parameters.digitalCertificate.value).toBeTrue();
 
             fixture.detectChanges();
 
