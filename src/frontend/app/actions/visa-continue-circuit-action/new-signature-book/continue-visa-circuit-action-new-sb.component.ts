@@ -18,10 +18,14 @@ import { SignatureBookService } from '@appRoot/signatureBook/signature-book.serv
 import { ContinueVisaCircuitDataToSendInterface, ContinueVisaCircuitObjectInterface } from "@models/actions.model";
 import { MatSidenav } from "@angular/material/sidenav";
 import { Attachment } from "@models/attachment.model";
+import { UntypedFormControl } from '@angular/forms';
+import { MaarchPluginFortifyInterface } from '@models/maarch-plugin-fortify-model';
+import { StripTagsPipe } from 'ngx-pipes';
 
 @Component({
     templateUrl: 'continue-visa-circuit-action-new-sb.component.html',
     styleUrls: ['continue-visa-circuit-action-new-sb.component.scss'],
+    providers: [StripTagsPipe]
 })
 export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
     @ViewChild('myPlugin', { read: ViewContainerRef, static: true }) myPlugin: ViewContainerRef;
@@ -40,7 +44,11 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
     noResourceToProcess: boolean = null;
     componentInstance: any = null;
 
-    digitalCertificate: boolean = true;
+    parameters: { digitalCertificate: UntypedFormControl } = {
+        digitalCertificate: new UntypedFormControl(true)
+    }
+
+    noteExpanded: boolean = false;
 
     constructor(
         public translate: TranslateService,
@@ -58,25 +66,7 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
     async ngOnInit(): Promise<void> {
         this.loading = true;
         await this.checkSignatureBook();
-        this.signatureBookService.config.url = this.signatureBookService.config.url.replace(/\/$/, '');
         this.loading = false;
-        const data: any = {
-            functions: this.functions,
-            notification: this.notify,
-            translate: this.translate,
-            pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/maarch-plugins',
-            additionalInfo: {
-                resources: this.data.resource.docsToSign,
-                sender: `${this.headerService.user.firstname} ${this.headerService.user.lastname}`,
-                externalUserId: this.headerService.user.externalId,
-                signatureBookConfig: this.signatureBookService.config
-            },
-        };
-        this.componentInstance = await this.pluginManagerService.initPlugin(
-            'maarch-plugins-fortify',
-            this.myPlugin,
-            data
-        );
     }
 
     checkSignatureBook() {
@@ -129,7 +119,14 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
         const realResSelected: number[] = this.data.resIds.filter(
             (resId: any) => this.resourcesErrors.map((resErr) => resErr.res_id).indexOf(resId) === -1
         );
-        if (this.signatureBookService.config.isNewInternalParaph && this.digitalCertificate) {
+        this.noteExpanded = true;
+        if (this.signatureBookService.config.isNewInternalParaph && this.parameters.digitalCertificate.value) {
+            this.data.resource.signatureBookConfig.url = this.signatureBookService.config.url?.replace(/\/$/, '')
+            this.componentInstance = await this.pluginManagerService.initPlugin(
+                'maarch-plugins-fortify',
+                this.myPlugin,
+                this.setPluginData()
+            );
             this.componentInstance
                 .open()
                 .pipe(
@@ -147,7 +144,6 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
         } else {
             this.executeAction(realResSelected);
         }
-        this.loading = false;
     }
 
     executeAction(realResSelected: number[], objToSend: ContinueVisaCircuitObjectInterface = null) {
@@ -169,6 +165,8 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
                 }),
                 finalize(() => (this.loading = false)),
                 catchError((err: any) => {
+                    this.loading = false;
+                    this.noteExpanded = false;
                     this.notify.handleSoftErrors(err);
                     return of(false);
                 })
@@ -198,5 +196,22 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
             return (this.data.resource.docsToSign as Attachment[]).some((resource: Attachment) => resource.stamps.length === 0);
         }
         return false;
+    }
+
+    setPluginData(): MaarchPluginFortifyInterface {
+        const data: MaarchPluginFortifyInterface = {
+            functions: this.functions,
+            notification: this.notify,
+            translate: this.translate,
+            pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/maarch-plugins',
+            additionalInfo: {
+                resources: this.data.resource.docsToSign,
+                sender: `${this.headerService.user.firstname} ${this.headerService.user.lastname}`,
+                externalUserId: this.headerService.user.externalId,
+                signatureBookConfig: this.signatureBookService.config,
+                digitalCertificate: this.parameters.digitalCertificate.value
+            },
+        };
+        return data;
     }
 }
