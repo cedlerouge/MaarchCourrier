@@ -70,8 +70,6 @@ export class CoreDialogComponent implements OnInit {
             await this.applyMinorUpdate();
             this.checkAppSecurity();
 
-            await this.signatureBookService.getInternalSignatureBookConfig();
-
             const tokenInfo = this.authService.getToken();
             if (window.location.hash.indexOf('/reset-password') === -1) {
                 if (tokenInfo !== null) {
@@ -115,7 +113,8 @@ export class CoreDialogComponent implements OnInit {
             this.authService
                 .getCurrentUserInfo()
                 .pipe(
-                    tap(() => {
+                    tap(async () => {
+                        await this.signatureBookService.getInternalSignatureBookConfig();
                         resolve(true);
                     }),
                     catchError((err: any) => {
