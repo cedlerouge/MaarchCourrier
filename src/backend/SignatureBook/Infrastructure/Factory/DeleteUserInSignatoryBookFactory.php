@@ -1,11 +1,22 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief DeleteUserInSignatoryBookFactory
+ * @author dev@maarch.org
+ */
+
 namespace MaarchCourrier\SignatureBook\Infrastructure\Factory;
 
 use MaarchCourrier\SignatureBook\Application\User\DeleteUserInSignatoryBook;
 use MaarchCourrier\SignatureBook\Infrastructure\MaarchParapheurUserService;
 use MaarchCourrier\SignatureBook\Infrastructure\SignatureServiceJsonConfigLoader;
-use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 
 class DeleteUserInSignatoryBookFactory
 {
@@ -14,13 +25,11 @@ class DeleteUserInSignatoryBookFactory
      */
     public static function create(): DeleteUserInSignatoryBook
     {
-        $currentUser = new CurrentUserInformations();
         $signatureBookUser = new MaarchParapheurUserService();
         $SignatureServiceConfigLoader = new SignatureServiceJsonConfigLoader();
 
         return new DeleteUserInSignatoryBook(
             $signatureBookUser,
-            $currentUser,
             $SignatureServiceConfigLoader,
         );
     }
