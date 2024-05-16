@@ -15,7 +15,7 @@
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Application\Config;
 
 use MaarchCourrier\SignatureBook\Application\Config\RetrieveConfig;
-use MaarchCourrier\SignatureBook\Domain\SignatureBookConfig;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookConfigReturnApi;
 use MaarchCourrier\Tests\Unit\Core\Mock\EnvironmentMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Config\SignatureServiceConfigLoaderMock;
 use PHPUnit\Framework\TestCase;
@@ -37,7 +37,7 @@ class RetrieveConfigTest extends TestCase
     {
         $config = $this->retrieveConfig->getConfig();
 
-        $this->assertInstanceOf(SignatureBookConfig::class, $config);
+        $this->assertInstanceOf(SignatureBookConfigReturnApi::class, $config);
         $this->assertFalse($config->isNewInternalParaph());
         $this->assertEmpty($config->getUrl());
     }
@@ -48,7 +48,7 @@ class RetrieveConfigTest extends TestCase
 
         $config = $this->retrieveConfig->getConfig();
 
-        $this->assertInstanceOf(SignatureBookConfig::class, $config);
+        $this->assertInstanceOf(SignatureBookConfigReturnApi::class, $config);
         $this->assertTrue($config->isNewInternalParaph());
         $this->assertNotEmpty($config->getUrl());
         $this->assertSame($this->signatureBookConfigRepositoryMock->url, $config->getUrl());

@@ -2,12 +2,12 @@
 
 namespace MaarchCourrier\SignatureBook\Domain\Port;
 
-use MaarchCourrier\SignatureBook\Domain\SignatureBookConfig;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookConfigReturnApi;
 
 interface SignatureBookConfigInterface
 {
     /**
-     * @return SignatureBookConfig
+     * @return SignatureBookConfigReturnApi
      */
-    public function getConfig(): SignatureBookConfig;
+    public function getConfig(): SignatureBookConfigReturnApi;
 }

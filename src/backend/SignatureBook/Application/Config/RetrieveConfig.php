@@ -16,7 +16,7 @@ namespace MaarchCourrier\SignatureBook\Application\Config;
 
 use MaarchCourrier\Core\Domain\Port\EnvironmentInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
-use MaarchCourrier\SignatureBook\Domain\SignatureBookConfig;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookConfigReturnApi;
 
 class RetrieveConfig
 {
@@ -27,11 +27,11 @@ class RetrieveConfig
     }
 
     /**
-     * @return SignatureBookConfig
+     * @return SignatureBookConfigReturnApi
      */
-    public function getConfig(): SignatureBookConfig
+    public function getConfig(): SignatureBookConfigReturnApi
     {
-        $config = (new SignatureBookConfig())
+        $config = (new SignatureBookConfigReturnApi())
             ->setIsNewInternalParaph($this->environment->isNewInternalParapheurEnabled())
             ->setUrl($this->loader->getSignatureServiceConfig()->getUrl());
 

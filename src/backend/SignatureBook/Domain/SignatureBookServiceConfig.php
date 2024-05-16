@@ -14,10 +14,13 @@
 
 namespace MaarchCourrier\SignatureBook\Domain;
 
+/**
+ *
+ */
 class SignatureBookServiceConfig
 {
     private string $url;
-    private ?UserWebService $userWebService;
+    private UserWebService $userWebService;
 
     /**
      * @return string
@@ -39,19 +42,19 @@ class SignatureBookServiceConfig
     }
 
     /**
-     * @return ?UserWebService
+     * @return UserWebService
      */
-    public function getUserWebService(): ?UserWebService
+    public function getUserWebService(): UserWebService
     {
         return $this->userWebService;
     }
 
     /**
-     * @param ?UserWebService $userWebService
+     * @param UserWebService $userWebService
      *
      * @return SignatureBookServiceConfig
      */
-    public function setUserWebService(?UserWebService $userWebService): self
+    public function setUserWebService(UserWebService $userWebService): self
     {
         $this->userWebService = $userWebService;
         return $this;
