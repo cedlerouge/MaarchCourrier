@@ -121,7 +121,7 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
         );
         this.noteExpanded = true;
         if (this.signatureBookService.config.isNewInternalParaph && this.parameters.digitalCertificate.value) {
-            this.data.resource.signatureBookConfig.url = this.signatureBookService.config.url?.replace(/\/$/, '')
+            this.signatureBookService.config.url = this.signatureBookService.config.url?.replace(/\/$/, '')
             this.componentInstance = await this.pluginManagerService.initPlugin(
                 'maarch-plugins-fortify',
                 this.myPlugin,
