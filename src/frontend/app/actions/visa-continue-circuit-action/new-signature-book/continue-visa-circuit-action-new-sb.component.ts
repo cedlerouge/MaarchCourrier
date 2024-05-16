@@ -18,7 +18,6 @@ import { SignatureBookService } from '@appRoot/signatureBook/signature-book.serv
 import { ContinueVisaCircuitDataToSendInterface, ContinueVisaCircuitObjectInterface } from "@models/actions.model";
 import { MatSidenav } from "@angular/material/sidenav";
 import { Attachment } from "@models/attachment.model";
-import { UntypedFormControl } from '@angular/forms';
 import { MaarchPluginFortifyInterface } from '@models/maarch-plugin-fortify-model';
 import { StripTagsPipe } from 'ngx-pipes';
 
@@ -44,8 +43,8 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
     noResourceToProcess: boolean = null;
     componentInstance: any = null;
 
-    parameters: { digitalCertificate: UntypedFormControl } = {
-        digitalCertificate: new UntypedFormControl(true)
+    parameters: { digitalCertificate: boolean } = {
+        digitalCertificate: true
     }
 
     noteExpanded: boolean = false;
@@ -120,30 +119,27 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
             (resId: any) => this.resourcesErrors.map((resErr) => resErr.res_id).indexOf(resId) === -1
         );
         this.noteExpanded = true;
-        if (this.signatureBookService.config.isNewInternalParaph && this.parameters.digitalCertificate.value) {
-            this.signatureBookService.config.url = this.signatureBookService.config.url?.replace(/\/$/, '')
-            this.componentInstance = await this.pluginManagerService.initPlugin(
-                'maarch-plugins-fortify',
-                this.myPlugin,
-                this.setPluginData()
-            );
-            this.componentInstance
-                .open()
-                .pipe(
-                    tap((data: any) => {
-                        if (!this.functions.empty(data) && typeof data === 'object') {
-                            this.executeAction(realResSelected, this.formatDataToSend(data));
-                        }
-                    }),
-                    catchError((err: any) => {
-                        this.notify.handleSoftErrors(err);
-                        return of(false);
-                    })
-                )
-                .subscribe();
-        } else {
-            this.executeAction(realResSelected);
-        }
+        this.signatureBookService.config.url = this.signatureBookService.config.url?.replace(/\/$/, '')
+        this.componentInstance = await this.pluginManagerService.initPlugin(
+            'maarch-plugins-fortify',
+            this.myPlugin,
+            this.setPluginData()
+        );
+        this.componentInstance
+            .open()
+            .pipe(
+                tap((data: any) => {
+                    if (!this.functions.empty(data) && typeof data === 'object') {
+                        this.executeAction(realResSelected, this.formatDataToSend(data));
+                    } else if (!data) {
+                        this.loading = false;
+                    }
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
     }
 
     executeAction(realResSelected: number[], objToSend: ContinueVisaCircuitObjectInterface = null) {
@@ -209,7 +205,7 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
                 sender: `${this.headerService.user.firstname} ${this.headerService.user.lastname}`,
                 externalUserId: this.headerService.user.externalId,
                 signatureBookConfig: this.signatureBookService.config,
-                digitalCertificate: this.parameters.digitalCertificate.value
+                digitalCertificate: this.parameters.digitalCertificate
             },
         };
         return data;
