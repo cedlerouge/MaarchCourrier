@@ -414,7 +414,7 @@ class UserController
         }
         $body['preferences'] = json_encode($preferences);
 
-        if ($sbcl->getConfig()->isNewInternalParaph()) {
+        if ($env->isNewInternalParapheurEnabled()) {
             $user = (new User())
                 ->setFirstname($body['firstname'])
                 ->setLastname($body['lastname'])
