@@ -1,14 +1,24 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief CreateAndUpdateUserInSignatoryBookTest
+ * @author dev@maarch.org
+ */
+
 namespace Unit\SignatureBook\Application\User;
 
 use MaarchCourrier\SignatureBook\Application\User\CreateAndUpdateUserInSignatoryBook;
-use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\UserCreateInMaarchParapheurFailedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\UserUpdateInMaarchParapheurFailedProblem;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\SignatureServiceJsonConfigLoaderMock;
-use MaarchCourrier\Tests\Unit\SignatureBook\Mock\CurrentUserInformationsMock;
 use MaarchCourrier\User\Domain\User;
 use PHPUnit\Framework\TestCase;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\User\MaarchParapheurUserServiceMock;
@@ -16,25 +26,21 @@ use MaarchCourrier\Tests\Unit\SignatureBook\Mock\User\MaarchParapheurUserService
 class CreateAndUpdateUserInSignatoryBookTest extends TestCase
 {
     private MaarchParapheurUserServiceMock $signatureBookUserServiceMock;
-    private CurrentUserInformationsMock $currentUserInformationsMock;
     private CreateAndUpdateUserInSignatoryBook $createAndUpdateUserInSignatoryBook;
     private SignatureServiceJsonConfigLoaderMock $signatureServiceJsonConfigLoaderMock;
 
     protected function setUp(): void
     {
         $this->signatureBookUserServiceMock = new MaarchParapheurUserServiceMock();
-        $this->currentUserInformationsMock = new CurrentUserInformationsMock();
         $this->signatureServiceJsonConfigLoaderMock = new SignatureServiceJsonConfigLoaderMock();
         $this->createAndUpdateUserInSignatoryBook = new CreateAndUpdateUserInSignatoryBook(
             $this->signatureBookUserServiceMock,
-            $this->currentUserInformationsMock,
             $this->signatureServiceJsonConfigLoaderMock,
         );
     }
 
     /**
      * @return void
-     * @throws CurrentTokenIsNotFoundProblem
      * @throws SignatureBookNoConfigFoundProblem
      * @throws UserCreateInMaarchParapheurFailedProblem
      * @throws UserUpdateInMaarchParapheurFailedProblem
@@ -65,7 +71,6 @@ class CreateAndUpdateUserInSignatoryBookTest extends TestCase
 
     /**
      * @return void
-     * @throws CurrentTokenIsNotFoundProblem
      * @throws SignatureBookNoConfigFoundProblem
      * @throws UserCreateInMaarchParapheurFailedProblem
      * @throws UserUpdateInMaarchParapheurFailedProblem
@@ -85,7 +90,6 @@ class CreateAndUpdateUserInSignatoryBookTest extends TestCase
 
     /**
      * @return void
-     * @throws CurrentTokenIsNotFoundProblem
      * @throws SignatureBookNoConfigFoundProblem
      * @throws UserCreateInMaarchParapheurFailedProblem
      * @throws UserUpdateInMaarchParapheurFailedProblem
@@ -121,7 +125,6 @@ class CreateAndUpdateUserInSignatoryBookTest extends TestCase
 
     /**
      * @return void
-     * @throws CurrentTokenIsNotFoundProblem
      * @throws SignatureBookNoConfigFoundProblem
      * @throws UserCreateInMaarchParapheurFailedProblem
      * @throws UserUpdateInMaarchParapheurFailedProblem
@@ -146,7 +149,6 @@ class CreateAndUpdateUserInSignatoryBookTest extends TestCase
 
     /**
      * @return void
-     * @throws CurrentTokenIsNotFoundProblem
      * @throws SignatureBookNoConfigFoundProblem
      * @throws UserCreateInMaarchParapheurFailedProblem
      * @throws UserUpdateInMaarchParapheurFailedProblem
@@ -179,7 +181,6 @@ class CreateAndUpdateUserInSignatoryBookTest extends TestCase
 
     /**
      * @return void
-     * @throws CurrentTokenIsNotFoundProblem
      * @throws SignatureBookNoConfigFoundProblem
      * @throws UserCreateInMaarchParapheurFailedProblem
      * @throws UserUpdateInMaarchParapheurFailedProblem

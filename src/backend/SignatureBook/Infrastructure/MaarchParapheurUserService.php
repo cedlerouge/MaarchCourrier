@@ -38,11 +38,10 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
 
     /**
      * @param int $id
-     * @param string $accessToken
      * @return true
      * @throws Exception
      */
-    public function doesUserExists(int $id, string $accessToken): bool
+    public function doesUserExists(int $id): bool
     {
         $response = CurlModel::exec([
             'url'       => rtrim($this->config->getUrl(), '/') . '/rest/users/' . $id,
@@ -66,11 +65,10 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
 
     /**
      * @param UserInterface $user
-     * @param string $accessToken
      * @return array|int
      * @throws Exception
      */
-    public function createUser(UserInterface $user, string $accessToken): array|int
+    public function createUser(UserInterface $user): array|int
     {
         $userDetails = [
             'firstname' => $user->getFirstname(),
@@ -103,11 +101,10 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
 
     /**
      * @param UserInterface $user
-     * @param string $accessToken
      * @return array|bool
      * @throws Exception
      */
-    public function updateUser(UserInterface $user, string $accessToken): array|bool
+    public function updateUser(UserInterface $user): array|bool
     {
         $userDetails = [
             'firstname' => $user->getFirstname(),
@@ -143,11 +140,10 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
 
     /**
      * @param UserInterface $user
-     * @param string $accessToken
      * @return array|bool
      * @throws Exception
      */
-    public function deleteUser(UserInterface $user, string $accessToken): array|bool
+    public function deleteUser(UserInterface $user): array|bool
     {
         $externalId = $user->getExternalId();
         $response = CurlModel::exec([
