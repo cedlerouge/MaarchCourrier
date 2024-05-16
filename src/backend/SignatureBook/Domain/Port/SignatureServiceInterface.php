@@ -14,9 +14,11 @@
 
 namespace MaarchCourrier\SignatureBook\Domain\Port;
 
+use MaarchCourrier\SignatureBook\Domain\SignatureBookServiceConfig;
+
 interface SignatureServiceInterface
 {
-    public function setConfig(SignatureServiceConfig $config): SignatureServiceInterface;
+    public function setConfig(SignatureBookServiceConfig $config): SignatureServiceInterface;
 
     public function applySignature(
         int $documentId,

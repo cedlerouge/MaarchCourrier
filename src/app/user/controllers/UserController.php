@@ -37,9 +37,9 @@ use Group\controllers\PrivilegeController;
 use Group\models\GroupModel;
 use History\controllers\HistoryController;
 use History\models\HistoryModel;
+use MaarchCourrier\Core\Infrastructure\Environment;
 use MaarchCourrier\SignatureBook\Infrastructure\Factory\CreateAndUpdateUserInSignatoryBookFactory;
 use MaarchCourrier\SignatureBook\Infrastructure\Factory\DeleteUserInSignatoryBookFactory;
-use MaarchCourrier\SignatureBook\Infrastructure\SignatureBookConfigLoader;
 use MaarchCourrier\User\Domain\User;
 use Notification\controllers\NotificationsEventsController;
 use Parameter\models\ParameterModel;
@@ -344,13 +344,13 @@ class UserController
 
         $loggingMethod = CoreConfigModel::getLoggingMethod();
         $existingUser = UserModel::getByLowerLogin(['login' => $body['userId']]);
-        $sbcl = new SignatureBookConfigLoader();
+        $env = new Environment();
         $user = null;
 
         if (!empty($existingUser) && $existingUser['status'] == 'DEL') {
             $body = $existingUser;
 
-            if ($sbcl->getConfig()->isNewInternalParaph()) {
+            if ($env->isNewInternalParapheurEnabled()) {
                 $user = (new User())
                     ->setFirstname($body['firstname'])
                     ->setLastname($body['lastname'])
@@ -556,9 +556,9 @@ class UserController
 
         $userQuota = ParameterModel::getById(['id' => 'user_quota', 'select' => ['param_value_int']]);
 
-        $sbcl = new SignatureBookConfigLoader();
+        $env = new Environment();
         $user = null;
-        if ($sbcl->getConfig()->isNewInternalParaph()) {
+        if ($env->isNewInternalParapheurEnabled()) {
             $user = (new User())
                 ->setFirstname($body['firstname'])
                 ->setLastname($body['lastname'])
@@ -900,9 +900,9 @@ class UserController
             'data'  => [$args['id']]
         ]);
 
-        $sbcl = new SignatureBookConfigLoader();
+        $env = new Environment();
         $externalId = json_decode($user['external_id'], true);
-        if ($sbcl->getConfig()->isNewInternalParaph()) {
+        if ($env->isNewInternalParapheurEnabled()) {
             if ($externalId['internalParapheur'] !== null) {
                 $userDel = (new User())
                     ->setExternalId($externalId);

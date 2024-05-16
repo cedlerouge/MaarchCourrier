@@ -3,6 +3,7 @@
 namespace MaarchCourrier\SignatureBook\Domain\Port;
 
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookServiceConfig;
 
 interface SignatureBookUserServiceInterface
 {
@@ -35,8 +36,9 @@ interface SignatureBookUserServiceInterface
     public function doesUserExists(int $id, string $accessToken): bool;
 
     /**
-     * @param SignatureServiceConfig $config
+     * @param SignatureBookServiceConfig $config
+     *
      * @return SignatureBookUserServiceInterface
      */
-    public function setConfig(SignatureServiceConfig $config): SignatureBookUserServiceInterface;
+    public function setConfig(SignatureBookServiceConfig $config): SignatureBookUserServiceInterface;
 }

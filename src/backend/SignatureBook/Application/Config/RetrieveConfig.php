@@ -1,14 +1,28 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief Retrieve Config class
+ * @author dev@maarch.org
+ */
+
 namespace MaarchCourrier\SignatureBook\Application\Config;
 
-use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookConfigInterface;
+use MaarchCourrier\Core\Domain\Port\EnvironmentInterface;
+use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookConfig;
 
 class RetrieveConfig
 {
     public function __construct(
-        private readonly SignatureBookConfigInterface $config
+        private readonly EnvironmentInterface $environment,
+        private readonly SignatureServiceConfigLoaderInterface $loader
     ) {
     }
 
@@ -17,6 +31,14 @@ class RetrieveConfig
      */
     public function getConfig(): SignatureBookConfig
     {
-        return $this->config->getConfig();
+        $config = (new SignatureBookConfig())
+            ->setIsNewInternalParaph($this->environment->isNewInternalParapheurEnabled())
+            ->setUrl($this->loader->getSignatureServiceConfig()->getUrl());
+
+        if (!$this->environment->isNewInternalParapheurEnabled()) {
+            $config->setUrl('');
+        }
+
+        return $config;
     }
 }

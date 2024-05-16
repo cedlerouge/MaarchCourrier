@@ -8,13 +8,15 @@
  */
 
 /**
- * @brief SignatureServiceConfigLoaderInterface class
+ * @brief Signature Service Config Loader Interface class
  * @author dev@maarch.org
  */
 
 namespace MaarchCourrier\SignatureBook\Domain\Port;
 
+use MaarchCourrier\SignatureBook\Domain\SignatureBookServiceConfig;
+
 interface SignatureServiceConfigLoaderInterface
 {
-    public function getSignatureServiceConfig(): ?SignatureServiceConfig;
+    public function getSignatureServiceConfig(): ?SignatureBookServiceConfig;
 }

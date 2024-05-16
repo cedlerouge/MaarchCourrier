@@ -14,12 +14,12 @@
 
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action;
 
-use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookServiceConfig;
 
 class MaarchParapheurSignatureServiceMock implements SignatureServiceInterface
 {
-    private SignatureServiceConfig $config;
+    private SignatureBookServiceConfig $config;
     public array|bool $applySignature = true;
 
     public array $returnFromParapheur = [
@@ -28,7 +28,7 @@ class MaarchParapheurSignatureServiceMock implements SignatureServiceInterface
         'filename'        => "PDF_signature.pdf"
     ];
 
-    public function setConfig(SignatureServiceConfig $config): SignatureServiceInterface
+    public function setConfig(SignatureBookServiceConfig $config): SignatureServiceInterface
     {
         $this->config = $config;
         return $this;
