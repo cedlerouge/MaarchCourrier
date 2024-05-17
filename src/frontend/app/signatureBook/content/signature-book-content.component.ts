@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, EventEmitter, Input, OnDestroy, Output, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { MessageActionInterface } from '@models/actions.model';
-import { Attachment } from '@models/attachment.model';
+import { Attachment, AttachmentInterface } from '@models/attachment.model';
 import { TranslateService } from '@ngx-translate/core';
 import { FunctionsService } from '@service/functions.service';
 import { HeaderService } from '@service/header.service';
@@ -16,7 +16,7 @@ import { SignatureBookService } from "@appRoot/signatureBook/signature-book.serv
     templateUrl: 'signature-book-content.component.html',
     styleUrls: ['signature-book-content.component.scss'],
 })
-export class MaarchSbContentComponent implements OnDestroy {
+export class MaarchSbContentComponent implements OnInit, OnDestroy {
     @ViewChild('myPlugin', { read: ViewContainerRef, static: true }) myPlugin: ViewContainerRef;
 
     @Input() position: 'left' | 'right' = 'right';
@@ -27,7 +27,7 @@ export class MaarchSbContentComponent implements OnDestroy {
 
     subscriptionDocument: Subscription;
 
-    documentData: Attachment;
+    documentData: AttachmentInterface;
     currentIndexDocument: number;
 
     documentType: 'attachments' | 'resources';
@@ -58,28 +58,7 @@ export class MaarchSbContentComponent implements OnDestroy {
                             this.pluginInstance.addStamp(signContent);
                         }
                     } else if (res.id === 'attachmentSelected' && this.position === res.data.position) {
-                        this.loading = true;
-                        this.subscriptionDocument?.unsubscribe();
-                        this.currentIndexDocument = res.data.resIndex;
-                        this.documentData = res.data.attachment;
-                        this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
-                        setTimeout(async () => {
-                            if (this.position === 'right' && !this.functionsService.empty(this.documentData)) {
-                                await this.loadContent();
-                                if (this.pluginInstance) {
-                                    this.pluginInstance.loadDocument({
-                                        fileName: this.documentData.title,
-                                        content: this.documentContent,
-                                    }, this.signatureBookService.docsToSign[this.currentIndexDocument].stamps);
-                                } else {
-                                    this.initPlugin();
-                                }
-                            } else {
-                                this.pluginInstance = null;
-                                this.pluginManagerService.destroyPlugin(this.myPlugin);
-                                this.loading = false;
-                            }
-                        }, 1000);
+                        this.initDocument();
                     }
                 }),
                 catchError((err: any) => {
@@ -88,6 +67,43 @@ export class MaarchSbContentComponent implements OnDestroy {
                 })
             )
             .subscribe();
+    }
+
+    ngOnInit() {
+        this.initDocument();
+    }
+
+    async initDocument() {
+        this.loading = true;
+        this.subscriptionDocument?.unsubscribe();
+
+        if (this.position === 'right' && this.signatureBookService.selectedDocToSign.index !== null) {
+            await this.initDocToSign();
+        } else if (this.position === 'left' && this.signatureBookService.selectedAttachment.index !== null) {
+            this.initAnnexe();
+        }
+        this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
+        this.loading = false;
+    }
+
+    initAnnexe() {
+        this.documentData = this.signatureBookService.selectedAttachment.attachment;
+        this.pluginInstance = null;
+        this.pluginManagerService.destroyPlugin(this.myPlugin);
+        this.loading = false;
+    }
+
+    async initDocToSign() {
+        this.documentData = this.signatureBookService.selectedDocToSign.attachment;
+        await this.loadContent();
+        if (this.pluginInstance) {
+            this.pluginInstance.loadDocument({
+                fileName: this.documentData.title,
+                content: this.documentContent,
+            }, this.signatureBookService.docsToSign[this.signatureBookService.selectedAttachment.index].stamps);
+        } else {
+            this.initPlugin();
+        }
     }
 
     ngOnDestroy() {

@@ -8,6 +8,7 @@ import { NotificationService } from "@service/notification/notification.service"
 import { catchError, map, of, tap } from "rxjs";
 import { mapAttachment } from "./signature-book.utils";
 import { SignatureBookConfig, SignatureBookConfigInterface } from "@models/signature-book.model";
+import { SelectedAttachment } from "@models/signature-book.model";
 
 @Injectable({
     providedIn: 'root'
@@ -19,6 +20,10 @@ export class SignatureBookService {
     docsToSign: Attachment[] = [];
     basketLabel: string = '';
     config = new SignatureBookConfig();
+
+    selectedAttachment: SelectedAttachment = new SelectedAttachment();
+
+    selectedDocToSign: SelectedAttachment = new SelectedAttachment();
 
     constructor(
         private http: HttpClient,

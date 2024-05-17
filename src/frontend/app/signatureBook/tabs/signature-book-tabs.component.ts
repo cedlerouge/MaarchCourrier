@@ -23,23 +23,25 @@ export class MaarchSbTabsComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        if (this.documents.length > 0) {
-            this.actionsService.emitActionWithData({
-                id: 'attachmentSelected',
-                data: {
-                    attachment: this.documents[0],
-                    position: this.position,
-                    resIndex: 0
-                },
-            });
+        if (this.position === 'left') {
+            this.selectedId = this.signatureBookService.selectedAttachment.index;
+        } else if (this.position === 'right') {
+            this.selectedId = this.signatureBookService.selectedDocToSign.index;
         }
     }
 
     selectDocument(i: number, attachment: AttachmentInterface): void {
-        if (this.position == 'left') {
-            this.signatureBookService.toolBarActive = false;
-        }
         this.selectedId = i;
+
+        if (this.position === 'left') {
+            this.signatureBookService.toolBarActive = false;
+            this.signatureBookService.selectedAttachment.index = i;
+            this.signatureBookService.selectedAttachment.attachment = attachment;
+        } else if (this.position === 'right') {
+            this.signatureBookService.selectedDocToSign.index = i;
+            this.signatureBookService.selectedDocToSign.attachment = attachment;
+        }
+
         this.actionsService.emitActionWithData({
             id: 'attachmentSelected',
             data: {
