@@ -56,7 +56,6 @@ export class SignatureBookComponent implements OnDestroy {
         private router: Router,
         private notify: NotificationService,
         private actionsService: ActionsService,
-        private actionService: ActionsService
     ) {
 
         this.initParams();
@@ -69,7 +68,7 @@ export class SignatureBookComponent implements OnDestroy {
         ).subscribe();
 
         // Event after process action
-        this.processActionSubscription = this.actionService.catchAction().subscribe(() => {
+        this.processActionSubscription = this.actionsService.catchAction().subscribe(() => {
             this.processAfterAction();
         });
     }
@@ -89,7 +88,7 @@ export class SignatureBookComponent implements OnDestroy {
             this.userId = parseInt(params['userId']);
 
             if (this.resId !== undefined) {
-                this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
+                this.actionsService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
                 this.setNextPrev();
                 await this.initDocuments();
             } else {
@@ -158,8 +157,8 @@ export class SignatureBookComponent implements OnDestroy {
 
     async unlockResource(): Promise<void> {
         const path = '/basketList/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId;
-        this.actionService.stopRefreshResourceLock();
-        await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId], path);
+        this.actionsService.stopRefreshResourceLock();
+        await this.actionsService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId], path);
     }
 
     toggleResList(): void {
@@ -177,7 +176,7 @@ export class SignatureBookComponent implements OnDestroy {
     }
 
     goToResource(event: string = 'next' || 'previous') {
-        this.actionService.goToResource(this.signatureBookService.resourcesListIds, this.userId, this.groupId, this.basketId).subscribe(((resourcesToProcess: number[]) => {
+        this.actionsService.goToResource(this.signatureBookService.resourcesListIds, this.userId, this.groupId, this.basketId).subscribe(((resourcesToProcess: number[]) => {
             const allResourcesUnlock: number[] = resourcesToProcess;
             const index: number = this.signatureBookService.resourcesListIds.indexOf(parseInt(this.resId.toString(), 10));
             const nextLoop = (event === 'next') ? 1 : (event === 'previous') ? -1 : 1;
