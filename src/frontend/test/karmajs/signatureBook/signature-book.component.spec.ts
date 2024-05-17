@@ -47,7 +47,7 @@ class FakeLoader implements TranslateLoader {
     }
 }
 
-fdescribe('SignatureBookComponent', () => {
+describe('SignatureBookComponent', () => {
     let component: SignatureBookComponent;
     let fixture: ComponentFixture<SignatureBookComponent>;
     let httpTestingController: HttpTestingController;
@@ -137,7 +137,7 @@ fdescribe('SignatureBookComponent', () => {
             const nativeElement = fixture.nativeElement;
             expect(nativeElement.querySelector('app-resource-toolbar')).toBeTruthy();
         }));
-        fit('First attachment should appears by default if attachments', fakeAsync(() => {
+        it('First attachment should appears by default if attachments', fakeAsync(() => {
             const res = httpTestingController.expectOne('../rest/signatureBook/users/1/groups/1/baskets/1/resources/100');
             expect(res.request.method).toBe('GET');
             res.flush({
