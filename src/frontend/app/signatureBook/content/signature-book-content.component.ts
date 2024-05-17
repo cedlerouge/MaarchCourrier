@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { MessageActionInterface } from '@models/actions.model';
-import { Attachment, AttachmentInterface } from '@models/attachment.model';
+import { AttachmentInterface } from '@models/attachment.model';
 import { TranslateService } from '@ngx-translate/core';
 import { FunctionsService } from '@service/functions.service';
 import { HeaderService } from '@service/header.service';
@@ -80,17 +80,22 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
         if (this.position === 'right' && this.signatureBookService.selectedDocToSign.index !== null) {
             await this.initDocToSign();
         } else if (this.position === 'left' && this.signatureBookService.selectedAttachment.index !== null) {
-            this.initAnnexe();
+            await this.initAnnexe();
         }
         this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
         this.loading = false;
     }
 
     initAnnexe() {
-        this.documentData = this.signatureBookService.selectedAttachment.attachment;
-        this.pluginInstance = null;
-        this.pluginManagerService.destroyPlugin(this.myPlugin);
-        this.loading = false;
+        return new Promise((resolve) => {
+            this.documentData = this.signatureBookService.selectedAttachment.attachment;
+            this.pluginInstance = null;
+            this.pluginManagerService.destroyPlugin(this.myPlugin);
+            setTimeout(() => {
+                resolve(true);
+            }, 0)
+        });
+
     }
 
     async initDocToSign() {
