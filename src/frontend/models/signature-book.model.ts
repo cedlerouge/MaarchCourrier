@@ -1,3 +1,6 @@
+import { AttachmentInterface } from "@models/attachment.model";
+import { ResourcesListInterface } from "@models/resources-list.model";
+
 export interface StampInterface {
     /**
      * base64 image
@@ -24,4 +27,20 @@ export interface StampInterface {
      * page of stamp located
      */
     "page": number
+}
+
+export interface SelectedAttachmentInterface {
+    index: number;
+    attachment: AttachmentInterface;
+}
+
+export class SelectedAttachment implements SelectedAttachmentInterface {
+    index: number = null;
+    attachment: AttachmentInterface = null;
+
+    constructor(json: any = null) {
+        if (json) {
+            Object.assign(this, json);
+        }
+    }
 }

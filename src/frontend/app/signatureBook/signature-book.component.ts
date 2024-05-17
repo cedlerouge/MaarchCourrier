@@ -13,6 +13,7 @@ import { ResourcesListComponent } from './resourcesList/resources-list.component
 import { TranslateService } from '@ngx-translate/core';
 import { FunctionsService } from '@service/functions.service';
 import { UserStampInterface } from '@models/user-stamp.model';
+import { SelectedAttachment } from "@models/signature-book.model";
 
 @Component({
     templateUrl: 'signature-book.component.html',
@@ -116,7 +117,22 @@ export class SignatureBookComponent implements OnDestroy {
 
     async initDocuments(): Promise<void>{
         await this.signatureBookService.initDocuments(this.userId, this.groupId, this.basketId, this.resId).then((data: any) => {
+            this.signatureBookService.selectedAttachment = new SelectedAttachment();
+            this.signatureBookService.selectedDocToSign = new SelectedAttachment();
+
+            if (data.resourcesAttached.length > 0) {
+                this.signatureBookService.toolBarActive = false;
+                this.signatureBookService.selectedAttachment.index = 0;
+                this.signatureBookService.selectedAttachment.attachment = data.resourcesAttached[0];
+            } else {
+                this.signatureBookService.toolBarActive = true;
+            }
+            if (data.resourcesToSign.length > 0) {
+                this.signatureBookService.selectedDocToSign.index = 0;
+                this.signatureBookService.selectedDocToSign.attachment = data.resourcesToSign[0];
+            }
             this.signatureBookService.docsToSign = data.resourcesToSign;
+            this.signatureBookService.selectedDocToSign.attachment = data.resourcesToSign[0];
             this.attachments = data.resourcesAttached;
             this.loadingAttachments = false;
             this.loadingDocsToSign = false;

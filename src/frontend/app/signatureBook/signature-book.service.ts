@@ -1,12 +1,13 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Attachment } from "@models/attachment.model";
+import { Attachment, AttachmentInterface } from "@models/attachment.model";
 import { ResourcesList } from "@models/resources-list.model";
 import { FiltersListService } from "@service/filtersList.service";
 import { HeaderService } from "@service/header.service";
 import { NotificationService } from "@service/notification/notification.service";
 import { catchError, map, of, tap } from "rxjs";
 import { mapAttachment } from "./signature-book.utils";
+import { SelectedAttachment } from "@models/signature-book.model";
 
 @Injectable()
 export class SignatureBookService {
@@ -15,6 +16,10 @@ export class SignatureBookService {
     resourcesListIds: number[] = [];
     docsToSign: Attachment[] = [];
     basketLabel: string = '';
+
+    selectedAttachment: SelectedAttachment = new SelectedAttachment();
+
+    selectedDocToSign: SelectedAttachment = new SelectedAttachment();
 
     constructor(
         private http: HttpClient,
