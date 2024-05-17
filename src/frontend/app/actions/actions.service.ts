@@ -829,6 +829,7 @@ export class ActionsService implements OnDestroy {
     }
 
     async continueVisaCircuitAction() {
+        await this.signatureBookService.getInternalSignatureBookConfig();
         const dialogConfig: MatDialogConfig<any> = {
             panelClass: 'maarch-modal',
             autoFocus: false,
