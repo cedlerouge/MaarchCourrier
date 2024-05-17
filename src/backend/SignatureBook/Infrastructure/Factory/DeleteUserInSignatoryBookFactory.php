@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief DeleteUserInSignatoryBookFactory
+ * @brief Delete User In Signatory Book Factory
  * @author dev@maarch.org
  */
 
