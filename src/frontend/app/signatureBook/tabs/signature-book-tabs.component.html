@@ -3,7 +3,7 @@
             *ngIf="position === 'left'"
             mat-button
             class="book-mark-toolbar"
-            title="Barre d'outils du courrier"
+            [title]="'lang.resourceOverview' | translate"
             [class.book-mark-item-to-left]="position === 'left'"
             [ngClass]="{
             'book-mark-toolbar-selected': signatureBookService.toolBarActive,
@@ -17,7 +17,7 @@
         *ngFor="let document of documents;let i=index"
         mat-button
         class="book-mark-item"
-        [title]="document.title"
+        [title]="document.typeLabel + ' : ' + document.title"
         [class.book-mark-item-to-left]="position === 'left'"
         [class.book-mark-item-to-right]="position === 'right'"
         [ngClass]="{
