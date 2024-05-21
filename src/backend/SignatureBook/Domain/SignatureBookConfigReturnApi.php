@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief SignatureBookConfig class
+ * @brief SignatureBookConfigReturnApi class
  * @author dev@maarch.org
  */
 
@@ -16,7 +16,7 @@ namespace MaarchCourrier\SignatureBook\Domain;
 
 use JsonSerializable;
 
-class SignatureBookConfig implements JsonSerializable
+class SignatureBookConfigReturnApi implements JsonSerializable
 {
     private bool $isNewInternalParaph;
     private string $url;
@@ -26,22 +26,6 @@ class SignatureBookConfig implements JsonSerializable
     {
         $this->isNewInternalParaph = false;
         $this->url = '';
-    }
-
-    /**
-     * @param array $array
-     *
-     * @return SignatureBookConfig
-     */
-    public static function createFromArray(array $array = []): SignatureBookConfig
-    {
-        $signatureBookConfig = new SignatureBookConfig();
-
-        $signatureBookConfig
-            ->setIsNewInternalParaph($array['isNewInternalParaph'] ?? false)
-            ->setUrl($array['url'] ?? '');
-
-        return $signatureBookConfig;
     }
 
     /**
@@ -55,7 +39,7 @@ class SignatureBookConfig implements JsonSerializable
     /**
      * @param bool $isNewInternalParaph
      *
-     * @return SignatureBookConfig
+     * @return SignatureBookConfigReturnApi
      */
     public function setIsNewInternalParaph(bool $isNewInternalParaph): self
     {
@@ -74,7 +58,7 @@ class SignatureBookConfig implements JsonSerializable
     /**
      * @param string $url
      *
-     * @return SignatureBookConfig
+     * @return SignatureBookConfigReturnApi
      */
     public function setUrl(string $url): self
     {

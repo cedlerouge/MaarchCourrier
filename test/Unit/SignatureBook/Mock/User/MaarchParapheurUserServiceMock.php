@@ -1,10 +1,22 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief MaarchParapheurUserServiceMock
+ * @author dev@maarch.org
+ */
+
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock\User;
 
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookUserServiceInterface;
-use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookServiceConfig;
 
 class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterface
 {
@@ -16,14 +28,13 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
     public bool $deleteUserCalled = false;
     public bool $userExists = false;
 
-    public SignatureServiceConfig $config;
+    public SignatureBookServiceConfig $config;
 
     /**
      * @param UserInterface $user
-     * @param string $accessToken
      * @return array|int
      */
-    public function createUser(UserInterface $user, string $accessToken): array|int
+    public function createUser(UserInterface $user): array|int
     {
         $this->createUserCalled = true;
         return $this->userCreated;
@@ -31,10 +42,9 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
 
     /**
      * @param UserInterface $user
-     * @param string $accessToken
      * @return array|int
      */
-    public function updateUser(UserInterface $user, string $accessToken): array|bool
+    public function updateUser(UserInterface $user): array|bool
     {
         $this->updateUserCalled = true;
         $user->setFirstname('firstname2');
@@ -43,10 +53,9 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
 
     /**
      * @param UserInterface $user
-     * @param string $accessToken
      * @return array|bool
      */
-    public function deleteUser(UserInterface $user, string $accessToken): array|bool
+    public function deleteUser(UserInterface $user): array|bool
     {
         $this->deleteUserCalled = true;
         return $this->deletedUser;
@@ -54,10 +63,9 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
 
     /**
      * @param int $id
-     * @param string $accessToken
      * @return bool
      */
-    public function doesUserExists(int $id, string $accessToken): bool
+    public function doesUserExists(int $id): bool
     {
         if (!$this->userExists) {
             return false;
@@ -66,10 +74,11 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
     }
 
     /**
-     * @param SignatureServiceConfig $config
+     * @param SignatureBookServiceConfig $config
+     *
      * @return SignatureBookUserServiceInterface
      */
-    public function setConfig(SignatureServiceConfig $config): SignatureBookUserServiceInterface
+    public function setConfig(SignatureBookServiceConfig $config): SignatureBookUserServiceInterface
     {
         $this->config = $config;
         return $this;

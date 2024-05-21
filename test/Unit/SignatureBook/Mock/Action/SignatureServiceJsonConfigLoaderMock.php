@@ -13,21 +13,21 @@
  */
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action;
 
-use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookServiceConfig;
 
 
 class SignatureServiceJsonConfigLoaderMock implements SignatureServiceConfigLoaderInterface
 {
-    public ?SignatureServiceConfig $signatureServiceConfigLoader = null;
+    public ?SignatureBookServiceConfig $signatureServiceConfigLoader = null;
 
     public function __construct()
     {
-        $this->signatureServiceConfigLoader = new SignatureServiceConfig(
+        $this->signatureServiceConfigLoader = new SignatureBookServiceConfig(
             'test/url/maarch/parapheur/api'
         );
     }
-    public function getSignatureServiceConfig(): ?SignatureServiceConfig
+    public function getSignatureServiceConfig(): ?SignatureBookServiceConfig
     {
         return $this->signatureServiceConfigLoader;
     }

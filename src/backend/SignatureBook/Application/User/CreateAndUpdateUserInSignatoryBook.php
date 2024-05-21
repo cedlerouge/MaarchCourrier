@@ -1,12 +1,22 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief Create And Update User In Signatory Book
+ * @author dev@maarch.org
+ */
+
 namespace MaarchCourrier\SignatureBook\Application\User;
 
-use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookUserServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
-use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\UserCreateInMaarchParapheurFailedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\UserUpdateInMaarchParapheurFailedProblem;
@@ -15,12 +25,10 @@ class CreateAndUpdateUserInSignatoryBook
 {
     /**
      * @param SignatureBookUserServiceInterface $signatureBookUserService
-     * @param CurrentUserInterface $currentUser
      * @param SignatureServiceConfigLoaderInterface $signatureServiceConfigLoader
      */
     public function __construct(
         private readonly SignatureBookUserServiceInterface $signatureBookUserService,
-        private readonly CurrentUserInterface $currentUser,
         private readonly SignatureServiceConfigLoaderInterface $signatureServiceConfigLoader
     ) {
     }
@@ -28,7 +36,6 @@ class CreateAndUpdateUserInSignatoryBook
     /**
      * @param UserInterface $user
      * @return UserInterface
-     * @throws CurrentTokenIsNotFoundProblem
      * @throws SignatureBookNoConfigFoundProblem
      * @throws UserCreateInMaarchParapheurFailedProblem
      * @throws UserUpdateInMaarchParapheurFailedProblem
@@ -41,22 +48,17 @@ class CreateAndUpdateUserInSignatoryBook
         }
         $this->signatureBookUserService->setConfig($signatureBook);
 
-        $accessToken = $this->currentUser->getCurrentUserToken();
-        if (empty($accessToken)) {
-            throw new CurrentTokenIsNotFoundProblem();
-        }
-
         $externalId = (int)array_values($user->getExternalId());
 
         if (!empty($externalId)) {
-            if ($this->signatureBookUserService->doesUserExists($externalId, $accessToken)) {
-                $userIsUpdated = $this->signatureBookUserService->updateUser($user, $accessToken);
+            if ($this->signatureBookUserService->doesUserExists($externalId)) {
+                $userIsUpdated = $this->signatureBookUserService->updateUser($user);
                 if (!empty($userIsUpdated['errors'])) {
                     throw new UserUpdateInMaarchParapheurFailedProblem($userIsUpdated);
                 }
             } else {
                 $existingIds = $user->getExternalId();
-                $maarchParapheurUserId = $this->signatureBookUserService->createUser($user, $accessToken);
+                $maarchParapheurUserId = $this->signatureBookUserService->createUser($user);
                 if (!empty($maarchParapheurUserId['errors'])) {
                     throw new UserCreateInMaarchParapheurFailedProblem($maarchParapheurUserId);
                 } else {
@@ -65,7 +67,7 @@ class CreateAndUpdateUserInSignatoryBook
                 }
             }
         } else {
-            $maarchParapheurUserId = $this->signatureBookUserService->createUser($user, $accessToken);
+            $maarchParapheurUserId = $this->signatureBookUserService->createUser($user);
             if (!empty($maarchParapheurUserId['errors'])) {
                 throw new UserCreateInMaarchParapheurFailedProblem($maarchParapheurUserId);
             } else {

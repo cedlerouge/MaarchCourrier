@@ -8,35 +8,44 @@
  */
 
 /**
- * @brief SignatureServiceConfigLoaderRepository class
+ * @brief Signature Service Json Config Loader class
  * @author dev@maarch.org
  */
 
 namespace MaarchCourrier\SignatureBook\Infrastructure;
 
 use Exception;
-use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookServiceConfig;
+use MaarchCourrier\SignatureBook\Domain\UserWebService;
 use SrcCore\models\CoreConfigModel;
 
 class SignatureServiceJsonConfigLoader implements SignatureServiceConfigLoaderInterface
 {
     /**
-     * @return SignatureServiceConfig|null
+     * @return SignatureBookServiceConfig|null
      * @throws Exception Returns the signatureBook config
      */
-    public function getSignatureServiceConfig(): ?SignatureServiceConfig
+    public function getSignatureServiceConfig(): ?SignatureBookServiceConfig
     {
-        $loadedConfig = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
-        $signatureBookConfig = null;
-        if (!empty($loadedConfig)) {
-            $signatureBookConfig = $loadedConfig['signatureBook'];
-            if ($signatureBookConfig) {
-                $signatureBookConfig = new SignatureServiceConfig(
-                    $signatureBookConfig['url'] ?? null,
-                );
-            }
+        $config = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
+        if (empty($config)) {
+            return null;
         }
-        return $signatureBookConfig ?? null;
+
+        $signatureServiceConfig = null;
+        $config = $config['signatureBook'];
+
+        if ($config) {
+            $signatureServiceConfig = (new SignatureBookServiceConfig())
+                ->setUrl($config['url'] ?? '')
+                ->setUserWebService(
+                    (new UserWebService())
+                        ->setLogin($config['userIdParapheurWS'] ?? '')
+                        ->setPassword($config['passwordParapheurWS'] ?? '')
+                );
+        }
+
+        return $signatureServiceConfig ?? null;
     }
 }
