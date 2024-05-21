@@ -105,7 +105,7 @@ export class ResourceToolbarComponent implements OnInit{
 
     async changeTab(tabId: string): Promise<void> {
         if (!this.modelId && tabId === 'info') {
-            const res = await this.getResourceInformation();
+            const res: false | number = await this.getResourceInformation();
             if (res) {
                 this.modelId = res;
             }
