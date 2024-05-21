@@ -99,11 +99,11 @@ export class ResourceToolbarComponent implements OnInit{
         private notify: NotificationService,
     ) { }
 
-    ngOnInit() {
+    ngOnInit(): void {
         this.loadBadges();
     }
 
-    async changeTab(tabId: string) {
+    async changeTab(tabId: string): Promise<void> {
         if (!this.modelId && tabId === 'info') {
             const res = await this.getResourceInformation();
             if (res) {
@@ -128,7 +128,7 @@ export class ResourceToolbarComponent implements OnInit{
         })
     }
 
-    loadBadges() {
+    loadBadges(): void {
         this.http.get(`../rest/resources/${this.resId}/items`).pipe(
             tap((data: any) => {
                 this.processTool.forEach(element => {

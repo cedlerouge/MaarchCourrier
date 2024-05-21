@@ -73,7 +73,7 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
         this.initDocument();
     }
 
-    async initDocument() {
+    async initDocument(): Promise<void> {
         this.loading = true;
         this.subscriptionDocument?.unsubscribe();
 
@@ -86,7 +86,7 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
         this.loading = false;
     }
 
-    initAnnexe() {
+    initAnnexe(): Promise<true> {
         return new Promise((resolve) => {
             this.documentData = this.signatureBookService.selectedAttachment.attachment;
             this.pluginInstance = null;

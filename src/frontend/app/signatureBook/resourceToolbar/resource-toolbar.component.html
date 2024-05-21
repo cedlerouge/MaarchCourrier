@@ -1,10 +1,10 @@
-<div class="processTool">
-    <div class="processTool-module jiggle"
+<div class="process-tool">
+    <div class="process-tool-module jiggle"
          *ngFor="let module of processTool"
          [class.tool-disabled]="module.disabled"
-         [class.processTool-module-active]="module.id === currentTool"
+         [class.process-tool-module-active]="module.id === currentTool"
          (click)="!module.disabled ? changeTab(module.id) : false" matRipple [matRippleDisabled]="module.disabled">
-        <i *ngIf="module.count > 0" class="fas fa-circle haveContent"></i>
+        <i *ngIf="module.count > 0" class="fas fa-circle has-content"></i>
         <i [class]="module.icon"></i>
         <span>{{module.label}}</span>
     </div>

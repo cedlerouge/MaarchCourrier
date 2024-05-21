@@ -15,7 +15,7 @@ import { SelectedAttachment } from "@models/signature-book.model";
 })
 export class SignatureBookService {
 
-    toolBarActive = false;
+    toolBarActive: boolean = false;
     resourcesListIds: number[] = [];
     docsToSign: Attachment[] = [];
     basketLabel: string = '';
