@@ -22,10 +22,12 @@ use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceRepositoryInterface
 use MaarchCourrier\Core\Domain\MainResource\Problem\ResourceDoesNotExistProblem;
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\DocumentConversion\Domain\Port\ConvertPdfServiceInterface;
+use MaarchCourrier\DocumentConversion\Domain\Port\SignatureMainDocumentRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\VisaWorkflowRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Privilege\SignDocumentPrivilege;
 use MaarchCourrier\SignatureBook\Domain\Problem\MainResourceDoesNotExistInSignatureBookBasketProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\NoResourcesFoundToSignProblem;
 use MaarchCourrier\SignatureBook\Domain\SignatureBook;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 
@@ -36,6 +38,7 @@ class RetrieveSignatureBook
         private readonly CurrentUserInterface $currentUser,
         private readonly MainResourcePerimeterCheckerInterface $mainResourceAccessControl,
         private readonly SignatureBookRepositoryInterface $signatureBookRepository,
+        private readonly SignatureMainDocumentRepositoryInterface $signatureMainDocument,
         private readonly ConvertPdfServiceInterface $convertPdfService,
         private readonly AttachmentRepositoryInterface $attachmentRepository,
         private readonly PrivilegeCheckerInterface $privilegeChecker,
@@ -50,6 +53,7 @@ class RetrieveSignatureBook
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
+     * @throws NoResourcesFoundToSignProblem
      */
     public function getSignatureBook(int $resId): SignatureBook
     {
@@ -81,7 +85,10 @@ class RetrieveSignatureBook
             $isConverted = $this->convertPdfService->canConvert($resource->getFileFormat());
             $mainSignatureBookResource->setIsConverted($isConverted);
 
-            if ($resource->isInSignatureBook()) {
+            if (
+                $resource->isInSignatureBook() &&
+                !$this->signatureMainDocument->isMainDocumentSign($resource->getResId())
+            ) {
                 $resourcesToSign[] = $mainSignatureBookResource;
             } else {
                 $isCreator = $resource->getTypist()->getId() == $this->currentUser->getCurrentUser()->getId();
@@ -96,6 +103,8 @@ class RetrieveSignatureBook
         foreach ($attachments as $attachment) {
             $isConverted = $this->convertPdfService->canConvert($attachment->getFileFormat());
 
+            var_dump($attachment->getTypeIdentifier(), $attachment->isSignable());
+
             if ($attachment->isSignable()) {
                 $resourcesToSign[] = (SignatureBookResource::createFromAttachment($attachment))
                     ->setIsConverted($isConverted);
@@ -109,6 +118,10 @@ class RetrieveSignatureBook
                     ->setCanModify($canModify)
                     ->setCanDelete($canDelete);
             }
+        }
+
+        if (empty($resourcesToSign)) {
+            throw new NoResourcesFoundToSignProblem();
         }
 
         $canSignResources = $this->privilegeChecker->hasPrivilege($currentUser, new SignDocumentPrivilege());

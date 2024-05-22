@@ -21,6 +21,7 @@ use MaarchCourrier\Authorization\Infrastructure\MainResourcePerimeterCheckerServ
 use MaarchCourrier\Authorization\Infrastructure\PrivilegeChecker;
 use MaarchCourrier\Core\Domain\MainResource\Problem\ResourceDoesNotExistProblem;
 use MaarchCourrier\Core\Infrastructure\Environment;
+use MaarchCourrier\DocumentConversion\Infrastructure\Repository\SignatureMainDocumentRepository;
 use MaarchCourrier\DocumentConversion\Infrastructure\Service\ConvertPdfService;
 use MaarchCourrier\MainResource\Infrastructure\Repository\MainResourceRepository;
 use MaarchCourrier\SignatureBook\Application\RetrieveSignatureBook;
@@ -58,6 +59,7 @@ class RetrieveSignatureBookController
             new CurrentUserInformations(),
             new MainResourcePerimeterCheckerService(),
             new SignatureBookRepository(),
+            new SignatureMainDocumentRepository(),
             new ConvertPdfService(),
             new AttachmentRepository(new UserFactory()),
             new PrivilegeChecker(),
