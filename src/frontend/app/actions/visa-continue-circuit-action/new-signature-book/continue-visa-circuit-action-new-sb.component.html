@@ -12,7 +12,7 @@
                         name="digitalCertificate"
                         color="primary"
                         [title]="'lang.digitalCertificate' | translate"
-                        [(ngModel)]="digitalCertificate">
+                        [(ngModel)]="parameters.digitalCertificate">
                         {{'lang.digitalCertificate' | translate}}
                     </mat-checkbox>
                 </div>
@@ -37,13 +37,13 @@
                 <app-maarch-message *ngIf="!loading && data.resIds.length === 1 && atLeastOneDocumentHasNoStamp()"
                     [mode]="'warning'">
                     <div class="at-least-no-one-stamp" role="alert"
-                        [title]="functions.getPlainText('lang.atLeastOneDocumentHasNoStamp')"
-                        [attr.aria-label]="functions.getPlainText('lang.atLeastOneDocumentHasNoStamp')"
+                        [title]="'lang.atLeastOneDocumentHasNoStamp' | translate | stripTags"
+                        [title]="'lang.atLeastOneDocumentHasNoStamp' | translate | stripTags"
                         [innerHTML]="'lang.atLeastOneDocumentHasNoStamp' | translate">
                     </div>
-                    <div *ngIf="!digitalCertificate" class="at-least-no-one-stamp" role="alert"
-                        [title]="functions.getPlainText('lang.seenAsVisaUser')"
-                        [attr.aria-label]="functions.getPlainText('lang.seenAsVisaUser')"
+                    <div *ngIf="!parameters.digitalCertificate" class="at-least-no-one-stamp" role="alert"
+                        [attr.aria-label]="'lang.seenAsVisaUser' | translate | stripTags"
+                        [attr.aria-label]="'lang.seenAsVisaUser' | translate | stripTags"
                         [innerHTML]="'lang.seenAsVisaUser' | translate"></div>
                 </app-maarch-message>
                 <app-maarch-message *ngIf="data.resIds.length === 1 && appVisaWorkflow !== undefined && appVisaWorkflow.getNextVisaUser() !== ''"
@@ -145,7 +145,7 @@
                     </div>
                 </div>
                 <div style="display: flow;">
-                    <mat-expansion-panel style="margin-top: 10px;" expanded="true">
+                    <mat-expansion-panel style="margin-top: 10px;" [expanded]="noteExpanded">
                         <mat-expansion-panel-header>
                             <mat-panel-title color="primary">
                                 {{'lang.note' | translate}}

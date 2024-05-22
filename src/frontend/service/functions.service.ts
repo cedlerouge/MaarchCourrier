@@ -223,13 +223,4 @@ export class FunctionsService {
             reader.readAsDataURL(blob);
         });
     }
-
-    // Ignore HTML tags and return plain text
-    getPlainText(messageKey: string): string {
-        // Retrieve the translated message
-        const translatedMessage = this.translate.instant(messageKey);
-        // Remove HTML tags using a regular expression
-        const plainText = translatedMessage.replace(/<[^>]*>/g, '');
-        return plainText;
-    }
 }

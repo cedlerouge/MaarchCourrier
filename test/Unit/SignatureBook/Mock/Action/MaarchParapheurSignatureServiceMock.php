@@ -34,21 +34,39 @@ class MaarchParapheurSignatureServiceMock implements SignatureServiceInterface
         return $this;
     }
 
+    /**
+     * @param int $documentId
+     * @param string|null $hashSignature
+     * @param array|null $signatures
+     * @param string|null $certificate
+     * @param string|null $signatureContentLength
+     * @param string|null $signatureFieldName
+     * @param string|null $tmpUniqueId
+     * @param string $accessToken
+     * @param string|null $cookieSession
+     * @param array $resourceToSign
+     * @return array|bool
+     */
     public function applySignature(
         int $documentId,
-        string $hashSignature,
-        array $signatures,
-        string $certificate,
-        string $signatureContentLength,
-        string $signatureFieldName,
+        ?string $hashSignature,
+        ?array $signatures,
+        ?string $certificate,
+        ?string $signatureContentLength,
+        ?string $signatureFieldName,
         ?string $tmpUniqueId,
         string $accessToken,
-        string $cookieSession,
+        ?string $cookieSession,
         array $resourceToSign
     ): array|bool {
         return $this->applySignature;
     }
 
+    /**
+     * @param string $accessToken
+     * @param string $urlRetrieveDoc
+     * @return array[]
+     */
     public function retrieveDocumentSign(string $accessToken, string $urlRetrieveDoc): array
     {
         return ['response' => $this->returnFromParapheur];

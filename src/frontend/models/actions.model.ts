@@ -31,7 +31,8 @@ export interface ContinueVisaCircuitObjectInterface {
         signature: any[];
         certificate: string;
         tmpUniqueId: string;
-    }[]
+    }[],
+    digitalCertificate: boolean;
 }
 
 export interface ContinueVisaCircuitStampsInterface {
