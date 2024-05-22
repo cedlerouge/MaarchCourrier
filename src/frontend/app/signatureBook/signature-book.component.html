@@ -33,7 +33,12 @@
                         <app-maarch-sb-tabs *ngIf="!loadingAttachments" position="left" [documents]="attachments"></app-maarch-sb-tabs>
                     </ng-scrollbar>
                     <div class="book-content" *ngIf="!loadingAttachments">
-                        <app-maarch-sb-content
+                        <app-resource-toolbar
+                                *ngIf="signatureBookService.toolBarActive"
+                                [resId]="resId"
+                                [groupId]="groupId"
+                        ></app-resource-toolbar>
+                        <app-maarch-sb-content *ngIf="!signatureBookService.toolBarActive"
                             position="left"
                             style="display: contents;"
                         ></app-maarch-sb-content>

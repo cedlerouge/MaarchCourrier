@@ -13,6 +13,7 @@ import { ResourcesListComponent } from './resourcesList/resources-list.component
 import { TranslateService } from '@ngx-translate/core';
 import { FunctionsService } from '@service/functions.service';
 import { UserStampInterface } from '@models/user-stamp.model';
+import { SelectedAttachment } from "@models/signature-book.model";
 
 @Component({
     templateUrl: 'signature-book.component.html',
@@ -55,7 +56,6 @@ export class SignatureBookComponent implements OnDestroy {
         private router: Router,
         private notify: NotificationService,
         private actionsService: ActionsService,
-        private actionService: ActionsService
     ) {
 
         this.initParams();
@@ -68,7 +68,7 @@ export class SignatureBookComponent implements OnDestroy {
         ).subscribe();
 
         // Event after process action
-        this.processActionSubscription = this.actionService.catchAction().subscribe(() => {
+        this.processActionSubscription = this.actionsService.catchAction().subscribe(() => {
             this.processAfterAction();
         });
     }
@@ -88,7 +88,7 @@ export class SignatureBookComponent implements OnDestroy {
             this.userId = parseInt(params['userId']);
 
             if (this.resId !== undefined) {
-                this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
+                this.actionsService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
                 this.setNextPrev();
                 await this.initDocuments();
             } else {
@@ -116,7 +116,22 @@ export class SignatureBookComponent implements OnDestroy {
 
     async initDocuments(): Promise<void>{
         await this.signatureBookService.initDocuments(this.userId, this.groupId, this.basketId, this.resId).then((data: any) => {
+            this.signatureBookService.selectedAttachment = new SelectedAttachment();
+            this.signatureBookService.selectedDocToSign = new SelectedAttachment();
+
+            if (data.resourcesAttached.length > 0) {
+                this.signatureBookService.toolBarActive = false;
+                this.signatureBookService.selectedAttachment.index = 0;
+                this.signatureBookService.selectedAttachment.attachment = data.resourcesAttached[0];
+            } else {
+                this.signatureBookService.toolBarActive = true;
+            }
+            if (data.resourcesToSign.length > 0) {
+                this.signatureBookService.selectedDocToSign.index = 0;
+                this.signatureBookService.selectedDocToSign.attachment = data.resourcesToSign[0];
+            }
             this.signatureBookService.docsToSign = data.resourcesToSign;
+            this.signatureBookService.selectedDocToSign.attachment = data.resourcesToSign[0];
             this.attachments = data.resourcesAttached;
             this.loadingAttachments = false;
             this.loadingDocsToSign = false;
@@ -142,8 +157,8 @@ export class SignatureBookComponent implements OnDestroy {
 
     async unlockResource(): Promise<void> {
         const path = '/basketList/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId;
-        this.actionService.stopRefreshResourceLock();
-        await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId], path);
+        this.actionsService.stopRefreshResourceLock();
+        await this.actionsService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId], path);
     }
 
     toggleResList(): void {
@@ -161,7 +176,7 @@ export class SignatureBookComponent implements OnDestroy {
     }
 
     goToResource(event: string = 'next' || 'previous') {
-        this.actionService.goToResource(this.signatureBookService.resourcesListIds, this.userId, this.groupId, this.basketId).subscribe(((resourcesToProcess: number[]) => {
+        this.actionsService.goToResource(this.signatureBookService.resourcesListIds, this.userId, this.groupId, this.basketId).subscribe(((resourcesToProcess: number[]) => {
             const allResourcesUnlock: number[] = resourcesToProcess;
             const index: number = this.signatureBookService.resourcesListIds.indexOf(parseInt(this.resId.toString(), 10));
             const nextLoop = (event === 'next') ? 1 : (event === 'previous') ? -1 : 1;

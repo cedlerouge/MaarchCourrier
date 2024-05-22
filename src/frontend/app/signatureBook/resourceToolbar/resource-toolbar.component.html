@@ -1,0 +1,32 @@
+<div class="process-tool">
+    <div class="process-tool-module jiggle"
+         *ngFor="let module of processTool"
+         [class.tool-disabled]="module.disabled"
+         [class.process-tool-module-active]="module.id === currentTool"
+         (click)="!module.disabled ? changeTab(module.id) : false" matRipple [matRippleDisabled]="module.disabled">
+        <i *ngIf="module.count > 0" class="fas fa-circle has-content"></i>
+        <i [class]="module.icon"></i>
+        <span>{{module.label}}</span>
+    </div>
+</div>
+<div style="overflow: auto;padding: 0 20px;background: white;">
+    <app-notes-list *ngIf="currentTool === 'notes'"
+        [editMode]="true"
+        [resId]="resId"
+    >
+    </app-notes-list>
+    <app-visa-workflow *ngIf="currentTool === 'visaCircuit'"
+       [adminMode]="false"
+       [target]="'signatureBook'"
+       [resId]="resId">
+    </app-visa-workflow>
+    <app-indexing-form *ngIf="currentTool === 'info'"
+       [resId]="resId"
+       [groupId]="groupId"
+       [indexingFormId]="modelId"
+       [mode]="'process'"
+       [canEdit]="false"
+       [hideDiffusionList]="true">
+    </app-indexing-form>
+</div>
+

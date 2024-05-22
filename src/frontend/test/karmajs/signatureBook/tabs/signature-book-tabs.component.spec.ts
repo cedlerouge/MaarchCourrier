@@ -23,7 +23,7 @@ class FakeLoader implements TranslateLoader {
     }
 }
 
-describe('SignatureBookStampsComponent', () => {
+describe('SignatureBookTabsComponent', () => {
     let component: MaarchSbTabsComponent;
     let fixture: ComponentFixture<MaarchSbTabsComponent>;
     let translateService: TranslateService;
@@ -62,6 +62,9 @@ describe('SignatureBookStampsComponent', () => {
     beforeEach(fakeAsync(() => {
         fixture = TestBed.createComponent(MaarchSbTabsComponent);
         component = fixture.componentInstance;
+        // Is normally set in signatureBookComponent init
+        component.signatureBookService.selectedAttachment.index = 0;
+        component.signatureBookService.selectedDocToSign.index = 0;
         fixture.detectChanges();
     }));
 

@@ -2861,5 +2861,6 @@
     "noStampDesc": "Aucune griffe apposée sur le document",
     "showVisaWorkflow": "Voir le circuit de visa",
     "hideVisaWorkflow": "Masquer le circuit de visa",
-    "seenAsVisaUser": "Vous serez considéré comme <b color=\"warn\">viseur</b>."
+    "seenAsVisaUser": "Vous serez considéré comme <b color=\"warn\">viseur</b>.",
+    "resourceOverview": "Vue d'ensemble du courrier"
 }
