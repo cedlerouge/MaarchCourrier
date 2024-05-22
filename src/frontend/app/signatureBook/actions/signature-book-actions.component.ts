@@ -93,7 +93,7 @@ export class SignatureBookActionsComponent implements OnInit {
                         this.groupId,
                         this.basketId,
                         [this.resId],
-                        { ...data, docsToSign: this.signatureBookService.docsToSign },
+                        { ...data, docsToSign: this.signatureBookService.docsToSign.concat(this.signatureBookService.selectedResources) },
                         false
                     );
                 }),

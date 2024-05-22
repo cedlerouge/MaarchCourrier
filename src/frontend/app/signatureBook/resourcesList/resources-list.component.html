@@ -52,7 +52,10 @@
             <div class="col-md-1">
                 <mat-checkbox color="primary"
                     aria-label="Sélectionner cette ressource"
-                    (click)="$event.stopPropagation();">
+                    [checked]="resId === resource.resId || isResourceSelected(resource)"
+                    [disabled]="resId === resource.resId"
+                    (click)="$event.stopPropagation()"
+                    (change)="signatureBookService.toggleSelection($event.checked, userId, groupId, basketId, resource)">
                 </mat-checkbox>
             </div>
             <div class="col-md-2" [title]="resource.subject">
