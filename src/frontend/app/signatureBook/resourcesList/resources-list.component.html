@@ -12,6 +12,9 @@
 <div *ngIf="loading" class="loader">
     <mat-spinner style="margin:auto;"></mat-spinner>
 </div>
+<div *ngIf="resources.length > 0" class="selected-resources">
+    <span>{{ getTotalSelectedResources() }} / {{ getTotalResources() }} {{'lang.selectedRes' | translate}}</span>
+</div>
 <cdk-virtual-scroll-viewport [itemSize]="85" class="virtual-scroll-viewport" #viewport [style.height.px]="viewportHeight">
     <div *cdkVirtualFor="let resource of resources"
         style="cursor: pointer;"

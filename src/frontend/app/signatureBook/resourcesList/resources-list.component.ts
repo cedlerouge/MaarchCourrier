@@ -253,4 +253,13 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     isResourceSelected(resource: Attachment): boolean {
         return this.signatureBookService.selectedResources.filter((doc: Attachment) => doc.resIdMaster === resource.resId).length > 0;
     }
+
+    getTotalSelectedResources(): number {
+        const resIds: number[] = [this.resId];
+        return resIds.concat([... new Set(this.signatureBookService.selectedResources.map((resource: Attachment) => resource.resIdMaster))]).length;
+    }
+
+    getTotalResources(): number {
+        return this.resources.map((resource: ResourcesList) => resource.resId).length;
+    }
 }
