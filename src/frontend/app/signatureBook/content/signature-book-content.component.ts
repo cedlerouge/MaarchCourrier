@@ -69,7 +69,7 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
             .subscribe();
     }
 
-    ngOnInit() {
+    ngOnInit(): void {
         this.initDocument();
     }
 
@@ -98,7 +98,7 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
 
     }
 
-    async initDocToSign() {
+    async initDocToSign(): Promise<void> {
         this.documentData = this.signatureBookService.selectedDocToSign.attachment;
         await this.loadContent();
         if (this.pluginInstance) {
@@ -111,13 +111,13 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
         }
     }
 
-    ngOnDestroy() {
+    ngOnDestroy(): void {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
         this.subscriptionDocument?.unsubscribe();
     }
 
-    async initPlugin() {
+    async initPlugin(): Promise<void> {
         const data: any = {
             file: {
                 fileName: this.documentData.title,
@@ -171,7 +171,7 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
         });
     }
 
-    getSignatureContent(contentUrl: string) {
+    getSignatureContent(contentUrl: string): Promise<string | false> {
         return new Promise((resolve) => {
             this.http
                 .get(contentUrl, { responseType: 'blob' })
