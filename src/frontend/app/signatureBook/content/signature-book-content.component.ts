@@ -28,7 +28,7 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
     subscriptionDocument: Subscription;
 
     documentData: AttachmentInterface;
-    currentIndexDocument: number;
+    currentIndexDocument: number = 0;
 
     documentType: 'attachments' | 'resources';
 
@@ -58,6 +58,7 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
                             this.pluginInstance.addStamp(signContent);
                         }
                     } else if (res.id === 'attachmentSelected' && this.position === res.data.position) {
+                        this.currentIndexDocument = res.data.resIndex ?? 0;
                         this.initDocument();
                     }
                 }),

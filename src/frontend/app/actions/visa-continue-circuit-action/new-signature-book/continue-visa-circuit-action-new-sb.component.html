@@ -34,7 +34,7 @@
                         <mat-icon class="fa fa-stream material-icons"></mat-icon>
                     </button>
                 </div>
-                <app-maarch-message *ngIf="!loading && data.resIds.length === 1 && atLeastOneDocumentHasNoStamp()"
+                <app-maarch-message *ngIf="!loading && data.resIds.length > 0 && atLeastOneDocumentHasNoStamp()"
                     [mode]="'warning'">
                     <div class="at-least-no-one-stamp" role="alert"
                         [title]="'lang.atLeastOneDocumentHasNoStamp' | translate | stripTags"
@@ -111,7 +111,7 @@
                         </li>
                     </ul>
                 </app-maarch-message>
-                <div *ngIf="!loading && data.resIds.length === 1 && data.resource.docsToSign?.length > 0" class="div-container">
+                <div *ngIf="!loading && data.resIds.length > 0 && data.resource.docsToSign?.length > 0" class="div-container">
                     <div class="docs-title"
                         [title]="data.resource.docsToSign.length + ' ' + ('lang.docsToSign' | translate)"
                         [attr.aria-label]="data.resource.docsToSign.length + ' ' + ('lang.docsToSign' | translate)">
@@ -157,7 +157,7 @@
                     </mat-expansion-panel>
                 </div>
             </mat-sidenav-content>
-            <mat-sidenav *ngIf="data.resIds.length === 1" #snav2 class="visa-workflow-sidenav"
+            <mat-sidenav *ngIf="data.resIds.length > 0" #snav2 class="visa-workflow-sidenav"
                 position='end'
                 autoFocus="false"
                 fixedTopGap="56"
