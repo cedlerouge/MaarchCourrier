@@ -23,11 +23,13 @@ use MaarchCourrier\MainResource\Domain\Integration;
 use MaarchCourrier\MainResource\Domain\MainResource;
 use MaarchCourrier\SignatureBook\Application\RetrieveSignatureBook;
 use MaarchCourrier\SignatureBook\Domain\Problem\MainResourceDoesNotExistInSignatureBookBasketProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\NoResourcesFoundToSignProblem;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 use MaarchCourrier\Tests\Unit\Attachment\Mock\AttachmentRepositoryMock;
 use MaarchCourrier\Tests\Unit\Authorization\Mock\MainResourcePerimeterCheckerServiceMock;
 use MaarchCourrier\Tests\Unit\Authorization\Mock\PrivilegeCheckerMock;
 use MaarchCourrier\Tests\Unit\DocumentConversion\Mock\ConvertPdfServiceMock;
+use MaarchCourrier\Tests\Unit\DocumentConversion\Mock\SignatureMainDocumentRepositoryMock;
 use MaarchCourrier\Tests\Unit\MainResource\Mock\MainResourceRepositoryMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\CurrentUserInformationsMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Repository\VisaWorkflowRepositoryMock;
@@ -42,6 +44,7 @@ class RetrieveSignatureBookTest extends TestCase
     private CurrentUserInformationsMock $currentUserInformationsMock;
     private MainResourcePerimeterCheckerServiceMock $mainResourceAccessControlServiceMock;
     private SignatureBookRepositoryMock $signatureBookRepositoryMock;
+    private SignatureMainDocumentRepositoryMock $signatureMainDocumentRepositoryMock;
     private ConvertPdfServiceMock $convertPdfServiceMock;
     private AttachmentRepositoryMock $attachmentRepositoryMock;
     private PrivilegeCheckerMock $privilegeCheckerMock;
@@ -55,6 +58,7 @@ class RetrieveSignatureBookTest extends TestCase
         $this->currentUserInformationsMock = new CurrentUserInformationsMock();
         $this->mainResourceAccessControlServiceMock = new MainResourcePerimeterCheckerServiceMock();
         $this->signatureBookRepositoryMock = new SignatureBookRepositoryMock();
+        $this->signatureMainDocumentRepositoryMock = new SignatureMainDocumentRepositoryMock();
         $this->convertPdfServiceMock = new ConvertPdfServiceMock();
 
         $this->attachmentRepositoryMock = new AttachmentRepositoryMock();
@@ -82,6 +86,7 @@ class RetrieveSignatureBookTest extends TestCase
             $this->currentUserInformationsMock,
             $this->mainResourceAccessControlServiceMock,
             $this->signatureBookRepositoryMock,
+            $this->signatureMainDocumentRepositoryMock,
             $this->convertPdfServiceMock,
             $this->attachmentRepositoryMock,
             $this->privilegeCheckerMock,
@@ -128,6 +133,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
+     * @throws NoResourcesFoundToSignProblem
      */
     public function testCannotGetMainResourceWhenResourceDoesNotExist(): void
     {
@@ -140,6 +146,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCannotAccessSignatureBookWhenUserHasNoRightAccess(): void
@@ -153,6 +160,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCannotGetSignatureBookResourceIfNotInSignatureBookBasket(): void
@@ -166,6 +174,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCanUpdateDocumentsInSignatureBookBasketWhenBasketParamIsEnable(): void
@@ -178,6 +187,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCannotUpdateDocumentsInSignatureBookBasketWhenBasketParamIsDisable()
@@ -191,6 +201,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testGetMainResourceInResourcesToSignWhenIntegratedInSignatoryBook(): void
@@ -208,6 +219,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testGetMainResourceInResourcesAttachedWhenNotIntegratedInSignatoryBook(): void
@@ -221,6 +233,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCanModifyMainResourceWhenNotIntegratedInSignatoryBookAndSignatureBookParamIsEnable(): void
@@ -237,6 +250,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCanModifyMainResourceWhenNotIntegratedAndSignatureBookParamDisabledAndCurrentUserIsDocCreator(): void
@@ -256,6 +270,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCannotModifyMainResourceWhenNotIntegratedAndSignatureBookParamDisabledAndCurrentUserIsNotDocCreator(): void
@@ -273,6 +288,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCannotDeleteMainResourceInSignatureBook(): void
@@ -288,6 +304,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCanGetASignableAttachmentInSignatureBookFromMainResource(): void
@@ -302,6 +319,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCanGetANonSignableAttachmentInSignatureBookFromMainResource(): void
@@ -316,6 +334,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testIsMainDocumentConvertedInSignatureBook(): void
@@ -330,6 +349,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testIsASignableAttachmentDocumentConvertedInSignatureBook(): void
@@ -344,6 +364,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testIsANonSignableAttachmentDocumentConvertedInSignatureBook(): void
@@ -358,6 +379,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCanModifyANonSignableAttachmentWhenSignatureBookParamIsEnable(): void
@@ -374,6 +396,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCanModifyANonSignableAttachmentWhenSignatureBookParamDisabledAndCurrentUserIsDocCreator(): void
@@ -393,6 +416,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCannotModifyANonSignableAttachmentWhenSignatureBookParamDisabledAndCurrentUserIsNotDocCreator(): void
@@ -411,6 +435,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCanDeleteANonSignableAttachmentWhenSignatureBookParamIsEnable(): void
@@ -427,6 +452,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCanDeleteANonSignableAttachmentWhenSignatureBookParamDisabledAndCurrentUserIsDocCreator(): void
@@ -446,6 +472,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testCannotDeleteANonSignableAttachmentWhenSignatureBookParamDisabledAndCurrentUserIsNotDocCreator(): void
@@ -464,6 +491,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testDoesSignatureBookResourceHasAnActiveWorkflow(): void
@@ -477,6 +505,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testIsCurrentUserTheSameInWorkflowStep(): void
@@ -490,6 +519,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testIsCurrentUserHasSignDocumentPrivilege(): void
@@ -503,6 +533,22 @@ class RetrieveSignatureBookTest extends TestCase
      * @return void
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCannotReturnSignatureBookWithNoResourcesToSign(): void
+    {
+        $this->signatureMainDocumentRepositoryMock->mainDocumentIsSigned = true;
+        $this->attachmentRepositoryMock->attachmentsInSignatureBook = [];
+        $this->expectExceptionObject(new NoResourcesFoundToSignProblem());
+        $this->retrieveSignatureBook->getSignatureBook(100);
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws NoResourcesFoundToSignProblem
      * @throws ResourceDoesNotExistProblem
      */
     public function testGetSignatureBookWhenNoProblemOccurred(): void

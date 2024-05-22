@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief Signature Main Document Repository Interface
+ * @brief Signature Document Repository Interface
  * @author dev@maarch.org
  */
 

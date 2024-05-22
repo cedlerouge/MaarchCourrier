@@ -103,8 +103,6 @@ class RetrieveSignatureBook
         foreach ($attachments as $attachment) {
             $isConverted = $this->convertPdfService->canConvert($attachment->getFileFormat());
 
-            var_dump($attachment->getTypeIdentifier(), $attachment->isSignable());
-
             if ($attachment->isSignable()) {
                 $resourcesToSign[] = (SignatureBookResource::createFromAttachment($attachment))
                     ->setIsConverted($isConverted);
