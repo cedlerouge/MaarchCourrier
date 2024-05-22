@@ -20,12 +20,12 @@ use MaarchCourrier\Authorization\Domain\Problem\MainResourceOutOfPerimeterProble
 use MaarchCourrier\Authorization\Infrastructure\MainResourcePerimeterCheckerService;
 use MaarchCourrier\Authorization\Infrastructure\PrivilegeChecker;
 use MaarchCourrier\Core\Domain\MainResource\Problem\ResourceDoesNotExistProblem;
+use MaarchCourrier\Core\Infrastructure\Environment;
 use MaarchCourrier\DocumentConversion\Infrastructure\Service\ConvertPdfService;
 use MaarchCourrier\MainResource\Infrastructure\Repository\MainResourceRepository;
 use MaarchCourrier\SignatureBook\Application\RetrieveSignatureBook;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\SignatureBookRepository;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\VisaWorkflowRepository;
-use MaarchCourrier\SignatureBook\Infrastructure\SignatureBookConfigLoader;
 use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 use MaarchCourrier\User\Infrastructure\UserFactory;
 use SignatureBook\controllers\SignatureBookController;
@@ -46,10 +46,9 @@ class RetrieveSignatureBookController
      */
     public function getSignatureBook(Request $request, Response $response, array $args): Response
     {
-        $confLoader = new SignatureBookConfigLoader();
-        $isEnable = $confLoader->getConfig()->isNewInternalParaph();
+        $env = new Environment();
 
-        if (!$isEnable) {
+        if (!$env->isNewInternalParapheurEnabled()) {
             $signatureBookController = new SignatureBookController();
             return $signatureBookController->getSignatureBook($request, $response, $args);
         }

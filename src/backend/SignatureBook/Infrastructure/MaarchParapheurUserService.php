@@ -1,23 +1,36 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief Maarch Parapheur User Service
+ * @author dev@maarch.org
+ */
+
 namespace MaarchCourrier\SignatureBook\Infrastructure;
 
 use Exception;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookUserServiceInterface;
-use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookServiceConfig;
 use SrcCore\models\CurlModel;
 
 class MaarchParapheurUserService implements SignatureBookUserServiceInterface
 {
     public int $id;
-    private SignatureServiceConfig $config;
+    private SignatureBookServiceConfig $config;
 
     /**
-     * @param SignatureServiceConfig $config
+     * @param SignatureBookServiceConfig $config
+     *
      * @return SignatureBookUserServiceInterface
      */
-    public function setConfig(SignatureServiceConfig $config): SignatureBookUserServiceInterface
+    public function setConfig(SignatureBookServiceConfig $config): SignatureBookUserServiceInterface
     {
         $this->config = $config;
         return $this;
@@ -25,17 +38,19 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
 
     /**
      * @param int $id
-     * @param string $accessToken
      * @return true
      * @throws Exception
      */
-    public function doesUserExists(int $id, string $accessToken): bool
+    public function doesUserExists(int $id): bool
     {
         $response = CurlModel::exec([
-            'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users/' . $id,
-            'bearerAuth' => ['token' => $accessToken],
-            'method'     => 'GET',
-            'headers'    => [
+            'url'       => rtrim($this->config->getUrl(), '/') . '/rest/users/' . $id,
+            'basicAuth' => [
+                'user'     => $this->config->getUserWebService()->getLogin(),
+                'password' => $this->config->getUserWebService()->getPassword(),
+            ],
+            'method'    => 'GET',
+            'headers'   => [
                 'content-type: application/json',
                 'Accept: application/json',
             ]
@@ -50,11 +65,10 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
 
     /**
      * @param UserInterface $user
-     * @param string $accessToken
      * @return array|int
      * @throws Exception
      */
-    public function createUser(UserInterface $user, string $accessToken): array|int
+    public function createUser(UserInterface $user): array|int
     {
         $userDetails = [
             'firstname' => $user->getFirstname(),
@@ -65,7 +79,10 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
 
         $response = CurlModel::exec([
             'url'        => rtrim($this->config->getUrl(), '/') . '/rest/users',
-            'bearerAuth' => ['token' => $accessToken],
+            'basicAuth' => [
+                'user'     => $this->config->getUserWebService()->getLogin(),
+                'password' => $this->config->getUserWebService()->getPassword(),
+            ],
             'method'     => 'POST',
             'headers'    => [
                 'content-type: application/json',
@@ -84,11 +101,10 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
 
     /**
      * @param UserInterface $user
-     * @param string $accessToken
      * @return array|bool
      * @throws Exception
      */
-    public function updateUser(UserInterface $user, string $accessToken): array|bool
+    public function updateUser(UserInterface $user): array|bool
     {
         $userDetails = [
             'firstname' => $user->getFirstname(),
@@ -103,7 +119,10 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
                 $this->config->getUrl(),
                 '/'
             ) . '/rest/users/' . $externalId['internalParapheur'],
-            'bearerAuth' => ['token' => $accessToken],
+            'basicAuth' => [
+                'user'     => $this->config->getUserWebService()->getLogin(),
+                'password' => $this->config->getUserWebService()->getPassword(),
+            ],
             'method'     => 'PUT',
             'headers'    => [
                 'content-type: application/json',
@@ -121,11 +140,10 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
 
     /**
      * @param UserInterface $user
-     * @param string $accessToken
      * @return array|bool
      * @throws Exception
      */
-    public function deleteUser(UserInterface $user, string $accessToken): array|bool
+    public function deleteUser(UserInterface $user): array|bool
     {
         $externalId = $user->getExternalId();
         $response = CurlModel::exec([
@@ -133,7 +151,10 @@ class MaarchParapheurUserService implements SignatureBookUserServiceInterface
                 $this->config->getUrl(),
                 '/'
             ) . '/rest/users/' . $externalId['internalParapheur'],
-            'bearerAuth' => ['token' => $accessToken],
+            'basicAuth' => [
+                'user'     => $this->config->getUserWebService()->getLogin(),
+                'password' => $this->config->getUserWebService()->getPassword(),
+            ],
             'method'     => 'DELETE',
             'headers'    => [
                 'content-type: application/json',

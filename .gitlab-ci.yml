@@ -5,6 +5,7 @@ variables:
 
 stages:
   - sync
+  - build
   - test
   - deploy
   - after_deploy
@@ -34,6 +35,47 @@ before_script:
   - php composer-setup.php
   - php -r "unlink('composer-setup.php');"
   - mv composer.phar /usr/local/bin/composer
+
+build:
+  image: docker:24.0.2
+  services:
+    - name: docker:24.0.2-dind
+      entrypoint: [ "env", "-u", "DOCKER_HOST" ]
+      command: [ "dockerd-entrypoint.sh" ]
+      alias: dockerhost
+  variables:
+    DOCKER_HOST: tcp://dockerhost:2375/
+    DOCKER_DRIVER: overlay2
+    # See https://github.com/docker-library/docker/pull/166
+    DOCKER_TLS_CERTDIR: ""
+    FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 'true'
+  stage: build
+  rules:
+#    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+#      variables:
+#        IMAGE_TAG: $CI_COMMIT_REF_SLUG
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $IMAGE_TAG == null'
+      variables:
+        IMAGE_TAG: $CI_COMMIT_REF_SLUG
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $IMAGE_TAG != null'
+    - if: $CI_COMMIT_TAG
+      variables:
+        IMAGE_TAG: $CI_COMMIT_TAG
+  before_script:
+    - echo "Docker build"
+    - apk update && apk add git
+    - git checkout-index --all --prefix umask-fix-checkout/
+    - cd umask-fix-checkout
+  script:
+    - docker info
+    - echo "$HARBOR_PASSWORD" | docker login -u $HARBOR_USERNAME --password-stdin $HARBOR_URL
+    - IMAGE_BASE_NAME=$HARBOR_HOST/$HARBOR_PROJECT/$CONTAINER_IMAGE_NAME
+    - echo $IMAGE_BASE_NAME
+    - IMAGE_NAME=$IMAGE_BASE_NAME:$IMAGE_TAG
+    - echo $IMAGE_NAME
+    - docker pull $IMAGE_NAME
+    - docker build --cache-from $IMAGE_NAME -t $IMAGE_NAME --target app --build-arg BUILDKIT_INLINE_CACHE=1 .
+    - docker push $IMAGE_NAME
 
 job_e2e:
   image: php:8.1-apache

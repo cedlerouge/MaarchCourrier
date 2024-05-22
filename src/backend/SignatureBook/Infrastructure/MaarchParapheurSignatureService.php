@@ -18,18 +18,18 @@ use Exception;
 use Firebase\JWT\JWT;
 use MaarchCourrier\Core\Domain\Curl\CurlRequest;
 use MaarchCourrier\Core\Infrastructure\Curl\CurlService;
-use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookServiceConfig;
 use SrcCore\controllers\UrlController;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
 
 class MaarchParapheurSignatureService implements SignatureServiceInterface
 {
-    private SignatureServiceConfig $config;
+    private SignatureBookServiceConfig $config;
 
-    public function setConfig(SignatureServiceConfig $config): MaarchParapheurSignatureService
+    public function setConfig(SignatureBookServiceConfig $config): MaarchParapheurSignatureService
     {
         $this->config = $config;
         return $this;

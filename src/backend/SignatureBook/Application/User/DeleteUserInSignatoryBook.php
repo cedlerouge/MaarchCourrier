@@ -1,12 +1,22 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief Delete User In Signatory Book
+ * @author dev@maarch.org
+ */
+
 namespace MaarchCourrier\SignatureBook\Application\User;
 
-use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookUserServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
-use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\UserDeletionInMaarchParapheurFailedProblem;
 
@@ -14,12 +24,10 @@ class DeleteUserInSignatoryBook
 {
     /**
      * @param SignatureBookUserServiceInterface $signatureBookUserService
-     * @param CurrentUserInterface $currentUser
      * @param SignatureServiceConfigLoaderInterface $signatureServiceConfigLoader
      */
     public function __construct(
         private readonly SignatureBookUserServiceInterface $signatureBookUserService,
-        private readonly CurrentUserInterface $currentUser,
         private readonly SignatureServiceConfigLoaderInterface $signatureServiceConfigLoader,
     ) {
     }
@@ -27,7 +35,6 @@ class DeleteUserInSignatoryBook
     /**
      * @param UserInterface $user
      * @return bool
-     * @throws CurrentTokenIsNotFoundProblem
      * @throws SignatureBookNoConfigFoundProblem
      * @throws UserDeletionInMaarchParapheurFailedProblem
      */
@@ -39,11 +46,7 @@ class DeleteUserInSignatoryBook
         }
         $this->signatureBookUserService->setConfig($signatureBook);
 
-        $accessToken = $this->currentUser->getCurrentUserToken();
-        if (empty($accessToken)) {
-            throw new CurrentTokenIsNotFoundProblem();
-        }
-        $userIsDeleted = $this->signatureBookUserService->deleteUser($user, $accessToken);
+        $userIsDeleted = $this->signatureBookUserService->deleteUser($user);
         if (!empty($userIsDeleted['errors'])) {
             throw new UserDeletionInMaarchParapheurFailedProblem($userIsDeleted);
         } else {

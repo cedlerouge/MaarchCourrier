@@ -14,8 +14,9 @@
 
 namespace MaarchCourrier\SignatureBook\Infrastructure\Controller;
 
+use MaarchCourrier\Core\Infrastructure\Environment;
 use MaarchCourrier\SignatureBook\Application\Config\RetrieveConfig;
-use MaarchCourrier\SignatureBook\Infrastructure\SignatureBookConfigLoader;
+use MaarchCourrier\SignatureBook\Infrastructure\SignatureServiceJsonConfigLoader;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 
@@ -23,7 +24,7 @@ class RetrieveConfigController
 {
     public function getConfig(Request $request, Response $response): Response
     {
-        $retrieveConfig = new RetrieveConfig(new SignatureBookConfigLoader());
+        $retrieveConfig = new RetrieveConfig(new Environment(), new SignatureServiceJsonConfigLoader());
         return $response->withJson($retrieveConfig->getConfig());
     }
 }

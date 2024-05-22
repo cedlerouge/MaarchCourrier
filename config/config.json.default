@@ -25,6 +25,8 @@
     ],
     "signatureBook": {
         "url": "",
+        "userIdParapheurWS": "ccornillac@maarch.com",
+        "passwordParapheurWS": "maarch",
         "userWS": "superadmin",
         "passwordWS": "superadmin",
         "validatedStatus": "EENV",
