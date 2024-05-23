@@ -37,7 +37,7 @@ class WebhookValidation
     }
 
     /**
-     * @param array $body
+     * @param  array  $body
      * @return SignedResource
      * @throws AttachmentOutOfPerimeterProblem
      * @throws ResourceAlreadySignProblem
@@ -71,6 +71,7 @@ class WebhookValidation
 
         $signedResource = new SignedResource();
 
+        $signedResource->setId($body['payload']['idParapheur']);
         $signedResource->setStatus($body['signatureState']['state']);
 
         if (!empty($body['signatureState']['message'])) {

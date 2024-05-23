@@ -23,17 +23,17 @@ use Resource\models\ResModel;
 class ResourceToSignRepository implements ResourceToSignRepositoryInterface
 {
     /**
-     * @param int $resId
+     * @param  int  $resId
      * @return array
      * @throws Exception
      */
     public function getResourceInformations(int $resId): array
     {
-        return ResModel::getById(['resId' => $resId, 'select' => ['version']]);
+        return ResModel::getById(['resId' => $resId, 'select' => ['version', 'external_id']]);
     }
 
     /**
-     * @param int $resId
+     * @param  int  $resId
      * @return array
      * @throws Exception
      */
@@ -50,14 +50,15 @@ class ResourceToSignRepository implements ResourceToSignRepositoryInterface
                     'recipient_id',
                     'recipient_type',
                     'format',
-                    'status'
+                    'status',
+                    'external_id'
                 ]
         ]);
     }
 
     /**
-     * @param int $resId
-     * @param array $storeInformations
+     * @param  int  $resId
+     * @param  array  $storeInformations
      * @return void
      * @throws Exception
      */
@@ -82,7 +83,7 @@ class ResourceToSignRepository implements ResourceToSignRepositoryInterface
     }
 
     /**
-     * @param int $resId
+     * @param  int  $resId
      * @return void
      * @throws Exception
      */
@@ -96,7 +97,7 @@ class ResourceToSignRepository implements ResourceToSignRepositoryInterface
     }
 
     /**
-     * @param int $resId
+     * @param  int  $resId
      * @return bool
      */
     public function isResourceSigned(int $resId): bool
@@ -112,7 +113,7 @@ class ResourceToSignRepository implements ResourceToSignRepositoryInterface
     }
 
     /**
-     * @param int $resId
+     * @param  int  $resId
      * @return bool
      * @throws Exception
      */
@@ -123,8 +124,8 @@ class ResourceToSignRepository implements ResourceToSignRepositoryInterface
     }
 
     /**
-     * @param int $resId
-     * @param int $resIdMaster
+     * @param  int  $resId
+     * @param  int  $resIdMaster
      * @return bool
      * @throws Exception
      */
@@ -132,5 +133,31 @@ class ResourceToSignRepository implements ResourceToSignRepositoryInterface
     {
         $infos = $this->getAttachmentInformations($resId);
         return ($infos['res_id_master'] === $resIdMaster);
+    }
+
+    public function setResourceExternalId(int $resId, int $parapheurDocumentId): void
+    {
+        $externalId = [
+            'maarchParapheurApi' => $parapheurDocumentId
+        ];
+
+        ResModel::update([
+            'set'   => ['external_id' => json_encode($externalId)],
+            'where' => ['res_id = ?'],
+            'data'  => [$resId]
+        ]);
+    }
+
+    public function setAttachmentExternalId(int $resId, int $parapheurDocumentId): void
+    {
+        $externalId = [
+            'maarchParapheurApi' => $parapheurDocumentId
+        ];
+
+        AttachmentModel::update([
+            'set'   => ['external_id' => json_encode($externalId)],
+            'where' => ['res_id = ?'],
+            'data'  => [$resId]
+        ]);
     }
 }
