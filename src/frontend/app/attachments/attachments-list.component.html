@@ -59,7 +59,7 @@
                     <mat-icon fontSet="fas" fontIcon="fa-ellipsis-v"></mat-icon>
                 </button>
                 <mat-menu #menuPjAction="matMenu">
-                    <button name="putInSignatureBook" mat-menu-item [disabled]="attachment.status === 'FRZ' || !attachment.canUpdate" (click)="$event.stopPropagation(); setInSignatureBook(attachment); menuTrigger.closeMenu()">
+                    <button name="putInSignatureBook" mat-menu-item [disabled]="['SIGN', 'FRZ'].indexOf(attachment.status) > -1 || !attachment.canUpdate" (click)="$event.stopPropagation(); setInSignatureBook(attachment); menuTrigger.closeMenu()">
                         <mat-checkbox color="primary" [checked]="attachment.inSignatureBook"></mat-checkbox>
                         {{'lang.putInSignatureBook' | translate}}
                     </button>
