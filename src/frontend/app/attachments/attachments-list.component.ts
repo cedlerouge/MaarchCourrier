@@ -16,6 +16,7 @@ import { AppService } from '@service/app.service';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { FunctionsService } from '@service/functions.service';
 import { ActivatedRoute } from '@angular/router';
+import { SignatureBookService } from '@appRoot/signatureBook/signature-book.service';
 
 @Component({
     selector: 'app-attachments-list',
@@ -102,6 +103,7 @@ export class AttachmentsListComponent implements OnInit {
         public appService: AppService,
         public externalSignatoryBook: ExternalSignatoryBookManagerService,
         public functions: FunctionsService,
+        public signatureBookService: SignatureBookService,
         private notify: NotificationService,
         private headerService: HeaderService,
         private privilegeService: PrivilegeService,

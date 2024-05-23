@@ -59,15 +59,33 @@
                     <mat-icon fontSet="fas" fontIcon="fa-ellipsis-v"></mat-icon>
                 </button>
                 <mat-menu #menuPjAction="matMenu">
-                    <button name="putInSignatureBook" mat-menu-item [disabled]="attachment.status === 'FRZ' || !attachment.canUpdate" (click)="$event.stopPropagation(); setInSignatureBook(attachment); menuTrigger.closeMenu()">
+                    <button
+                        class="button-item"
+                        name="putInSignatureBook"
+                        mat-menu-item
+                        [title]="'lang.putInSignatureBook' | translate"
+                        [disabled]="attachment.status === 'FRZ' || !attachment.canUpdate"
+                        (click)="$event.stopPropagation(); setInSignatureBook(attachment); menuTrigger.closeMenu()">
                         <mat-checkbox color="primary" [checked]="attachment.inSignatureBook"></mat-checkbox>
                         {{'lang.putInSignatureBook' | translate}}
                     </button>
-                    <button mat-menu-item (click)="$event.stopPropagation(); setInSendAttachment(attachment); menuTrigger.closeMenu()" [disabled]="!mailevaEnabled">
+                    <button
+                        class="button-item"
+                        mat-menu-item
+                        [title]="'lang.putInSendAttach' | translate"
+                        [disabled]="!mailevaEnabled"
+                        (click)="$event.stopPropagation(); setInSendAttachment(attachment); menuTrigger.closeMenu()">
                         <mat-checkbox color="primary" [checked]="attachment.inSendAttach"
                             [disabled]="!mailevaEnabled">
                         </mat-checkbox>
                         {{'lang.putInSendAttach' | translate}}
+                    </button>
+                    <button *ngIf="!loading && attachment.status === 'SIGN' && signatureBookService.config.isNewInternalParaph"
+                        mat-menu-item
+                        [title]="'lang.downloadProof' | translate"
+                        (click)="$event.stopPropagation(); signatureBookService.downloadProof(attachment.resId)">
+                        <mat-icon color="primary" class="fas fa-award" style="font-size: 17px;"></mat-icon>
+                        <span style="white-space: pre-wrap;">{{'lang.downloadProof' | translate}}</span>
                     </button>
                     <ng-container *ngIf="attachment.status === 'FRZ'">
                         <mat-divider></mat-divider>
