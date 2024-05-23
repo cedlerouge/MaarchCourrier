@@ -25,12 +25,15 @@ use Docserver\models\DocserverModel;
 use Doctype\models\DoctypeModel;
 use Doctype\models\SecondLevelModel;
 use Entity\models\EntityModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use Priority\models\PriorityModel;
 use Resource\models\ResModel;
 use Resource\models\ResourceContactModel;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
+use SoapClient;
+use SoapFault;
 use SrcCore\http\Response;
 use SrcCore\controllers\PasswordController;
 use SrcCore\models\ValidatorModel;
@@ -39,7 +42,12 @@ use User\models\UserModel;
 
 class MultigestController
 {
-    public function getConfiguration(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getConfiguration(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_multigest', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -55,7 +63,12 @@ class MultigestController
         return $response->withJson(['configuration' => $configuration]);
     }
 
-    public function updateConfiguration(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function updateConfiguration(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_multigest', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -75,19 +88,29 @@ class MultigestController
         if (empty($configuration)) {
             ConfigurationModel::create(['privilege' => 'admin_multigest', 'value' => $value]);
         } else {
-            ConfigurationModel::update(['set' => ['value' => $value], 'where' => ['privilege = ?'], 'data' => ['admin_multigest']]);
+            ConfigurationModel::update(
+                ['set' => ['value' => $value], 'where' => ['privilege = ?'], 'data' => ['admin_multigest']]
+            );
         }
 
         return $response->withStatus(204);
     }
 
-    public function getAccounts(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function getAccounts(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_multigest', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $entities = EntityModel::get(['select' => ['external_id', 'short_label'], 'where' => ["external_id->>'multigest' is not null"]]);
+        $entities = EntityModel::get(
+            ['select' => ['external_id', 'short_label'], 'where' => ["external_id->>'multigest' is not null"]]
+        );
 
         $accounts = [];
         $alreadyAdded = [];
@@ -114,7 +137,13 @@ class MultigestController
         return $response->withJson(['accounts' => $accounts]);
     }
 
-    public function getAvailableEntities(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function getAvailableEntities(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_multigest', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -127,7 +156,13 @@ class MultigestController
         return $response->withJson(['availableEntities' => $availableEntities]);
     }
 
-    public function createAccount(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function createAccount(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_multigest', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -176,30 +211,50 @@ class MultigestController
         return $response->withStatus(204);
     }
 
-    public function getAccountById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getAccountById(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_multigest', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $entities = EntityModel::get(['select' => ['external_id', 'id'], 'where' => ["external_id->'multigest'->>'id' = ?"], 'data' => [$args['id']]]);
+        $entities = EntityModel::get(
+            [
+                'select' => ['external_id', 'id'],
+                'where'  => ["external_id->'multigest'->>'id' = ?"],
+                'data'   => [$args['id']]
+            ]
+        );
         if (empty($entities[0])) {
             return $response->withStatus(400)->withJson(['errors' => 'Account not found']);
         }
 
         $externalId = json_decode($entities[0]['external_id'], true);
         $account = [
-            'id'        => $externalId['multigest']['id'],
-            'label'     => $externalId['multigest']['label'],
-            'login'     => $externalId['multigest']['login'],
-            'sasId'     => $externalId['multigest']['sasId'],
-            'entities'  => array_column($entities, 'id')
+            'id'       => $externalId['multigest']['id'],
+            'label'    => $externalId['multigest']['label'],
+            'login'    => $externalId['multigest']['login'],
+            'sasId'    => $externalId['multigest']['sasId'],
+            'entities' => array_column($entities, 'id')
         ];
 
         return $response->withJson($account);
     }
 
-    public function updateAccount(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function updateAccount(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_multigest', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -217,7 +272,13 @@ class MultigestController
             return $response->withStatus(400)->withJson(['errors' => 'Body entities is empty or not an array']);
         }
 
-        $accounts = EntityModel::get(['select' => ['external_id', 'id'], 'where' => ["external_id->'multigest'->>'id' = ?"], 'data' => [$args['id']]]);
+        $accounts = EntityModel::get(
+            [
+                'select' => ['external_id', 'id'],
+                'where'  => ["external_id->'multigest'->>'id' = ?"],
+                'data'   => [$args['id']]
+            ]
+        );
         if (empty($accounts[0])) {
             return $response->withStatus(400)->withJson(['errors' => 'Account not found']);
         }
@@ -234,11 +295,13 @@ class MultigestController
 
         $externalId = json_decode($accounts[0]['external_id'], true);
         $account = [
-            'id'        => $args['id'],
-            'label'     => $body['label'],
-            'login'     => $body['login'],
-            'password'  => empty($body['password']) ? $externalId['multigest']['password'] : PasswordController::encrypt(['dataToEncrypt' => $body['password']]),
-            'sasId'     => $body['sasId']
+            'id'       => $args['id'],
+            'label'    => $body['label'],
+            'login'    => $body['login'],
+            'password' => empty($body['password']) ? $externalId['multigest']['password'] : PasswordController::encrypt(
+                ['dataToEncrypt' => $body['password']]
+            ),
+            'sasId'    => $body['sasId']
         ];
         $account = json_encode($account);
 
@@ -249,46 +312,65 @@ class MultigestController
         ]);
 
         EntityModel::update([
-            'postSet'   => ['external_id' => "jsonb_set(coalesce(external_id, '{}'::jsonb), '{multigest}', '{$account}')"],
-            'where'     => ['id in (?)'],
-            'data'      => [$body['entities']]
+            'postSet' => ['external_id' => "jsonb_set(coalesce(external_id, '{}'::jsonb), '{multigest}', '{$account}')"],
+            'where'   => ['id in (?)'],
+            'data'    => [$body['entities']]
         ]);
 
         $previousEntities = array_column($accounts, 'id');
         $entitiesToRemove = array_diff($previousEntities, $body['entities']);
         if (!empty($entitiesToRemove)) {
             EntityModel::update([
-                'postSet'   => ['external_id' => "external_id - 'multigest'"],
-                'where'     => ['id in (?)'],
-                'data'      => [$entitiesToRemove]
+                'postSet' => ['external_id' => "external_id - 'multigest'"],
+                'where'   => ['id in (?)'],
+                'data'    => [$entitiesToRemove]
             ]);
         }
 
         return $response->withStatus(204);
     }
 
-    public function deleteAccount(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function deleteAccount(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_multigest', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $accounts = EntityModel::get(['select' => ['external_id', 'id'], 'where' => ["external_id->'multigest'->>'id' = ?"], 'data' => [$args['id']]]);
+        $accounts = EntityModel::get(
+            [
+                'select' => ['external_id', 'id'],
+                'where'  => ["external_id->'multigest'->>'id' = ?"],
+                'data'   => [$args['id']]
+            ]
+        );
         if (empty($accounts[0])) {
             return $response->withStatus(400)->withJson(['errors' => 'Account not found']);
         }
 
         $entitiesToRemove = array_column($accounts, 'id');
         EntityModel::update([
-            'postSet'   => ['external_id' => "external_id - 'multigest'"],
-            'where'     => ['id in (?)'],
-            'data'      => [$entitiesToRemove]
+            'postSet' => ['external_id' => "external_id - 'multigest'"],
+            'where'   => ['id in (?)'],
+            'data'    => [$entitiesToRemove]
         ]);
 
         return $response->withStatus(204);
     }
 
-    public function checkAccount(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function checkAccount(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_multigest', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -304,8 +386,8 @@ class MultigestController
         }
 
         $result = MultigestController::checkAccountWithCredentials([
-            'sasId' => $body['sasId'],
-            'login' => $body['login'],
+            'sasId'    => $body['sasId'],
+            'login'    => $body['login'],
             'password' => empty($body['password']) ? '' : $body['password']
         ]);
 
@@ -320,7 +402,12 @@ class MultigestController
         return $response->withStatus(204);
     }
 
-    public static function checkAccountWithCredentials(array $args)
+    /**
+     * @param array $args
+     * @return string[]|true
+     * @throws Exception
+     */
+    public static function checkAccountWithCredentials(array $args): array|bool
     {
         ValidatorModel::stringType($args, ['sasId', 'login', 'password']);
         ValidatorModel::notEmpty($args, ['sasId', 'login']);
@@ -336,13 +423,13 @@ class MultigestController
         $multigestUri = rtrim($configuration['uri'], '/');
 
         try {
-            $soapClient = new \SoapClient($multigestUri, [
+            $soapClient = new SoapClient($multigestUri, [
                 'login'          => $args['login'],
                 'password'       => $args['password'] ?? '',
                 'authentication' => SOAP_AUTHENTICATION_BASIC
             ]);
-        } catch (\SoapFault $e) {
-            return ['errors' => (string) $e, 'lang' => 'soapClientCreationError'];
+        } catch (SoapFault $e) {
+            return ['errors' => (string)$e, 'lang' => 'soapClientCreationError'];
         }
 
         $multigestParameters = CoreConfigModel::getJsonLoaded(['path' => 'config/multigest.json']);
@@ -350,7 +437,10 @@ class MultigestController
             return ['errors' => 'Multigest mapping file does not exist', 'lang' => 'multigestMappingDoesNotExist'];
         }
         if (empty($multigestParameters['mapping']['document'])) {
-            return ['errors' => 'Multigest mapping for document is empty', 'lang' => 'multigestMappingForDocumentIsEmpty'];
+            return [
+                'errors' => 'Multigest mapping for document is empty',
+                'lang'   => 'multigestMappingForDocumentIsEmpty'
+            ];
         }
 
         $keyMetadataField = key($multigestParameters['mapping']['document']);
@@ -366,16 +456,24 @@ class MultigestController
         if (is_soap_fault($result)) {
             return ['errors' => 'MultiGest SoapFault: ' . $result];
         }
-        $result = (int) $result;
+        $result = (int)$result;
 
         if ($result < 0 && $result != -7) { // -7 -> "Dossier inexistant"
-            return ['errors' => 'MultiGest connection failed for user ' . $args['login'] . ' in sas ' . $args['sasId'], 'lang' => 'multigestAccountTestFailed'];
+            return [
+                'errors' => 'MultiGest connection failed for user ' . $args['login'] . ' in sas ' . $args['sasId'],
+                'lang'   => 'multigestAccountTestFailed'
+            ];
         }
 
         return true;
     }
 
-    public static function sendResource(array $args)
+    /**
+     * @param array $args
+     * @return string[]|true
+     * @throws Exception
+     */
+    public static function sendResource(array $args): array|bool
     {
         ValidatorModel::notEmpty($args, ['resId', 'userId']);
         ValidatorModel::intVal($args, ['resId', 'userId']);
@@ -410,25 +508,42 @@ class MultigestController
 
         $document = ResModel::getById([
             'select' => [
-                'filename', 'subject', 'alt_identifier', 'external_id', 'type_id', 'priority', 'fingerprint', 'custom_fields', 'dest_user',
-                'creation_date', 'modification_date', 'doc_date', 'admission_date',
-                'destination', 'initiator', 'process_limit_date', 'closing_date', 'docserver_id', 'path', 'filename'
+                'filename',
+                'subject',
+                'alt_identifier',
+                'external_id',
+                'type_id',
+                'priority',
+                'fingerprint',
+                'custom_fields',
+                'dest_user',
+                'creation_date',
+                'modification_date',
+                'doc_date',
+                'admission_date',
+                'destination',
+                'initiator',
+                'process_limit_date',
+                'closing_date',
+                'docserver_id',
+                'path',
+                'filename'
             ],
             'resId'  => $args['resId']
         ]);
 
         $convertedDocument = AdrModel::getDocuments([
-            'select'    => ['docserver_id', 'path', 'filename', 'fingerprint'],
-            'where'     => ['res_id = ?', 'type = ?', 'version = ?'],
-            'data'      => [$args['resId'], 'SIGN', $document['version']],
-            'orderBy'   => ['version DESC'],
-            'limit'     => 1
+            'select'  => ['docserver_id', 'path', 'filename', 'fingerprint'],
+            'where'   => ['res_id = ?', 'type = ?', 'version = ?'],
+            'data'    => [$args['resId'], 'SIGN', $document['version']],
+            'orderBy' => ['version DESC'],
+            'limit'   => 1
         ]);
         if (!empty($convertedDocument[0])) {
             $document['docserver_id'] = $convertedDocument['docserver_id'];
-            $document['path']         = $convertedDocument['path'];
-            $document['filename']     = $convertedDocument['filename'];
-            $document['fingerprint']  = $convertedDocument['fingerprint'];
+            $document['path'] = $convertedDocument['path'];
+            $document['filename'] = $convertedDocument['filename'];
+            $document['fingerprint'] = $convertedDocument['fingerprint'];
         }
 
         if (empty($document)) {
@@ -440,12 +555,19 @@ class MultigestController
         }
         $document['subject'] = str_replace([':', '*', '\'', '"', '>', '<'], ' ', $document['subject']);
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
+        $docserver = DocserverModel::getByDocserverId(
+            ['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
+        );
         if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
             return ['errors' => 'Docserver does not exist', 'lang' => 'docserverDoesNotExists'];
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $document['path']) . $document['filename'];
+        $pathToDocument = $docserver['path_template'] . str_replace(
+            '#',
+            DIRECTORY_SEPARATOR,
+            $document['path']
+        ) .
+            $document['filename'];
         if (!is_file($pathToDocument)) {
             return ['errors' => 'Document not found on docserver', 'lang' => 'documentNotFoundOnDocserver'];
         }
@@ -463,19 +585,22 @@ class MultigestController
             return ['errors' => 'Multigest mapping file does not exist', 'lang' => 'multigestMappingDoesNotExist'];
         }
         if (empty($multigestParameters['mapping']['document'])) {
-            return ['errors' => 'Multigest mapping for document is empty', 'lang' => 'multigestMappingForDocumentIsEmpty'];
+            return [
+                'errors' => 'Multigest mapping for document is empty',
+                'lang'   => 'multigestMappingForDocumentIsEmpty'
+            ];
         }
 
         $resourceContacts = ResourceContactModel::get([
-            'where'     => ['res_id = ?', 'mode = ?'],
-            'data'      => [$args['resId'], 'sender']
+            'where' => ['res_id = ?', 'mode = ?'],
+            'data'  => [$args['resId'], 'sender']
         ]);
         $rawContacts = [];
         foreach ($resourceContacts as $resourceContact) {
             if ($resourceContact['type'] == 'contact') {
                 $rawContacts[] = ContactModel::getById([
-                    'select'    => ['*'],
-                    'id'        => $resourceContact['item_id']
+                    'select' => ['*'],
+                    'id'     => $resourceContact['item_id']
                 ]);
             }
         }
@@ -493,7 +618,7 @@ class MultigestController
             if ($maarchField == 'currentDate') {
                 $nextValue = date('Y-m-d');
             } elseif (isset($document[$maarchField])) {
-                if (strpos($maarchField, '_date') !== false) {
+                if (str_contains($maarchField, '_date')) {
                     $date = new \DateTime($document[$maarchField]);
                     $document[$maarchField] = $date->format('Y-m-d');
                 }
@@ -529,13 +654,15 @@ class MultigestController
         }
 
         try {
-            $soapClient = new \SoapClient($multigestUri, [
+            $soapClient = new SoapClient($multigestUri, [
                 'login'          => $configuration['login'],
-                'password'       => empty($configuration['password']) ? '' : PasswordController::decrypt(['encryptedData' => $configuration['password']]),
+                'password'       => empty($configuration['password']) ? '' : PasswordController::decrypt(
+                    ['encryptedData' => $configuration['password']]
+                ),
                 'authentication' => SOAP_AUTHENTICATION_BASIC
             ]);
-        } catch (\SoapFault $e) {
-            return ['errors' => (string) $e, 'lang' => 'soapClientCreationError'];
+        } catch (SoapFault $e) {
+            return ['errors' => (string)$e, 'lang' => 'soapClientCreationError'];
         }
 
         $result = $soapClient->GedSetModeUid(1);
@@ -558,7 +685,7 @@ class MultigestController
             return ['errors' => 'MultiGest SoapFault: ' . $result];
         }
 
-        $result = (int) $result;
+        $result = (int)$result;
         if ($result > 0) {
             return ['errors' => 'This resource is already in Multigest', 'lang' => 'documentAlreadyInMultigest'];
         } elseif ($result !== -7) { // -7 -> "Dossier inexistant"
@@ -580,7 +707,7 @@ class MultigestController
             return ['errors' => 'MultiGest SoapFault: ' . $result];
         }
 
-        $result = (int) $result;
+        $result = (int)$result;
         if ($result != 0) {
             return ['errors' => 'Could not create Multigest folder', 'lang' => 'multigestFolderCreationError'];
         }
@@ -600,7 +727,7 @@ class MultigestController
             return ['errors' => 'MultiGest SoapFault: ' . $result];
         }
 
-        $result = (int) $result;
+        $result = (int)$result;
         if ($result <= 0) {
             return ['errors' => 'Multigest error ' . $result . ' occurred while accessing folder'];
         }
@@ -626,22 +753,37 @@ class MultigestController
             return ['errors' => 'MultiGest SoapFault: ' . $result];
         }
 
-        $result = (int) $result;
+        $result = (int)$result;
         if ($result <= 0) {
             return ['errors' => 'Multigest error ' . $result . ' occurred while importing main document'];
         }
 
         $externalId = json_decode($document['external_id'], true);
         $externalId['multigestId'] = $result;
-        ResModel::update(['set' => ['external_id' => json_encode($externalId)], 'where' => ['res_id = ?'], 'data' => [$args['resId']]]);
-
-        $multigestUIDs = ['document' => $result, 'attachments' => []];
+        ResModel::update(
+            [
+                'set'   => ['external_id' => json_encode($externalId)],
+                'where' => ['res_id = ?'],
+                'data'  => [$args['resId']]
+            ]
+        );
 
         $attachments = AttachmentModel::get([
-            'select'    => ['res_id', 'title', 'identifier', 'external_id', 'docserver_id', 'path', 'filename', 'format', 'attachment_type', 'relation'],
-            'where'     => ['res_id_master = ?', 'attachment_type not in (?)', 'status not in (?)'],
-            'data'      => [$args['resId'], ['signed_response'], ['DEL', 'OBS']],
-            'orderBy'   => ['relation DESC']
+            'select'  => [
+                'res_id',
+                'title',
+                'identifier',
+                'external_id',
+                'docserver_id',
+                'path',
+                'filename',
+                'format',
+                'attachment_type',
+                'relation'
+            ],
+            'where'   => ['res_id_master = ?', 'attachment_type not in (?)', 'status not in (?)'],
+            'data'    => [$args['resId'], ['signed_response'], ['DEL', 'OBS']],
+            'orderBy' => ['relation DESC']
         ]);
 
         // keep only last version
@@ -656,9 +798,9 @@ class MultigestController
 
         foreach ($attachments as $attachment) {
             $adrInfo = [
-                'docserver_id'  => $attachment['docserver_id'],
-                'path'          => $attachment['path'],
-                'filename'      => $attachment['filename']
+                'docserver_id' => $attachment['docserver_id'],
+                'path'         => $attachment['path'],
+                'filename'     => $attachment['filename']
             ];
             if (empty($adrInfo['docserver_id'])) {
                 continue;
@@ -667,7 +809,12 @@ class MultigestController
             if (empty($docserver['path_template'])) {
                 continue;
             }
-            $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $adrInfo['path']) . $adrInfo['filename'];
+            $pathToDocument = $docserver['path_template'] . str_replace(
+                '#',
+                DIRECTORY_SEPARATOR,
+                $adrInfo['path']
+            ) .
+                $adrInfo['filename'];
             if (!is_file($pathToDocument)) {
                 continue;
             }
@@ -712,9 +859,6 @@ class MultigestController
             $metadataFields .= '|' . $keyMetadataField;
             $metadataValues .= '|' . $keyMetadataValue;
 
-            $metadataFields = $metadataFields;
-            $metadataValues = $metadataValues;
-
             $result = $soapClient->GedChampReset();
             if (is_soap_fault($result)) {
                 return ['errors' => 'MultiGest SoapFault: ' . $result];
@@ -730,7 +874,7 @@ class MultigestController
                 return ['errors' => 'MultiGest SoapFault: ' . $result];
             }
 
-            $result = (int) $result;
+            $result = (int)$result;
             if ($result != 0) {
                 return ['errors' => 'Could not create Multigest folder', 'lang' => 'multigestFolderCreationError'];
             }
@@ -750,7 +894,7 @@ class MultigestController
                 return ['errors' => 'MultiGest SoapFault: ' . $result];
             }
 
-            $result = (int) $result;
+            $result = (int)$result;
             if ($result <= 0) {
                 return ['errors' => 'Multigest error ' . $result . ' occurred while accessing folder'];
             }
@@ -776,22 +920,33 @@ class MultigestController
                 return ['errors' => 'MultiGest SoapFault: ' . $result];
             }
 
-            $result = (int) $result;
+            $result = (int)$result;
             if ($result <= 0) {
                 return ['errors' => 'Multigest error ' . $result . ' occurred while importing attachment'];
             }
 
-            $multigestUIDs['attachments'][] = $result;
-
             $externalId = json_decode($attachment['external_id'], true);
             $externalId['multigestId'] = $result;
-            AttachmentModel::update(['set' => ['external_id' => json_encode($externalId)], 'where' => ['res_id = ?'], 'data' => [$attachment['res_id']]]);
+            AttachmentModel::update(
+                [
+                    'set'   => ['external_id' => json_encode($externalId)],
+                    'where' => ['res_id = ?'],
+                    'data'  => [$attachment['res_id']]
+                ]
+            );
         }
 
         return true;
     }
 
-    public static function getResourceField(array $document, string $field, array $rawContacts)
+    /**
+     * @param array $document
+     * @param string $field
+     * @param array $rawContacts
+     * @return mixed|string
+     * @throws Exception
+     */
+    public static function getResourceField(array $document, string $field, array $rawContacts): mixed
     {
         if ($field == 'doctypeLabel' && !empty($document['type_id'])) {
             $doctype = DoctypeModel::getById(['select' => ['description'], 'id' => $document['type_id']]);
@@ -808,7 +963,9 @@ class MultigestController
             return '';
         }
         if ($field == 'destinationLabel' && !empty($document['destination'])) {
-            $destination = EntityModel::getByEntityId(['entityId' => $document['destination'], 'select' => ['entity_label']]);
+            $destination = EntityModel::getByEntityId(
+                ['entityId' => $document['destination'], 'select' => ['entity_label']]
+            );
             if (!empty($destination)) {
                 return $destination['entity_label'];
             }
@@ -824,26 +981,28 @@ class MultigestController
         if ($field == 'destUserLabel' && !empty($document['dest_user'])) {
             return UserModel::getLabelledUserById(['id' => $document['dest_user']]);
         }
-        if (strpos($field, 'senderCompany_') === 0) {
+        if (str_starts_with($field, 'senderCompany_')) {
             return $rawContacts[MultigestController::fieldNameToIndex($field)]['company'] ?? '';
         }
-        if (strpos($field, 'senderCivility_') === 0) {
+        if (str_starts_with($field, 'senderCivility_')) {
             if (!empty($rawContacts[MultigestController::fieldNameToIndex($field)]['civility'])) {
-                return ContactCivilityController::getLabelById(['id' => $rawContacts[MultigestController::fieldNameToIndex($field)]['civility']]);
+                return ContactCivilityController::getLabelById(
+                    ['id' => $rawContacts[MultigestController::fieldNameToIndex($field)]['civility']]
+                );
             } else {
                 return '';
             }
         }
-        if (strpos($field, 'senderFirstname_') === 0) {
+        if (str_starts_with($field, 'senderFirstname_')) {
             return $rawContacts[MultigestController::fieldNameToIndex($field)]['firstname'] ?? '';
         }
-        if (strpos($field, 'senderLastname_') === 0) {
+        if (str_starts_with($field, 'senderLastname_')) {
             return $rawContacts[MultigestController::fieldNameToIndex($field)]['lastname'] ?? '';
         }
-        if (strpos($field, 'senderFunction_') === 0) {
+        if (str_starts_with($field, 'senderFunction_')) {
             return $rawContacts[MultigestController::fieldNameToIndex($field)]['function'] ?? '';
         }
-        if (strpos($field, 'senderAddress_') === 0) {
+        if (str_starts_with($field, 'senderAddress_')) {
             $contactIndex = MultigestController::fieldNameToIndex($field);
             if (!empty($rawContacts[$contactIndex])) {
                 return ContactController::getFormattedContactWithAddress(['contact' => $rawContacts[$contactIndex]])['contact']['otherInfo'];
@@ -856,13 +1015,15 @@ class MultigestController
             if (empty($doctype)) {
                 return '';
             }
-            $doctypeSecondLevel = SecondLevelModel::getById(['id' => $doctype['doctypes_second_level_id'], 'select' => ['doctypes_second_level_label']]);
+            $doctypeSecondLevel = SecondLevelModel::getById(
+                ['id' => $doctype['doctypes_second_level_id'], 'select' => ['doctypes_second_level_label']]
+            );
             if (empty($doctypeSecondLevel)) {
                 return '';
             }
             return $doctypeSecondLevel['doctypes_second_level_label'];
         }
-        if (strpos($field, 'customField_') === 0) {
+        if (str_starts_with($field, 'customField_')) {
             $customFieldId = MultigestController::fieldNameToIndex($field);
             $customFieldsValues = json_decode($document['custom_fields'], true);
             if (!empty($customFieldsValues[$customFieldId]) && is_string($customFieldsValues[$customFieldId])) {
@@ -874,11 +1035,15 @@ class MultigestController
         return '';
     }
 
-    private static function fieldNameToIndex($field)
+    /**
+     * @param $field
+     * @return int
+     */
+    private static function fieldNameToIndex($field): int
     {
         $fieldParts = explode($field, '_');
         if (count($fieldParts) > 1) {
-            return (int) $fieldParts[1];
+            return (int)$fieldParts[1];
         }
         return 0;
     }

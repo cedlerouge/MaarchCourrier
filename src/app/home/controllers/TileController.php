@@ -26,7 +26,6 @@ use Doctype\models\DoctypeModel;
 use Entity\models\EntityModel;
 use Entity\models\ListTemplateModel;
 use Exception;
-use ExternalSignatoryBook\controllers\FastParapheurController;
 use Folder\controllers\FolderController;
 use Folder\models\FolderModel;
 use Folder\models\ResourceFolderModel;
@@ -73,6 +72,7 @@ class TileController
     /**
      * @param Request $request
      * @param Response $response
+     *
      * @return Response
      * @throws Exception
      */
@@ -98,6 +98,7 @@ class TileController
      * @param Request $request
      * @param Response $response
      * @param array $args
+     *
      * @return Response
      * @throws Exception
      */
@@ -124,6 +125,7 @@ class TileController
     /**
      * @param Request $request
      * @param Response $response
+     *
      * @return Response
      * @throws Exception
      */
@@ -190,6 +192,7 @@ class TileController
      * @param Request $request
      * @param Response $response
      * @param array $args
+     *
      * @return Response
      * @throws Exception
      */
@@ -242,6 +245,7 @@ class TileController
      * @param Request $request
      * @param Response $response
      * @param array $args
+     *
      * @return Response
      * @throws Exception
      */
@@ -271,6 +275,7 @@ class TileController
     /**
      * @param Request $request
      * @param Response $response
+     *
      * @return Response
      */
     public function updatePositions(Request $request, Response $response): Response
@@ -309,6 +314,7 @@ class TileController
 
     /**
      * @param array $args
+     *
      * @return array|bool
      * @throws Exception
      */
@@ -372,10 +378,11 @@ class TileController
 
     /**
      * @param array $tile
-     * @return bool
+     *
+     * @return void
      * @throws Exception
      */
-    private static function getShortDetails(array &$tile): bool
+    private static function getShortDetails(array &$tile): void
     {
         if ($tile['type'] == 'basket') {
             $basket = BasketModel::getById([
@@ -400,7 +407,8 @@ class TileController
             } elseif ($groupBasket[0]['list_event'] == 'documentDetails') {
                 $tile['basketRoute'] = '/resources/:resId';
             } elseif ($groupBasket[0]['list_event'] == 'signatureBookAction') {
-                $tile['basketRoute'] = '/signatureBook/users/:userId/groups/:groupId/baskets/:basketId/resources/:resId';
+                $route = '/signatureBook/users/:userId/groups/:groupId/baskets/:basketId/resources/:resId';
+                $tile['basketRoute'] = $route;
             }
         } elseif ($tile['type'] == 'folder') {
             $folder = FolderModel::getById(['select' => ['label'], 'id' => $tile['parameters']['folderId']]);
@@ -408,7 +416,7 @@ class TileController
         } elseif ($tile['type'] == 'externalSignatoryBook') {
             $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
             if (empty($loadedXml)) {
-                return false;
+                return;
             }
             $enabledExternalSignatoryBook = (string)$loadedXml->signatoryBookEnabled;
             if ($enabledExternalSignatoryBook == 'maarchParapheur') {
@@ -432,12 +440,11 @@ class TileController
             ]);
             $tile['label'] = "{$searchTemplate[0]['label']}";
         }
-
-        return true;
     }
 
     /**
      * @param array $tile
+     *
      * @return array|bool
      * @throws Exception
      */
@@ -504,6 +511,7 @@ class TileController
 
     /**
      * @param array $tile
+     *
      * @return array|bool
      * @throws Exception
      */
@@ -545,10 +553,11 @@ class TileController
      * @param array $tile
      * @param $allResources
      * @param string $order
-     * @return bool
+     *
+     * @return void
      * @throws Exception
      */
-    private static function getResourcesDetails(array &$tile, $allResources, string $order = ''): bool
+    private static function getResourcesDetails(array &$tile, $allResources, string $order = ''): void
     {
         $allResources = array_column($allResources, 'res_id');
         if ($tile['view'] == 'summary') {
@@ -611,7 +620,7 @@ class TileController
                 $chunkedResources = array_chunk($allResources, 5000);
                 foreach ($chunkedResources as $chunkedResource) {
                     $chunkResources = ResModel::get([
-                        'select'  => ["COUNT({$type})", $type],
+                        'select'  => ["COUNT($type)", $type],
                         'where'   => ['res_id in (?)'],
                         'data'    => [$chunkedResource],
                         'groupBy' => [$type],
@@ -692,12 +701,11 @@ class TileController
                 }
             }
         }
-
-        return true;
     }
 
     /**
      * @param array $tile
+     *
      * @return void
      * @throws Exception
      */
@@ -715,7 +723,7 @@ class TileController
             if (empty($allResources[$i])) {
                 break;
             }
-            $order .= "WHEN {$allResources[$i]} THEN {$i} ";
+            $order .= "WHEN $allResources[$i] THEN $i ";
         }
         $order .= 'END';
 
@@ -724,6 +732,7 @@ class TileController
 
     /**
      * @param array $tile
+     *
      * @return array|bool
      * @throws Exception
      */
@@ -797,10 +806,7 @@ class TileController
         return true;
     }
 
-    /**
-     * @param array $tile
-     * @return void
-     */
+    /* STANDBY : We can't create tiles for FAST
     private static function getFastParapheurDetails(array &$tile): void
     {
         if ($tile['view'] == 'summary') {
@@ -809,9 +815,11 @@ class TileController
             $tile['resources'] = FastParapheurController::getResourcesDetails();
         }
     }
+    */
 
     /**
      * @param array $tile
+     *
      * @return array|true
      * @throws Exception
      */
@@ -944,6 +952,7 @@ class TileController
 
     /**
      * @param array $tile
+     *
      * @return array|true
      * @throws Exception
      */
@@ -1069,7 +1078,7 @@ class TileController
             if (empty($allResources[$i])) {
                 break;
             }
-            $order .= "WHEN {$allResources[$i]} THEN {$i} ";
+            $order .= "WHEN $allResources[$i] THEN $i ";
             $resIds[] = ['res_id' => $allResources[$i]];
         }
         $order .= 'END';
