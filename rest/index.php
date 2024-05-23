@@ -494,7 +494,6 @@ $app->delete('/resources/{resId}/linkedResources/{id}', \Resource\controllers\Li
 $app->delete('/resources/{resId}/circuits/{type}', \Entity\controllers\ListInstanceController::class . ':deleteCircuit');
 $app->get('/resources/{resId}/fileInformation', \Resource\controllers\ResController::class . ':getResourceFileInformation');
 $app->get('/resources/{resId}/baskets', \Resource\controllers\UserFollowedResourceController::class . ':getBaskets');
-$app->get('/resources/{resId}/proofSignature', \MaarchCourrier\SignatureBook\Infrastructure\Controller\RetrieveProofFileController::class . ':getProofFile');
 
 $app->put('/res/resource/status', \Resource\controllers\ResController::class . ':updateStatus');
 $app->post('/res/list', \Resource\controllers\ResController::class . ':getList');
@@ -569,6 +568,7 @@ $app->get('/signatureBook/users/{userId}/groups/{groupId}/baskets/{basketId}/res
 $app->get('/signatureBook/{resId}/attachments', \SignatureBook\controllers\SignatureBookController::class . ':getAttachmentsById');
 $app->get('/signatureBook/{resId}/incomingMailAttachments', \SignatureBook\controllers\SignatureBookController::class . ':getIncomingMailAndAttachmentsById');
 $app->post('/signatureBook/webhook', \MaarchCourrier\SignatureBook\Infrastructure\Controller\WebhookController::class . ':fetchAndStoreSignedDocumentOnWebhookTrigger');
+$app->get('/documents/{resId}/proofSignature', \MaarchCourrier\SignatureBook\Infrastructure\Controller\RetrieveProofFileController::class . ':getProofFile');
 
 //statuses
 $app->get('/statuses', \Status\controllers\StatusController::class . ':get');

@@ -59,8 +59,6 @@ class MaarchParapheurProofService implements SignatureBookProofServiceInterface
             );
         }
 
-        $curlResponseContent = $curlRequest->getCurlResponse()->getContentReturn();
-
-        return ['response' => $curlResponseContent];
+        return $curlRequest->getCurlResponse()->getContentReturn();
     }
 }
