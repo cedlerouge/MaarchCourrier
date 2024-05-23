@@ -13,6 +13,7 @@ export function mapAttachment(data: any): Attachment {
         canConvert: data.isConverted,
         canDelete: data.canDelete,
         canUpdate: data.canModify,
-        stamps: []
+        stamps: [],
+        isAttachment: data.resIdMaster !== null
     });
 }
