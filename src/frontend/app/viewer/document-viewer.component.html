@@ -123,9 +123,9 @@
                         <mat-icon class="fa fa-trash" color="warn"></mat-icon>
                         <span>{{'lang.removeFile' | translate}}</span>
                     </button>
-                    <button mat-menu-item *ngIf="!loading && resId !== null && file.subinfos.signedDocVersions && signatureBookService.config.isNewInternalParaph"
+                    <button mat-menu-item *ngIf="!loading && resId !== null && file?.subinfos?.signedDocVersions && signatureBookService.config.isNewInternalParaph"
                         [title]="'lang.downloadProof' | translate"
-                        (click)="$event.stopPropagation(); signatureBookService.downloadProof(resId)">
+                        (click)="$event.stopPropagation(); signatureBookService.downloadProof(resId, false)">
                         <mat-icon color="primary" class="fas fa-award" style="font-size: 17px;"></mat-icon>
                         <span style="white-space: pre-wrap;">{{'lang.downloadProof' | translate}}</span>
                     </button>

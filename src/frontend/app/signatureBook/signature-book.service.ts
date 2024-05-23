@@ -144,9 +144,9 @@ export class SignatureBookService {
         ).subscribe();
     }
 
-    downloadProof(resId: number): Promise<boolean> {
+    downloadProof(resId: number, isAttachment: boolean): Promise<boolean> {
         return new Promise((resolve) => {
-            this.http.get(`../rest/documents/${resId}/proof?mode=stream`, { responseType: 'blob' as 'json' })
+            this.http.get(`../rest/documents/${resId}/proofSignature`, { responseType: 'blob' as 'json', params: { isAttachment: isAttachment } })
                 .pipe(
                     tap((data: any) => {
                         const today = new Date();
