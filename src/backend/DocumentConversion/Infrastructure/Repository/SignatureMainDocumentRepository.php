@@ -19,7 +19,7 @@ use MaarchCourrier\DocumentConversion\Domain\Port\SignatureMainDocumentRepositor
 
 class SignatureMainDocumentRepository implements SignatureMainDocumentRepositoryInterface
 {
-    public function isMainDocumentSign(int $resId): bool
+    public function isMainDocumentSigned(int $resId): bool
     {
         $signedDoc = AdrModel::getDocuments([
             'select' => ['*'],

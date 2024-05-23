@@ -22,7 +22,7 @@ class SignatureMainDocumentRepositoryMock implements SignatureMainDocumentReposi
     /**
      * @inheritDoc
      */
-    public function isMainDocumentSign(int $resId): bool
+    public function isMainDocumentSigned(int $resId): bool
     {
         return $this->mainDocumentIsSigned;
     }

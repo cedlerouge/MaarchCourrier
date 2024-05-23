@@ -21,5 +21,5 @@ interface SignatureMainDocumentRepositoryInterface
      *
      * @return bool
      */
-    public function isMainDocumentSign(int $resId): bool;
+    public function isMainDocumentSigned(int $resId): bool;
 }

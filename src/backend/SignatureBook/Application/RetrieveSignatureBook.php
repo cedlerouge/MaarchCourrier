@@ -27,7 +27,6 @@ use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\VisaWorkflowRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Privilege\SignDocumentPrivilege;
 use MaarchCourrier\SignatureBook\Domain\Problem\MainResourceDoesNotExistInSignatureBookBasketProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\NoResourcesFoundToSignProblem;
 use MaarchCourrier\SignatureBook\Domain\SignatureBook;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 
@@ -53,7 +52,6 @@ class RetrieveSignatureBook
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
-     * @throws NoResourcesFoundToSignProblem
      */
     public function getSignatureBook(int $resId): SignatureBook
     {
@@ -87,7 +85,7 @@ class RetrieveSignatureBook
 
             if (
                 $resource->isInSignatureBook() &&
-                !$this->signatureMainDocument->isMainDocumentSign($resource->getResId())
+                !$this->signatureMainDocument->isMainDocumentSigned($resource->getResId())
             ) {
                 $resourcesToSign[] = $mainSignatureBookResource;
             } else {
@@ -116,10 +114,6 @@ class RetrieveSignatureBook
                     ->setCanModify($canModify)
                     ->setCanDelete($canDelete);
             }
-        }
-
-        if (empty($resourcesToSign)) {
-            throw new NoResourcesFoundToSignProblem();
         }
 
         $canSignResources = $this->privilegeChecker->hasPrivilege($currentUser, new SignDocumentPrivilege());
