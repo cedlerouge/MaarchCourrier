@@ -83,7 +83,8 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
         } else if (this.position === 'left' && this.signatureBookService.selectedAttachment.index !== null) {
             await this.initAnnexe();
         }
-        this.documentType = this.documentData.isAttachment ? 'attachments' : 'resources';
+
+        this.documentType = this.documentData?.isAttachment ? 'attachments' : 'resources';
         this.loading = false;
     }
 
