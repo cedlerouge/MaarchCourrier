@@ -14,6 +14,7 @@ import { FoldersService } from '@appRoot/folder/folders.service';
 import { PrivilegeService } from '@service/privileges.service';
 import { ConfirmComponent } from "@plugins/modal/confirm.component";
 import * as langFrJson from '@langs/lang-fr.json';
+import { FiltersListService } from "@service/filtersList.service";
 
 class FakeLoader implements TranslateLoader {
     getTranslation(): Observable<any> {
@@ -47,7 +48,8 @@ describe('AttachmentsListComponent', () => {
                 DatePipe,
                 AdministrationService,
                 HttpClient,
-                ConfirmComponent
+                ConfirmComponent,
+                FiltersListService
             ],
             declarations: [AttachmentsListComponent]
         }).compileComponents();
