@@ -858,10 +858,10 @@ class AttachmentController
             }
 
             $pathToThumbnail = $docserver['path_template'] . str_replace(
-                    '#',
-                    DIRECTORY_SEPARATOR,
-                    $tnlAdr['path']
-                ) . $tnlAdr['filename'];
+                '#',
+                DIRECTORY_SEPARATOR,
+                $tnlAdr['path']
+            ) . $tnlAdr['filename'];
         }
 
         $fileContent = file_get_contents($pathToThumbnail);
@@ -1059,10 +1059,10 @@ class AttachmentController
         }
 
         $pathToDocument = $docserver['path_template'] . str_replace(
-                '#',
-                DIRECTORY_SEPARATOR,
-                $document['path']
-            ) . $document['filename'];
+            '#',
+            DIRECTORY_SEPARATOR,
+            $document['path']
+        ) . $document['filename'];
         if (!file_exists($pathToDocument)) {
             return $response->withStatus(404)->withJson(['errors' => 'Attachment not found on docserver']);
         }
@@ -1198,10 +1198,10 @@ class AttachmentController
         }
 
         $pathToDocument = $docserver['path_template'] . str_replace(
-                '#',
-                DIRECTORY_SEPARATOR,
-                $document['path']
-            ) . $document['filename'];
+            '#',
+            DIRECTORY_SEPARATOR,
+            $document['path']
+        ) . $document['filename'];
 
         if (!file_exists($pathToDocument)) {
             return $response->withStatus(404)->withJson(['errors' => 'Attachment not found on docserver']);
@@ -1364,10 +1364,10 @@ class AttachmentController
         }
 
         $pathToDocument = $docserver['path_template'] . str_replace(
-                '#',
-                DIRECTORY_SEPARATOR,
-                $document['path']
-            ) . $document['filename'];
+            '#',
+            DIRECTORY_SEPARATOR,
+            $document['path']
+        ) . $document['filename'];
         if (!file_exists($pathToDocument)) {
             return ['errors' => 'Document not found on docserver'];
         }
@@ -1482,10 +1482,10 @@ class AttachmentController
             return ['errors' => 'Docserver does not exist'];
         }
         $pathToAttachment = $docserver['path_template'] . str_replace(
-                '#',
-                DIRECTORY_SEPARATOR,
-                $attachment['path']
-            ) . $attachment['filename'];
+            '#',
+            DIRECTORY_SEPARATOR,
+            $attachment['path']
+        ) . $attachment['filename'];
         if (!is_file($pathToAttachment)) {
             return ['errors' => 'Attachment not found on docserver'];
         }
