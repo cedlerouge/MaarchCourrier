@@ -52,17 +52,18 @@ class RetrieveResource
      * Retrieves the main file info with watermark.
      *
      * @param int $resId The ID of the resource.
-     * @return  ResourceFileInfo
-     * @throws ParameterMustBeGreaterThanZeroException
-     * @throws ResourceDoesNotExistException
-     * @throws ResourceHasNoFileException
-     * @throws ResourceFingerPrintDoesNotMatchException
-     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @param bool $watermark
+     * @return ResourceFileInfo
      * @throws ConvertedResultException
+     * @throws ParameterMustBeGreaterThanZeroException
      * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
      * @throws ResourceNotFoundInDocserverException
      */
-    public function getResourceFile(int $resId): ResourceFileInfo
+    public function getResourceFile(int $resId, bool $watermark): ResourceFileInfo
     {
         if ($resId <= 0) {
             throw new ParameterMustBeGreaterThanZeroException('resId');
@@ -102,8 +103,12 @@ class RetrieveResource
             $docserverAndFilePath->getDocserver()->getIsEncrypted()
         );
 
-        $fileContent = $this->resourceFile->getWatermark($resId, $fileContentWithNoWatermark);
-        if (empty($fileContent)) {
+        if ($watermark) {
+            $fileContent = $this->resourceFile->getWatermark($resId, $fileContentWithNoWatermark);
+            if (empty($fileContent)) {
+                $fileContent = $fileContentWithNoWatermark;
+            }
+        } else {
             $fileContent = $fileContentWithNoWatermark;
         }
 

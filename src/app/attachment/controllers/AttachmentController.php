@@ -858,10 +858,10 @@ class AttachmentController
             }
 
             $pathToThumbnail = $docserver['path_template'] . str_replace(
-                '#',
-                DIRECTORY_SEPARATOR,
-                $tnlAdr['path']
-            ) . $tnlAdr['filename'];
+                    '#',
+                    DIRECTORY_SEPARATOR,
+                    $tnlAdr['path']
+                ) . $tnlAdr['filename'];
         }
 
         $fileContent = file_get_contents($pathToThumbnail);
@@ -1059,10 +1059,10 @@ class AttachmentController
         }
 
         $pathToDocument = $docserver['path_template'] . str_replace(
-            '#',
-            DIRECTORY_SEPARATOR,
-            $document['path']
-        ) . $document['filename'];
+                '#',
+                DIRECTORY_SEPARATOR,
+                $document['path']
+            ) . $document['filename'];
         if (!file_exists($pathToDocument)) {
             return $response->withStatus(404)->withJson(['errors' => 'Attachment not found on docserver']);
         }
@@ -1077,12 +1077,25 @@ class AttachmentController
             return $response->withStatus(400)->withJson(['errors' => 'Fingerprints do not match']);
         }
 
-        $fileContent = WatermarkController::watermarkAttachment(
-            ['attachmentId' => $args['id'], 'path' => $pathToDocument]
-        );
-        if (empty($fileContent)) {
+        $data = $request->getQueryParams();
+
+        $watermark = true;
+
+        if (isset($data['watermark'])) {
+            $watermark = $data['watermark'];
+        }
+
+        if ($watermark) {
+            $fileContent = WatermarkController::watermarkAttachment(
+                ['attachmentId' => $args['id'], 'path' => $pathToDocument]
+            );
+            if (empty($fileContent)) {
+                $fileContent = file_get_contents($pathToDocument);
+            }
+        } else {
             $fileContent = file_get_contents($pathToDocument);
         }
+
         if ($fileContent === false) {
             return $response->withStatus(400)->withJson(['errors' => 'Document not found on docserver']);
         }
@@ -1105,7 +1118,7 @@ class AttachmentController
             'eventId'   => 'resview'
         ]);
 
-        $data = $request->getQueryParams();
+
         $data['mode'] = $data['mode'] ?? null;
 
         $mimeAndSize = CoreController::getMimeTypeAndFileSize(['path' => $pathToDocument]);
@@ -1198,10 +1211,10 @@ class AttachmentController
         }
 
         $pathToDocument = $docserver['path_template'] . str_replace(
-            '#',
-            DIRECTORY_SEPARATOR,
-            $document['path']
-        ) . $document['filename'];
+                '#',
+                DIRECTORY_SEPARATOR,
+                $document['path']
+            ) . $document['filename'];
 
         if (!file_exists($pathToDocument)) {
             return $response->withStatus(404)->withJson(['errors' => 'Attachment not found on docserver']);
@@ -1364,10 +1377,10 @@ class AttachmentController
         }
 
         $pathToDocument = $docserver['path_template'] . str_replace(
-            '#',
-            DIRECTORY_SEPARATOR,
-            $document['path']
-        ) . $document['filename'];
+                '#',
+                DIRECTORY_SEPARATOR,
+                $document['path']
+            ) . $document['filename'];
         if (!file_exists($pathToDocument)) {
             return ['errors' => 'Document not found on docserver'];
         }
@@ -1482,10 +1495,10 @@ class AttachmentController
             return ['errors' => 'Docserver does not exist'];
         }
         $pathToAttachment = $docserver['path_template'] . str_replace(
-            '#',
-            DIRECTORY_SEPARATOR,
-            $attachment['path']
-        ) . $attachment['filename'];
+                '#',
+                DIRECTORY_SEPARATOR,
+                $attachment['path']
+            ) . $attachment['filename'];
         if (!is_file($pathToAttachment)) {
             return ['errors' => 'Attachment not found on docserver'];
         }
