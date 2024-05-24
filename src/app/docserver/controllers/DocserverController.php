@@ -16,6 +16,7 @@ namespace Docserver\controllers;
 
 use DateTime;
 use Docserver\models\DocserverTypeModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Parameter\models\ParameterModel;
@@ -30,7 +31,13 @@ use Docserver\models\DocserverModel;
 
 class DocserverController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function get(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_docservers', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -44,10 +51,14 @@ class DocserverController
             if (!CoreConfigModel::isEnableDocserverEncryption() && !empty($docserver['is_encrypted'] ?? false)) {
                 continue;
             }
-            $sortedDocservers[$docserver['docserver_type_id']][] = DocserverController::getFormattedDocserver(['docserver' => $docserver]);
+            $sortedDocservers[$docserver['docserver_type_id']][] = DocserverController::getFormattedDocserver(
+                ['docserver' => $docserver]
+            );
         }
 
-        $docserversTypes = DocserverTypeModel::get(['select' => ['docserver_type_id', 'docserver_type_label'], 'orderBy' => ['docserver_type_label']]);
+        $docserversTypes = DocserverTypeModel::get(
+            ['select' => ['docserver_type_id', 'docserver_type_label'], 'orderBy' => ['docserver_type_label']]
+        );
 
         $return = ['docservers' => $sortedDocservers, 'types' => $docserversTypes];
 
@@ -58,7 +69,14 @@ class DocserverController
         return $response->withJson($return);
     }
 
-    public function getById(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function getById(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_docservers', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -74,10 +92,14 @@ class DocserverController
 
     /**
      * Get Path of migration folder (shadow docserver, not available in docserver administration)
+     * @return array|string[]
+     * @throws Exception
      */
-    public static function getMigrationFolderPath()
+    public static function getMigrationFolderPath(): array
     {
-        $docservers = DocserverModel::getCurrentDocserver(['typeId' => 'MIGRATION', 'collId' => 'migration', 'select' => ['path_template']]);
+        $docservers = DocserverModel::getCurrentDocserver(
+            ['typeId' => 'MIGRATION', 'collId' => 'migration', 'select' => ['path_template']]
+        );
         if (!empty($docservers)) {
             if (empty($docservers['path_template'] ?? null)) {
                 return ['errors' => 'Docserver path is empty'];
@@ -88,7 +110,9 @@ class DocserverController
             return ['path' => $docservers['path_template']];
         } else {
             // TODO not having a migration folder is deprecated, to be removed in the next major release
-            $docservers = DocserverModel::getCurrentDocserver(['typeId' => 'DOC', 'collId' => 'letterbox_coll', 'select' => ['path_template']]);
+            $docservers = DocserverModel::getCurrentDocserver(
+                ['typeId' => 'DOC', 'collId' => 'letterbox_coll', 'select' => ['path_template']]
+            );
             if (empty($docservers)) {
                 return ['errors' => 'Docserver letterbox_coll  does not exist'];
             }
@@ -108,7 +132,13 @@ class DocserverController
         }
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_docservers', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -116,7 +146,8 @@ class DocserverController
 
         $data = $request->getParsedBody();
 
-        $check = Validator::stringType()->notEmpty()->validate($data['docserver_id']) && preg_match("/^[\w-]*$/", $data['docserver_id']) && (strlen($data['docserver_id']) <= 32);
+        $check = Validator::stringType()->notEmpty()->validate($data['docserver_id']) &&
+            preg_match("/^[\w-]*$/", $data['docserver_id']) && (strlen($data['docserver_id']) <= 32);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['docserver_type_id']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['device_label']);
         $check = $check && Validator::notEmpty()->intVal()->validate($data['size_limit_number']);
@@ -127,19 +158,28 @@ class DocserverController
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
 
-        $existingDocserver = DocserverModel::getByDocserverId(['docserverId' => $data['docserver_id'], 'select' => ['1']]);
+        $existingDocserver = DocserverModel::getByDocserverId(
+            ['docserverId' => $data['docserver_id'], 'select' => ['1']]
+        );
         if (!empty($existingDocserver)) {
             return $response->withStatus(400)->withJson(['errors' => _ID . ' ' . _ALREADY_EXISTS]);
         }
-        $existingDocserverType = DocserverTypeModel::get(['select' => ['1'], 'where' => ['docserver_type_id = ?'], 'data' => [$data['docserver_type_id']]]);
+        $existingDocserverType = DocserverTypeModel::get(
+            ['select' => ['1'], 'where' => ['docserver_type_id = ?'], 'data' => [$data['docserver_type_id']]]
+        );
         if (empty($existingDocserverType)) {
             return $response->withStatus(400)->withJson(['errors' => 'Docserver type does not exist']);
         }
         if (!CoreConfigModel::isEnableDocserverEncryption() || !isset($data['is_encrypted'])) {
             $data['is_encrypted'] = false;
         }
-        if (!empty($data['is_encrypted']) && in_array($data['docserver_type_id'], DocserverTypeController::FORBIDDEN_TYPE_IDS_FOR_ENCRYPTION)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Docserver type is forbidden for encryption']);
+        if (
+            !empty($data['is_encrypted']) &&
+            in_array($data['docserver_type_id'], DocserverTypeController::FORBIDDEN_TYPE_IDS_FOR_ENCRYPTION)
+        ) {
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Docserver type is forbidden for encryption']
+            );
         }
         if (!DocserverController::isPathAvailable(['path' => $data['path_template']])) {
             return $response->withStatus(400)->withJson(['errors' => _PATH_OF_DOCSERVER_UNAPPROACHABLE]);
@@ -169,7 +209,13 @@ class DocserverController
         return $response->withJson(['docserver' => $id]);
     }
 
-    public function calculateSize(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function calculateSize(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_docservers', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['error' => 'Service forbidden']);
@@ -208,13 +254,17 @@ class DocserverController
                     $contentFolder = $ds['path_template'] . DIRECTORY_SEPARATOR . "*";
                     $contentFolder = str_replace('//', '/', $contentFolder);
 
-                    $output = shell_exec("du -sb $contentFolder | awk '{total += \$1} END {printf \"%.0f\", total}'");
+                    $output = shell_exec(
+                        "du -sb $contentFolder | awk '{total += \$1} END {printf \"%.0f\", total}'"
+                    );
 
                     if ($output) {
                         $size = trim($output);
                     } else {
                         unlink($lockFile);
-                        return $response->withStatus(400)->withJson(['error' => 'Size calculation error for docserver ' . $ds['docserver_id']]);
+                        return $response->withStatus(400)->withJson(
+                            ['error' => 'Size calculation error for docserver ' . $ds['docserver_id']]
+                        );
                     }
                 }
 
@@ -229,9 +279,13 @@ class DocserverController
         }
 
         if (empty($last_calculation_date)) {
-            ParameterModel::create(['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]);
+            ParameterModel::create(
+                ['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]
+            );
         } else {
-            ParameterModel::update(['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]);
+            ParameterModel::update(
+                ['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]
+            );
         }
 
         unlink($lockFile);
@@ -239,7 +293,14 @@ class DocserverController
         return $response->withStatus(204);
     }
 
-    public function update(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_docservers', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -284,11 +345,11 @@ class DocserverController
 
         DocserverModel::update([
             'set'   => [
-                'device_label'          => $data['device_label'],
-                'size_limit_number'     => $data['size_limit_number'],
-                'path_template'         => $data['path_template'],
-                'is_readonly'           => empty($data['is_readonly']) ? 'N' : 'Y',
-                'is_encrypted'          => $data['is_encrypted'] ?? false ? 'false' : 'true'
+                'device_label'      => $data['device_label'],
+                'size_limit_number' => $data['size_limit_number'],
+                'path_template'     => $data['path_template'],
+                'is_readonly'       => empty($data['is_readonly']) ? 'N' : 'Y',
+                'is_encrypted'      => $data['is_encrypted'] ?? false ? 'false' : 'true'
 
             ],
             'where' => ['id = ?'],
@@ -306,10 +367,19 @@ class DocserverController
 
         $docserver = DocserverModel::getById(['id' => $aArgs['id']]);
 
-        return $response->withJson(['docserver' => DocserverController::getFormattedDocserver(['docserver' => $docserver])]);
+        return $response->withJson(
+            ['docserver' => DocserverController::getFormattedDocserver(['docserver' => $docserver])]
+        );
     }
 
-    public function delete(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_docservers', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -333,14 +403,23 @@ class DocserverController
         return $response->withJson(['success' => 'success']);
     }
 
-    public static function storeResourceOnDocServer(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array|string[]
+     * @throws Exception
+     */
+    public static function storeResourceOnDocServer(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['collId', 'docserverTypeId', 'encodedResource', 'format']);
         ValidatorModel::stringType($aArgs, ['collId', 'docserverTypeId', 'encodedResource', 'format']);
 
-        $docserver = DocserverModel::getCurrentDocserver(['collId' => $aArgs['collId'], 'typeId' => $aArgs['docserverTypeId']]);
+        $docserver = DocserverModel::getCurrentDocserver(
+            ['collId' => $aArgs['collId'], 'typeId' => $aArgs['docserverTypeId']]
+        );
         if (empty($docserver)) {
-            return ['errors' => '[storeRessourceOnDocserver] No available Docserver with type ' . $aArgs['docserverTypeId']];
+            return [
+                'errors' => '[storeRessourceOnDocserver] No available Docserver with type ' . $aArgs['docserverTypeId']
+            ];
         }
 
         $pathOnDocserver = DocserverController::createPathOnDocServer(['path' => $docserver['path_template']]);
@@ -348,7 +427,9 @@ class DocserverController
             return ['errors' => '[storeRessourceOnDocserver] ' . $pathOnDocserver['errors']];
         }
 
-        $docinfo = DocserverController::getNextFileNameInDocServer(['pathOnDocserver' => $pathOnDocserver['pathToDocServer']]);
+        $docinfo = DocserverController::getNextFileNameInDocServer(
+            ['pathOnDocserver' => $pathOnDocserver['pathToDocServer']]
+        );
         if (!empty($docinfo['errors'])) {
             return ['errors' => '[storeRessourceOnDocserver] ' . $docinfo['errors']];
         }
@@ -389,7 +470,12 @@ class DocserverController
         ];
     }
 
-    public static function createPathOnDocServer(array $args)
+    /**
+     * @param array $args
+     * @return string[]
+     * @throws Exception
+     */
+    public static function createPathOnDocServer(array $args): array
     {
         ValidatorModel::notEmpty($args, ['path']);
         ValidatorModel::stringType($args, ['path']);
@@ -407,7 +493,9 @@ class DocserverController
         if (!is_dir($yearPath)) {
             mkdir($yearPath, 0770);
             if (DIRECTORY_SEPARATOR == '/' && !empty($GLOBALS['apacheUserAndGroup'])) {
-                exec('chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' . escapeshellarg($yearPath));
+                exec(
+                    'chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' . escapeshellarg($yearPath)
+                );
             }
             umask(0022);
             chmod($yearPath, 0770);
@@ -417,7 +505,9 @@ class DocserverController
         if (!is_dir($monthPath)) {
             mkdir($monthPath, 0770);
             if (DIRECTORY_SEPARATOR == '/' && !empty($GLOBALS['apacheUserAndGroup'])) {
-                exec('chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' . escapeshellarg($monthPath));
+                exec(
+                    'chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' . escapeshellarg($monthPath)
+                );
             }
             umask(0022);
             chmod($monthPath, 0770);
@@ -429,7 +519,9 @@ class DocserverController
             if (!is_dir($pathToDS)) {
                 mkdir($pathToDS, 0770, true);
                 if (DIRECTORY_SEPARATOR == '/' && !empty($GLOBALS['apacheUserAndGroup'])) {
-                    exec('chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' . escapeshellarg($monthPath));
+                    exec(
+                        'chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' . escapeshellarg($monthPath)
+                    );
                 }
                 umask(0022);
                 chmod($monthPath, 0770);
@@ -439,7 +531,12 @@ class DocserverController
         return ['pathToDocServer' => $pathToDS];
     }
 
-    public static function getNextFileNameInDocServer(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return string[]
+     * @throws Exception
+     */
+    public static function getNextFileNameInDocServer(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['pathOnDocserver']);
         ValidatorModel::stringType($aArgs, ['pathOnDocserver']);
@@ -469,7 +566,9 @@ class DocserverController
                 return ['errors' => '[getNextFileNameInDocServer] Directory creation failed: ' . $zeroOnePath];
             } else {
                 if (DIRECTORY_SEPARATOR == '/' && !empty($GLOBALS['apacheUserAndGroup'])) {
-                    exec('chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' . escapeshellarg($zeroOnePath));
+                    exec(
+                        'chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' . escapeshellarg($zeroOnePath)
+                    );
                 }
                 umask(0022);
                 chmod($zeroOnePath, 0770);
@@ -481,19 +580,36 @@ class DocserverController
             }
         } else {
             $destinationDir = $aArgs['pathOnDocserver'] . str_pad(count($aFiles), 4, '0', STR_PAD_LEFT) . '/';
-            $aFilesBis = scandir($aArgs['pathOnDocserver'] . strval(str_pad(count($aFiles), 4, '0', STR_PAD_LEFT)));
+            $aFilesBis = scandir(
+                $aArgs['pathOnDocserver'] . strval(
+                    str_pad(
+                        count($aFiles),
+                        4,
+                        '0',
+                        STR_PAD_LEFT
+                    )
+                )
+            );
             array_shift($aFilesBis); // Remove . line
             array_shift($aFilesBis); // Remove .. line
 
             $filesNbBis = count($aFilesBis);
             if ($filesNbBis >= 1000) { //If number of files >= 1000 then creates a new subdirectory
-                $zeroNumberPath = $aArgs['pathOnDocserver'] . str_pad($filesNb + 1, 4, '0', STR_PAD_LEFT) . '/';
+                $zeroNumberPath = $aArgs['pathOnDocserver'] . str_pad(
+                    $filesNb + 1,
+                    4,
+                    '0',
+                    STR_PAD_LEFT
+                ) . '/';
 
                 if (!mkdir($zeroNumberPath, 0770)) {
                     return ['errors' => '[getNextFileNameInDocServer] Directory creation failed: ' . $zeroNumberPath];
                 } else {
                     if (DIRECTORY_SEPARATOR == '/' && !empty($GLOBALS['apacheUserAndGroup'])) {
-                        exec('chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' . escapeshellarg($zeroNumberPath));
+                        exec(
+                            'chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' .
+                            escapeshellarg($zeroNumberPath)
+                        );
                     }
                     umask(0022);
                     chmod($zeroNumberPath, 0770);
@@ -514,20 +630,33 @@ class DocserverController
 
                 return [
                     'destinationDir'      => $destinationDir,
-                    'fileDestinationName' => str_pad($higher, 4, '0', STR_PAD_LEFT) . '_' . mt_rand(),
+                    'fileDestinationName' => str_pad(
+                        $higher,
+                        4,
+                        '0',
+                        STR_PAD_LEFT
+                    ) . '_' . mt_rand(),
                 ];
             }
         }
     }
 
-    public static function copyOnDocServer(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array|string[]
+     * @throws Exception
+     */
+    public static function copyOnDocServer(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['destinationDir', 'fileDestinationName', 'encodedResource']);
         ValidatorModel::stringType($aArgs, ['destinationDir', 'fileDestinationName', 'encodedResource']);
         ValidatorModel::boolType($aArgs, ['isEncrypted']);
 
         if (file_exists($aArgs['destinationDir'] . $aArgs['fileDestinationName'])) {
-            return ['errors' => '[copyOnDocserver] File already exists: ' . $aArgs['destinationDir'] . $aArgs['fileDestinationName']];
+            return [
+                'errors' => '[copyOnDocserver] File already exists: ' . $aArgs['destinationDir'] .
+                    $aArgs['fileDestinationName']
+            ];
         }
 
         error_reporting(0);
@@ -535,7 +664,10 @@ class DocserverController
         if (!is_dir($aArgs['destinationDir'])) {
             mkdir($aArgs['destinationDir'], 0770, true);
             if (DIRECTORY_SEPARATOR == '/' && !empty($GLOBALS['apacheUserAndGroup'])) {
-                exec('chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' . escapeshellarg($aArgs['destinationDir']));
+                exec(
+                    'chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' .
+                    escapeshellarg($aArgs['destinationDir'])
+                );
             }
             umask(0022);
             chmod($aArgs['destinationDir'], 0770);
@@ -543,26 +675,46 @@ class DocserverController
 
         $fileContent = base64_decode($aArgs['encodedResource']);
 
-        if (CoreConfigModel::isEnableDocserverEncryption() && !empty($aArgs['isEncrypted']) && !CoreConfigModel::useVhostEncryptKey()) {
+        if (
+            CoreConfigModel::isEnableDocserverEncryption() && !empty($aArgs['isEncrypted']) &&
+            !CoreConfigModel::useVhostEncryptKey()
+        ) {
             $fileContent = PasswordController::encrypt(['dataToEncrypt' => $fileContent]);
             $fileContent = base64_decode($fileContent);
         }
 
-        if (file_put_contents($aArgs['destinationDir'] . $aArgs['fileDestinationName'], $fileContent) === false) {
+        if (
+            file_put_contents(
+                $aArgs['destinationDir'] . $aArgs['fileDestinationName'],
+                $fileContent
+            ) === false
+        ) {
             return ['errors' => '[copyOnDocserver] Copy on the docserver failed'];
         }
         if (DIRECTORY_SEPARATOR == '/' && !empty($GLOBALS['apacheUserAndGroup'])) {
-            exec('chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' . escapeshellarg($aArgs['destinationDir'] . $aArgs['fileDestinationName']));
+            exec(
+                'chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' .
+                escapeshellarg($aArgs['destinationDir'] . $aArgs['fileDestinationName'])
+            );
         }
         umask(0022);
         chmod($aArgs['destinationDir'] . $aArgs['fileDestinationName'], 0770);
 
         $aArgs['destinationDir'] = str_replace(DIRECTORY_SEPARATOR, '#', $aArgs['destinationDir']);
 
-        return ['fileSize' => filesize(str_replace('#', '/', $aArgs['destinationDir']) . $aArgs['fileDestinationName'])];
+        return [
+            'fileSize' => filesize(
+                str_replace('#', '/', $aArgs['destinationDir']) . $aArgs['fileDestinationName']
+            )
+        ];
     }
 
-    private static function getFormattedDocserver(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return mixed
+     * @throws Exception
+     */
+    private static function getFormattedDocserver(array $aArgs): mixed
     {
         ValidatorModel::notEmpty($aArgs, ['docserver']);
         ValidatorModel::arrayType($aArgs, ['docserver']);
@@ -570,19 +722,35 @@ class DocserverController
         $docserver = $aArgs['docserver'];
 
         $docserver['is_readonly'] = ($docserver['is_readonly'] == 'Y');
-        $docserver['actual_size_number'] = DocserverController::getDocserverSize(['path' => $docserver['path_template']]);
+        $docserver['actual_size_number'] = DocserverController::getDocserverSize(
+            ['path' => $docserver['path_template']]
+        );
         if ($docserver['actual_size_number'] > 1000000000) {
-            $docserver['actualSizeFormatted'] = round($docserver['actual_size_number'] / 1000000000, 3) . ' Go';
+            $docserver['actualSizeFormatted'] = round(
+                $docserver['actual_size_number'] / 1000000000,
+                3
+            ) . ' Go';
         } else {
-            $docserver['actualSizeFormatted'] = round($docserver['actual_size_number'] / 1000000, 3) . ' Mo';
+            $docserver['actualSizeFormatted'] = round(
+                $docserver['actual_size_number'] / 1000000,
+                3
+            ) . ' Mo';
         }
         $docserver['limitSizeFormatted'] = round($docserver['size_limit_number'] / 1000000000, 3); // Giga
-        $docserver['percentage'] = round($docserver['actual_size_number'] / $docserver['size_limit_number'] * 100, 2);
+        $docserver['percentage'] = round(
+            $docserver['actual_size_number'] / $docserver['size_limit_number'] * 100,
+            2
+        );
 
         return $docserver;
     }
 
-    private static function getDocserverSize(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return int
+     * @throws Exception
+     */
+    private static function getDocserverSize(array $aArgs): int
     {
         ValidatorModel::notEmpty($aArgs, ['path']);
         ValidatorModel::stringType($aArgs, ['path']);
@@ -600,7 +768,12 @@ class DocserverController
         return (int)$size;
     }
 
-    private static function isPathAvailable(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return bool
+     * @throws Exception
+     */
+    private static function isPathAvailable(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['path']);
         ValidatorModel::stringType($aArgs, ['path']);

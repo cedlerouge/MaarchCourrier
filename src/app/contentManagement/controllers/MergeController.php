@@ -46,8 +46,6 @@ use User\models\UserModel;
 // phpcs:ignore
 include_once('vendor/tinybutstrong/opentbs/tbs_plugin_opentbs.php');
 
-//include_once('vendor/rafikhaceb/pi-barcode/pi_barcode.php');
-
 
 class MergeController
 {
@@ -161,27 +159,23 @@ class MergeController
             if (!empty($args['senderId']) && !empty($args['senderType'])) {
                 $senders = [['id' => $args['senderId'], 'type' => $args['senderType']]];
             } else {
-                $senders = ResourceContactModel::get(
-                    [
-                        'select' => ['item_id as id', 'type'],
-                        'where'  => ['res_id = ?', 'mode = ?'],
-                        'data'   => [$args['resId'], 'sender'],
-                        'limit'  => 1
-                    ]
-                );
+                $senders = ResourceContactModel::get([
+                    'select' => ['item_id as id', 'type'],
+                    'where'  => ['res_id = ?', 'mode = ?'],
+                    'data'   => [$args['resId'], 'sender'],
+                    'limit'  => 1
+                ]);
             }
 
             if (!empty($args['recipientId']) && !empty($args['recipientType'])) {
                 $recipients = [['id' => $args['recipientId'], 'type' => $args['recipientType']]];
             } else {
-                $recipients = ResourceContactModel::get(
-                    [
-                        'select' => ['item_id as id', 'type'],
-                        'where'  => ['res_id = ?', 'mode = ?'],
-                        'data'   => [$args['resId'], 'recipient'],
-                        'limit'  => 1
-                    ]
-                );
+                $recipients = ResourceContactModel::get([
+                    'select' => ['item_id as id', 'type'],
+                    'where'  => ['res_id = ?', 'mode = ?'],
+                    'data'   => [$args['resId'], 'recipient'],
+                    'limit'  => 1
+                ]);
             }
         } else {
             if (!empty($args['modelId'])) {
@@ -228,9 +222,10 @@ class MergeController
         $resource['category_id'] = ResModel::getCategoryLabel(['categoryId' => $resource['category_id']]);
 
         if (!empty($resource['type_id'])) {
-            $doctype = DoctypeModel::getById(
-                ['id' => $resource['type_id'], 'select' => ['process_delay', 'process_mode', 'description']]
-            );
+            $doctype = DoctypeModel::getById([
+                'id'     => $resource['type_id'],
+                'select' => ['process_delay', 'process_mode', 'description']
+            ]);
             $resource['type_label'] = $doctype['description'];
             $resource['process_delay'] = $doctype['process_delay'];
             $resource['process_mode'] = $doctype['process_mode'];
@@ -238,30 +233,36 @@ class MergeController
 
         if (!empty($resource['initiator'])) {
             $initiator = EntityModel::getByEntityId(['entityId' => $resource['initiator'], 'select' => ['*']]);
-            $initiator['path'] = EntityModel::getEntityPathByEntityId(
-                ['entityId' => $resource['initiator'], 'path' => '']
-            );
+            $initiator['path'] = EntityModel::getEntityPathByEntityId([
+                'entityId' => $resource['initiator'],
+                'path'     => ''
+            ]);
             if (!empty($initiator['parent_entity_id'])) {
-                $parentInitiator = EntityModel::getByEntityId(
-                    ['entityId' => $initiator['parent_entity_id'], 'select' => ['*']]
-                );
-                $parentInitiator['path'] = EntityModel::getEntityPathByEntityId(
-                    ['entityId' => $initiator['parent_entity_id'], 'path' => '']
-                );
+                $parentInitiator = EntityModel::getByEntityId([
+                    'entityId' => $initiator['parent_entity_id'],
+                    'select'   => ['*']
+                ]);
+                $parentInitiator['path'] = EntityModel::getEntityPathByEntityId([
+                    'entityId' => $initiator['parent_entity_id'],
+                    'path'     => ''
+                ]);
             }
         }
         if (!empty($resource['destination'])) {
             $destination = EntityModel::getByEntityId(['entityId' => $resource['destination'], 'select' => ['*']]);
-            $destination['path'] = EntityModel::getEntityPathByEntityId(
-                ['entityId' => $resource['destination'], 'path' => '']
-            );
+            $destination['path'] = EntityModel::getEntityPathByEntityId([
+                'entityId' => $resource['destination'],
+                'path'     => ''
+            ]);
             if (!empty($destination['parent_entity_id'])) {
-                $parentDestination = EntityModel::getByEntityId(
-                    ['entityId' => $destination['parent_entity_id'], 'select' => ['*']]
-                );
-                $parentDestination['path'] = EntityModel::getEntityPathByEntityId(
-                    ['entityId' => $destination['parent_entity_id'], 'path' => '']
-                );
+                $parentDestination = EntityModel::getByEntityId([
+                    'entityId' => $destination['parent_entity_id'],
+                    'select'   => ['*']
+                ]);
+                $parentDestination['path'] = EntityModel::getEntityPathByEntityId([
+                    'entityId' => $destination['parent_entity_id'],
+                    'path'     => ''
+                ]);
             }
         }
 
@@ -272,25 +273,30 @@ class MergeController
         ];
 
         //Sender
-        $sender = MergeController::formatPerson(
-            ['id' => $senders[0]['id'] ?? null, 'type' => $senders[0]['type'] ?? null]
-        );
+        $sender = MergeController::formatPerson([
+            'id'   => $senders[0]['id'] ?? null,
+            'type' => $senders[0]['type'] ?? null
+        ]);
         //Recipient
-        $recipient = MergeController::formatPerson(
-            ['id' => $recipients[0]['id'] ?? null, 'type' => $recipients[0]['type'] ?? null]
-        );
+        $recipient = MergeController::formatPerson([
+            'id'   => $recipients[0]['id'] ?? null,
+            'type' => $recipients[0]['type'] ?? null
+        ]);
 
         //User
-        $currentUser = UserModel::getById(
-            ['id' => $args['userId'], 'select' => ['firstname', 'lastname', 'phone', 'mail', 'initials']]
-        );
-        $currentUserPrimaryEntity = UserModel::getPrimaryEntityById(
-            ['id' => $args['userId'], 'select' => ['entities.*', 'users_entities.user_role as role']]
-        );
+        $currentUser = UserModel::getById([
+            'id'     => $args['userId'],
+            'select' => ['firstname', 'lastname', 'phone', 'mail', 'initials']
+        ]);
+        $currentUserPrimaryEntity = UserModel::getPrimaryEntityById([
+            'id'     => $args['userId'],
+            'select' => ['entities.*', 'users_entities.user_role as role']
+        ]);
         if (!empty($currentUserPrimaryEntity)) {
-            $currentUserPrimaryEntity['path'] = EntityModel::getEntityPathByEntityId(
-                ['entityId' => $currentUserPrimaryEntity['entity_id'], 'path' => '']
-            );
+            $currentUserPrimaryEntity['path'] = EntityModel::getEntityPathByEntityId([
+                'entityId' => $currentUserPrimaryEntity['entity_id'],
+                'path'     => ''
+            ]);
         }
 
         //Visas - Visa
@@ -314,12 +320,10 @@ class MergeController
             $signCount = 0;
             foreach ($visaWorkflow as $value) {
                 $userLabel = UserModel::getLabelledUserById(['id' => $value['item_id']]);
-                $primaryEntity = UserModel::getPrimaryEntityById(
-                    [
-                        'id'     => $value['item_id'],
-                        'select' => ['entities.entity_label', 'users_entities.user_role as role']
-                    ]
-                );
+                $primaryEntity = UserModel::getPrimaryEntityById([
+                    'id'     => $value['item_id'],
+                    'select' => ['entities.entity_label', 'users_entities.user_role as role']
+                ]);
                 $value['process_comment'] = $value['process_comment'] ?? '';
 
                 if (
@@ -334,12 +338,13 @@ class MergeController
                     $mode = ($value['requested_signature'] ? 'sign' : 'visa');
                 }
 
-                $delegate = !empty($value['delegate']) ? UserModel::getLabelledUserById(['id' => $value['delegate']]) : '';
+                $delegate = !empty($value['delegate']) ?
+                    UserModel::getLabelledUserById(['id' => $value['delegate']]) : '';
                 if (!empty($delegate)) {
                     $userLabel = $delegate . ', ' . _INSTEAD_OF . ' ' . $userLabel;
                 }
                 $visas .= "{$userLabel} (" . (!empty($primaryEntity['role']) ? $primaryEntity['role'] . ', ' : '') .
-                    "{$primaryEntity['entity_label']}) - {$modeLabel}\n";
+                    "{$primaryEntity['entity_label']}) - $modeLabel\n";
 
                 if ($mode === 'sign') {
                     $signCount++;
@@ -385,22 +390,26 @@ class MergeController
                 'data'    => ['AVIS_CIRCUIT', $args['resId']],
                 'orderBy' => ['listinstance_id']
             ]);
-            $visibleNotes = NoteModel::getByUserIdForResource(
-                ['select' => ['user_id', 'note_text'], 'resId' => $args['resId'], 'userId' => $GLOBALS['id']]
-            );
+            $visibleNotes = NoteModel::getByUserIdForResource([
+                'select' => ['user_id', 'note_text'],
+                'resId'  => $args['resId'],
+                'userId' => $GLOBALS['id']
+            ]);
             $visibleNotes = array_reverse($visibleNotes);
             $opinionCount = 1;
             foreach ($opinionWorkflow as $value) {
                 $valueUserId = $value['delegate'] ?? $value['item_id'];
                 $user = UserModel::getById(['id' => $valueUserId, 'select' => ['firstname', 'lastname']]);
-                $primaryEntity = UserModel::getPrimaryEntityById(
-                    ['id' => $valueUserId, 'select' => ['entities.entity_label', 'users_entities.user_role as role']]
-                );
+                $primaryEntity = UserModel::getPrimaryEntityById([
+                    'id'     => $valueUserId,
+                    'select' => ['entities.entity_label', 'users_entities.user_role as role']
+                ]);
                 $processDate = null;
                 if (!empty($value['process_date'])) {
                     $processDate = ' - ' . TextFormatModel::formatDate($value['process_date']);
                 }
-                $opinions .= "{$user['firstname']} {$user['lastname']} ({$primaryEntity['entity_label']}) {$processDate}\n";
+                $opinions .= "{$user['firstname']} {$user['lastname']} " .
+                    "({$primaryEntity['entity_label']}) $processDate\n";
                 $opinion['firstname' . $opinionCount] = $user['firstname'];
                 $opinion['lastname' . $opinionCount] = $user['lastname'];
                 $opinion['role' . $opinionCount] = $primaryEntity['role'];
@@ -436,38 +445,38 @@ class MergeController
             foreach ($copyWorkflow as $value) {
                 if ($value['item_type'] == 'user_id') {
                     $user = UserModel::getById(['id' => $value['item_id'], 'select' => ['firstname', 'lastname']]);
-                    $primaryentity = UserModel::getPrimaryEntityById(
-                        ['id' => $value['item_id'], 'select' => ['entities.entity_label']]
-                    );
+                    $primaryentity = UserModel::getPrimaryEntityById([
+                        'id'     => $value['item_id'],
+                        'select' => ['entities.entity_label']
+                    ]);
                     $label = "{$user['firstname']} {$user['lastname']} ({$primaryentity['entity_label']})";
                 } else {
                     $entity = EntityModel::getById(['id' => $value['item_id'], 'select' => ['entity_label']]);
                     $label = $entity['entity_label'];
                 }
-                $copies .= "{$label}\n";
+                $copies .= "$label\n";
             }
         }
 
         //Notes
         $mergedNote = '';
         if (!empty($args['resId'])) {
-            $notes = NoteModel::getByUserIdForResource(
-                [
-                    'select' => ['note_text', 'creation_date', 'user_id'],
-                    'resId'  => $args['resId'],
-                    'userId' => $args['userId']
-                ]
-            );
+            $notes = NoteModel::getByUserIdForResource([
+                'select' => ['note_text', 'creation_date', 'user_id'],
+                'resId'  => $args['resId'],
+                'userId' => $args['userId']
+            ]);
             foreach ($notes as $note) {
                 $labelledUser = UserModel::getLabelledUserById(['id' => $note['user_id']]);
                 $creationDate = TextFormatModel::formatDate($note['creation_date'], 'd/m/Y');
-                $mergedNote .= "{$labelledUser} : {$creationDate} : {$note['note_text']}\n";
+                $mergedNote .= "$labelledUser : $creationDate : {$note['note_text']}\n";
             }
         }
 
         //CustomFields
         if (!empty($args['resId'])) {
-            $customs = !empty($resource['custom_fields']) ? json_decode($resource['custom_fields'], true) : [];
+            $customs = !empty($resource['custom_fields']) ?
+                json_decode($resource['custom_fields'], true) : [];
         } else {
             $customs = !empty($args['customFields']) ? $args['customFields'] : [];
         }
@@ -513,8 +522,9 @@ class MergeController
 
                 if (is_array($custom)) {
                     if ($customFieldsTypes[$customId] == 'banAutocomplete') {
-                        $resource['customField_' .
-                        $customId] = "{$custom[0]['addressNumber']} {$custom[0]['addressStreet']} {$custom[0]['addressTown']} ({$custom[0]['addressPostcode']})";
+                        $value = "{$custom[0]['addressNumber']} {$custom[0]['addressStreet']} " .
+                            "{$custom[0]['addressTown']} ({$custom[0]['addressPostcode']})";
+                        $resource['customField_' . $customId] = $value;
                     } elseif ($customFieldsTypes[$customId] == 'contact') {
                         $customValues = ContactController::getContactCustomField(['contacts' => $custom]);
                         $resource['customField_' . $customId] = implode("\n", $customValues);
@@ -530,9 +540,10 @@ class MergeController
         //Transmissions
         $transmissions = [];
         if (!empty($args['recipientId']) && !empty($args['recipientType'])) {
-            $currentTransmission = MergeController::formatPerson(
-                ['id' => $args['recipientId'], 'type' => $args['recipientType']]
-            );
+            $currentTransmission = MergeController::formatPerson([
+                'id'   => $args['recipientId'],
+                'type' => $args['recipientType']
+            ]);
             $transmissions['currentContact_lastname'] = $currentTransmission['lastname'] ?? null;
             $transmissions['currentContact_firstname'] = $currentTransmission['firstname'] ?? null;
             $transmissions['currentContact_title'] = $currentTransmission['civility'] ?? null;
@@ -541,13 +552,14 @@ class MergeController
 
         $trKey = 1;
         while (!empty($args["transmissionRecipientId{$trKey}"])) {
-            $recipientTransmission = MergeController::formatPerson(
-                ['id' => $args["transmissionRecipientId{$trKey}"], 'type' => $args["transmissionRecipientType{$trKey}"]]
-            );
-            $transmissions["lastname{$trKey}"] = $recipientTransmission['lastname'] ?? null;
-            $transmissions["firstname{$trKey}"] = $recipientTransmission['firstname'] ?? null;
-            $transmissions["title{$trKey}"] = $recipientTransmission['civility'] ?? null;
-            $transmissions["function{$trKey}"] = $recipientTransmission['function'] ?? null;
+            $recipientTransmission = MergeController::formatPerson([
+                'id'   => $args["transmissionRecipientId$trKey"],
+                'type' => $args["transmissionRecipientType$trKey"]
+            ]);
+            $transmissions["lastname$trKey"] = $recipientTransmission['lastname'] ?? null;
+            $transmissions["firstname$trKey"] = $recipientTransmission['firstname'] ?? null;
+            $transmissions["title$trKey"] = $recipientTransmission['civility'] ?? null;
+            $transmissions["function$trKey"] = $recipientTransmission['function'] ?? null;
             ++$trKey;
         }
 
@@ -578,9 +590,10 @@ class MergeController
         $dataToBeMerge['datetime'] = $datetime;
         $dataToBeMerge['transmissions'] = $transmissions;
         if (empty($args['inMailing'])) {
-            $dataToBeMerge['attachmentRecipient'] = MergeController::formatPerson(
-                ['id' => $args['recipientId'] ?? null, 'type' => $args['recipientType'] ?? null]
-            );
+            $dataToBeMerge['attachmentRecipient'] = MergeController::formatPerson([
+                'id'   => $args['recipientId'] ?? null,
+                'type' => $args['recipientType'] ?? null
+            ]);
         }
 
         return $dataToBeMerge;
@@ -669,7 +682,10 @@ class MergeController
                         } elseif ($args['type'] == 'attachment') {
                             $tbs->MergeField('attachment', ['chrono' => $args['chrono']]);
                         }
-                        $tbs->MergeField('attachments', ['chronoBarCode' => $barcodeFile, 'chronoQrCode' => $qrcodeFile]);
+                        $tbs->MergeField(
+                            'attachments',
+                            ['chronoBarCode' => $barcodeFile, 'chronoQrCode' => $qrcodeFile]
+                        );
                     }
                 }
                 $tbs->PlugIn(OPENTBS_SELECT_MAIN);
@@ -761,14 +777,16 @@ class MergeController
         fclose($handle);
 
         $datasources['user'] = [
-            UserModel::getById(
-                ['select' => ['firstname', 'lastname', 'mail', 'phone', 'initials'], 'id' => $GLOBALS['id']]
-            )
+            UserModel::getById([
+                'select' => ['firstname', 'lastname', 'mail', 'phone', 'initials'],
+                'id'     => $GLOBALS['id']
+            ])
         ];
         $datasources['userPrimaryEntity'] = [
-            UserModel::getPrimaryEntityById(
-                ['id' => $GLOBALS['id'], 'select' => ['entities.*', 'users_entities.user_role as role']]
-            )
+            UserModel::getPrimaryEntityById([
+                'id'     => $GLOBALS['id'],
+                'select' => ['entities.*', 'users_entities.user_role as role']
+            ])
         ];
 
         $TBS = new clsTinyButStrong();
@@ -827,35 +845,34 @@ class MergeController
             ]);
             $document = $document[0];
 
-            $docserver = DocserverModel::getByDocserverId(
-                ['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
-            );
+            $docserver = DocserverModel::getByDocserverId([
+                'docserverId' => $document['docserver_id'],
+                'select'      => ['path_template', 'docserver_type_id']
+            ]);
             if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
                 return ['errors' => 'Docserver does not exist'];
             }
 
-            $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $document['path']) .
-                $document['filename'];
+            $pathToDocument = $docserver['path_template'] .
+                str_replace('#', DIRECTORY_SEPARATOR, $document['path']) . $document['filename'];
 
             if (!file_exists($pathToDocument)) {
                 return ['errors' => 'Document not found on docserver'];
             }
         } else {
-            $document = ResModel::getById(
-                [
-                    'select' => [
-                        'docserver_id',
-                        'path',
-                        'filename',
-                        'category_id',
-                        'version',
-                        'fingerprint',
-                        'format',
-                        'version'
-                    ],
-                    'resId'  => $args['resId']
-                ]
-            );
+            $document = ResModel::getById([
+                'select' => [
+                    'docserver_id',
+                    'path',
+                    'filename',
+                    'category_id',
+                    'version',
+                    'fingerprint',
+                    'format',
+                    'version'
+                ],
+                'resId'  => $args['resId']
+            ]);
             if (empty($document['filename'])) {
                 return ['errors' => 'Document does not exist'];
             }
@@ -868,15 +885,16 @@ class MergeController
             ]);
             $document = $convertedDocument[0] ?? $document;
 
-            $docserver = DocserverModel::getByDocserverId(
-                ['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
-            );
+            $docserver = DocserverModel::getByDocserverId([
+                'docserverId' => $document['docserver_id'],
+                'select'      => ['path_template', 'docserver_type_id']
+            ]);
             if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
                 return ['errors' => 'Docserver does not exist'];
             }
 
-            $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $document['path']) .
-                $document['filename'];
+            $pathToDocument = $docserver['path_template'] .
+                str_replace('#', DIRECTORY_SEPARATOR, $document['path']) . $document['filename'];
         }
 
         $tbs = new clsTinyButStrong();
@@ -997,10 +1015,10 @@ class MergeController
 
     /**
      * @param array $args
-     * @return array|mixed
+     * @return array
      * @throws Exception
      */
-    private static function formatPerson(array $args): mixed
+    private static function formatPerson(array $args): array
     {
         $person = [];
 

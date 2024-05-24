@@ -54,7 +54,7 @@ class AttachmentRepository implements AttachmentRepositoryInterface
                 'res_id', 'res_id_master', 'title', 'identifier', 'relation', 'attachment_type', 'filename', 'format',
                 'typist'
             ],
-            'where'  => ['res_id_master = ?', 'in_signature_book = ?', "status not in ('DEL', 'TMP', 'OBS')"],
+            'where'  => ['res_id_master = ?', 'in_signature_book = ?', "status not in ('DEL', 'TMP', 'OBS', 'SIGN')"],
             'data'   => [$mainResource->getResId(), 'true']
         ]);
 

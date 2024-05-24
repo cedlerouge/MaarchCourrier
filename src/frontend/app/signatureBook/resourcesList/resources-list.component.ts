@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import { FiltersListService } from '@service/filtersList.service';
 import { ListPropertiesInterface } from '@models/list-properties.model';
+import { Attachment } from '@models/attachment.model';
 
 @Component({
     selector: 'app-resources-list',
@@ -247,5 +248,18 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
         if (index !== -1) {
             this.viewport.scrollToIndex(index);
         }
+    }
+
+    isResourceSelected(resource: Attachment): boolean {
+        return this.signatureBookService.selectedResources.filter((doc: Attachment) => doc.resIdMaster === resource.resId).length > 0;
+    }
+
+    getTotalSelectedResources(): number {
+        const resIds: number[] = [this.resId];
+        return resIds.concat([... new Set(this.signatureBookService.selectedResources.map((resource: Attachment) => resource.resIdMaster))]).length;
+    }
+
+    getTotalResources(): number {
+        return this.resources.map((resource: ResourcesList) => resource.resId).length;
     }
 }

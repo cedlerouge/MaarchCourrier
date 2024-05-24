@@ -1,14 +1,13 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-* @brief   ParametersController
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ * @brief   ParametersController
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 /**
  * @brief Custom Field Controller
@@ -21,6 +20,7 @@ use Action\models\ActionModel;
 use Basket\models\GroupBasketModel;
 use Configuration\models\ConfigurationModel;
 use CustomField\models\CustomFieldModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use IndexingModel\models\IndexingModelFieldModel;
@@ -46,7 +46,12 @@ class CustomFieldController
         'bigserial'
     ];
 
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
@@ -55,7 +60,10 @@ class CustomFieldController
         foreach ($customFields as $key => $customField) {
             $customFields[$key]['values'] = json_decode($customField['values'], true);
             $customFields[$key]['SQLMode'] = !empty($customFields[$key]['values']['table']);
-            if (empty($queryParams['admin']) || !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_custom_fields', 'userId' => $GLOBALS['id']])) {
+            if (
+                empty($queryParams['admin']) ||
+                !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_custom_fields', 'userId' => $GLOBALS['id']])
+            ) {
                 if (!empty($customFields[$key]['values']['table'])) {
                     if (!empty($queryParams['resId']) && is_numeric($queryParams['resId'])) {
                         $customFields[$key]['values']['resId'] = $queryParams['resId'];
@@ -82,13 +90,11 @@ class CustomFieldController
                         $customFields[$key]['values'][] = ['key' => $value, 'label' => $value];
                     }
                 }
-            } else {
-                if (empty($customFields[$key]['values']['table']) && !empty($customFields[$key]['values'])) {
-                    $values = $customFields[$key]['values'];
-                    $customFields[$key]['values'] = [];
-                    foreach ($values as $valueKey => $value) {
-                        $customFields[$key]['values'][] = ['key' => $valueKey, 'label' => $value];
-                    }
+            } elseif (empty($customFields[$key]['values']['table']) && !empty($customFields[$key]['values'])) {
+                $values = $customFields[$key]['values'];
+                $customFields[$key]['values'] = [];
+                foreach ($values as $valueKey => $value) {
+                    $customFields[$key]['values'][] = ['key' => $valueKey, 'label' => $value];
                 }
             }
         }
@@ -96,7 +102,13 @@ class CustomFieldController
         return $response->withJson(['customFields' => $customFields]);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_custom_fields', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -106,17 +118,31 @@ class CustomFieldController
 
         if (!Validator::stringType()->notEmpty()->validate($body['label'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body label is empty or not a string']);
-        } elseif (!Validator::stringType()->notEmpty()->validate($body['type']) || !in_array($body['type'], ['string', 'integer', 'select', 'date', 'radio', 'checkbox', 'banAutocomplete', 'contact'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body type is empty, not a string or value is incorrect']);
+        } elseif (
+            !Validator::stringType()->notEmpty()->validate($body['type']) || !in_array(
+                $body['type'],
+                ['string', 'integer', 'select', 'date', 'radio', 'checkbox', 'banAutocomplete', 'contact']
+            )
+        ) {
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body type is empty, not a string or value is incorrect']
+            );
         } elseif (!empty($body['values']) && !Validator::arrayType()->notEmpty()->validate($body['values'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body values is not an array']);
-        } elseif (!Validator::stringType()->notEmpty()->validate($body['mode']) || !in_array($body['mode'], ['form', 'technical'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body mode is empty, not a string or value is incorrect']);
+        } elseif (
+            !Validator::stringType()->notEmpty()->validate($body['mode']) ||
+            !in_array($body['mode'], ['form', 'technical'])
+        ) {
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body mode is empty, not a string or value is incorrect']
+            );
         }
 
         $fields = CustomFieldModel::get(['select' => [1], 'where' => ['label = ?'], 'data' => [$body['label']]]);
         if (!empty($fields)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Custom field with this label already exists']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Custom field with this label already exists']
+            );
         }
 
         if (!empty($body['SQLMode'])) {
@@ -129,10 +155,10 @@ class CustomFieldController
         }
 
         $id = CustomFieldModel::create([
-            'label'         => $body['label'],
-            'type'          => $body['type'],
-            'mode'          => $body['mode'],
-            'values'        => empty($body['values']) ? '[]' : json_encode($body['values'])
+            'label'  => $body['label'],
+            'type'   => $body['type'],
+            'mode'   => $body['mode'],
+            'values' => empty($body['values']) ? '[]' : json_encode($body['values'])
         ]);
 
         HistoryController::add([
@@ -147,7 +173,14 @@ class CustomFieldController
         return $response->withJson(['customFieldId' => $id]);
     }
 
-    public function update(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_custom_fields', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -163,8 +196,13 @@ class CustomFieldController
             return $response->withStatus(400)->withJson(['errors' => 'Body label is empty or not a string']);
         } elseif (!empty($body['values']) && !Validator::arrayType()->notEmpty()->validate($body['values'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body values is not an array']);
-        } elseif (!Validator::stringType()->notEmpty()->validate($body['mode']) || !in_array($body['mode'], ['form', 'technical'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body mode is empty, not a string or value is incorrect']);
+        } elseif (
+            !Validator::stringType()->notEmpty()->validate($body['mode']) ||
+            !in_array($body['mode'], ['form', 'technical'])
+        ) {
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body mode is empty, not a string or value is incorrect']
+            );
         }
 
         $field = CustomFieldModel::getById(['select' => ['type', 'values', 'mode', 'id'], 'id' => $args['id']]);
@@ -172,9 +210,13 @@ class CustomFieldController
             return $response->withStatus(400)->withJson(['errors' => 'Custom field not found']);
         }
 
-        $fields = CustomFieldModel::get(['select' => [1], 'where' => ['label = ?', 'id != ?'], 'data' => [$body['label'], $args['id']]]);
+        $fields = CustomFieldModel::get(
+            ['select' => [1], 'where' => ['label = ?', 'id != ?'], 'data' => [$body['label'], $args['id']]]
+        );
         if (!empty($fields)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Custom field with this label already exists']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Custom field with this label already exists']
+            );
         }
 
         if (!empty($body['SQLMode'])) {
@@ -216,11 +258,19 @@ class CustomFieldController
                         $newValues[] = $value['label'];
                     }
 
-                    if (empty($values['table']) && !empty($values[$value['key']]) && !empty($value['label']) && $value['label'] != $values[$value['key']]) {
+                    if (
+                        empty($values['table']) && !empty($values[$value['key']]) && !empty($value['label']) &&
+                        $value['label'] != $values[$value['key']]
+                    ) {
                         ResModel::update([
-                            'postSet' => ['custom_fields' => "jsonb_set(custom_fields, '{{$args['id']}}', '\"" . str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $value['label']) . "\"')"],
+                            'postSet' => [
+                                'custom_fields' => "jsonb_set(custom_fields, '{{$args['id']}}', '\"" .
+                                    str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $value['label']) . "\"')"
+                            ],
                             'where'   => ["custom_fields->'{$args['id']}' @> ?"],
-                            'data'    => ["\"" . str_replace(["\\", '"'], ["\\\\", '\"'], $values[$value['key']]) . "\""]
+                            'data'    => [
+                                "\"" . str_replace(["\\", '"'], ["\\\\", '\"'], $values[$value['key']]) . "\""
+                            ]
                         ]);
                     }
                 }
@@ -230,7 +280,9 @@ class CustomFieldController
         }
 
         if ($field['mode'] == 'form' && $body['mode'] == 'technical') {
-            IndexingModelFieldModel::delete(['where' => ['identifier = ?'], 'data' => ['indexingCustomField_' . $args['id']]]);
+            IndexingModelFieldModel::delete(
+                ['where' => ['identifier = ?'], 'data' => ['indexingCustomField_' . $args['id']]]
+            );
         }
 
         CustomFieldModel::update([
@@ -272,7 +324,14 @@ class CustomFieldController
         return $response->withJson(['customField' => $customField]);
     }
 
-    public function delete(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_custom_fields', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -284,8 +343,12 @@ class CustomFieldController
 
         $field = CustomFieldModel::getById(['select' => ['label'], 'id' => $args['id']]);
 
-        IndexingModelFieldModel::delete(['where' => ['identifier = ?'], 'data' => ['indexingCustomField_' . $args['id']]]);
-        ResModel::update(['postSet' => ['custom_fields' => "custom_fields - '{$args['id']}'"], 'where' => ['1 = ?'], 'data' => [1]]);
+        IndexingModelFieldModel::delete(
+            ['where' => ['identifier = ?'], 'data' => ['indexingCustomField_' . $args['id']]]
+        );
+        ResModel::update(
+            ['postSet' => ['custom_fields' => "custom_fields - '{$args['id']}'"], 'where' => ['1 = ?'], 'data' => [1]]
+        );
 
         ActionModel::update([
             'postSet' => ['parameters' => "jsonb_set(parameters, '{requiredFields}', (parameters->'requiredFields') - 'indexingCustomField_{$args['id']}')"],
@@ -294,10 +357,10 @@ class CustomFieldController
         ]);
 
         $itemsPositionToRemove = DatabaseModel::select([
-            'select'    => ['a.id as action_id', 'position'],
-            'table'     => ["actions a, jsonb_array_elements( a.parameters->'fillRequiredFields') with ordinality arr(elem, position)"],
-            'where'     => ["a.parameters->'fillRequiredFields' IS NOT NULL AND elem->>'id' = ?"],
-            'data'      => ['indexingCustomField_' . $args['id']]
+            'select' => ['a.id as action_id', 'position'],
+            'table'  => ["actions a, jsonb_array_elements( a.parameters->'fillRequiredFields') with ordinality arr(elem, position)"],
+            'where'  => ["a.parameters->'fillRequiredFields' IS NOT NULL AND elem->>'id' = ?"],
+            'data'   => ['indexingCustomField_' . $args['id']]
         ]);
         if (!empty($itemsPositionToRemove)) {
             foreach ($itemsPositionToRemove as $key => $item) {
@@ -340,7 +403,7 @@ class CustomFieldController
         //When customField is deleted, delete from search administration
         $adminSearch = ConfigurationModel::getByPrivilege(['privilege' => 'admin_search', 'select' => ['value']]);
         $configuration = json_decode($adminSearch['value'], true);
-        $subInfos   = $configuration['listDisplay']['subInfos'];
+        $subInfos = $configuration['listDisplay']['subInfos'];
         foreach ($subInfos as $key => $value) {
             if ($value['value'] === 'indexingCustomField_' . $args['id']) {
                 unset($subInfos[$key]);
@@ -356,7 +419,9 @@ class CustomFieldController
         }
 
         //When customField is deleted, delete from search model
-        $searchTemplates = SearchTemplateModel::get(['select' => ['query'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']]]);
+        $searchTemplates = SearchTemplateModel::get(
+            ['select' => ['query'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']]]
+        );
         foreach ($searchTemplates as $searchTemplate) {
             $queries = json_decode($searchTemplate['query'], true);
             foreach ($queries as $key => $query) {
@@ -385,7 +450,13 @@ class CustomFieldController
         return $response->withStatus(204);
     }
 
-    public function getWhiteList(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function getWhiteList(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_custom_fields', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -402,15 +473,20 @@ class CustomFieldController
                 }
             }
             $allowedTables[] = [
-                'name'      => $table,
-                'columns'   => array_values($columns)
+                'name'    => $table,
+                'columns' => array_values($columns)
             ];
         }
 
         return $response->withJson(['allowedTables' => $allowedTables]);
     }
 
-    public static function controlSQLMode(array $args)
+    /**
+     * @param array $args
+     * @return string[]|true
+     * @throws Exception
+     */
+    public static function controlSQLMode(array $args): array|bool
     {
         $body = $args['body'];
 
@@ -426,7 +502,10 @@ class CustomFieldController
         } elseif (!Validator::stringType()->notEmpty()->validate($body['values']['clause'])) {
             return ['errors' => 'Body values[clause] is empty or not a string'];
         }
-        if (stripos($body['values']['key'], 'password') !== false || stripos($body['values']['key'], 'token') !== false) {
+        if (
+            stripos($body['values']['key'], 'password') !== false ||
+            stripos($body['values']['key'], 'token') !== false
+        ) {
             return ['errors' => 'Body values[key] is not allowed'];
         }
         $allowedTables = CoreConfigModel::getJsonLoaded(['path' => 'config/customFieldsWhiteList.json']);
@@ -449,14 +528,17 @@ class CustomFieldController
                 return ['errors' => 'Body values[label] delimiterStart is not set'];
             } elseif (!isset($value['delimiterEnd'])) {
                 return ['errors' => 'Body values[label] delimiterEnd is not set'];
-            } elseif (strpos($value['column'], 'password') !== false || strpos($value['column'], 'token') !== false) {
+            } elseif (str_contains($value['column'], 'password') || str_contains($value['column'], 'token')) {
                 return ['errors' => 'Body values[label] column is not allowed'];
             }
             if ($body['type'] == 'date' && stripos($columns[$value['column']], 'timestamp') === false) {
                 return ['errors' => 'Body values[label] column is not a date', 'lang' => 'invalidColumnType'];
             } elseif ($body['type'] == 'integer' && !in_array($columns[$value['column']], self::NUMERIC_TYPES)) {
                 return ['errors' => 'Body values[label] column is not an integer', 'lang' => 'invalidColumnType'];
-            } elseif (in_array($body['type'], ['date', 'integer']) && (!empty($value['delimiterStart']) || !empty($value['delimiterEnd']))) {
+            } elseif (
+                in_array($body['type'], ['date', 'integer']) &&
+                (!empty($value['delimiterStart']) || !empty($value['delimiterEnd']))
+            ) {
                 return ['errors' => 'Delimiters are forbidden for this type', 'lang' => 'forbiddenDelimiterType'];
             }
         }
@@ -473,7 +555,7 @@ class CustomFieldController
         try {
             $body['values']['resId'] = 100;
             CustomFieldModel::getValuesSQL($body['values']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['errors' => 'Clause is not valid', 'lang' => 'invalidClause'];
         }
 

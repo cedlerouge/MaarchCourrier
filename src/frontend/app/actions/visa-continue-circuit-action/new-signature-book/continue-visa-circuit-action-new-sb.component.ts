@@ -146,7 +146,7 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
         const dataToSend : ContinueVisaCircuitDataToSendInterface = {
             resources : realResSelected,
             note: this.noteEditor.getNote(),
-            data: objToSend
+            data: { ...objToSend, digitalCertificate: this.parameters.digitalCertificate },
         };
         this.http
             .put(this.data.processActionRoute, dataToSend)
