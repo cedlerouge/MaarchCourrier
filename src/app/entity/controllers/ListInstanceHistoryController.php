@@ -141,9 +141,11 @@ class ListInstanceHistoryController
             $data = [$value['listinstance_history_id']];
             if (!empty($queryParams['type']) && in_array($queryParams['type'], ['visaCircuit', 'opinionCircuit'])) {
                 $where[] = 'difflist_type = ?';
-                $data[] = str_replace(['visaCircuit', 'opinionCircuit'],
+                $data[] = str_replace(
+                    ['visaCircuit', 'opinionCircuit'],
                     ['VISA_CIRCUIT', 'AVIS_CIRCUIT'],
-                    $queryParams['type']);
+                    $queryParams['type']
+                );
             } else {
                 $where[] = 'difflist_type = ?';
                 $data[] = 'VISA_CIRCUIT';
@@ -159,7 +161,8 @@ class ListInstanceHistoryController
                     ['id' => $listInstancesDetail['item_id']]
                 );
                 $listInstancesDetails[$key]['itemSubLabel'] = UserModel::getPrimaryEntityById(
-                    ['id' => $listInstancesDetail['item_id'], 'select' => ['entities.entity_label']]
+                    ['id' => $listInstancesDetail['item_id'],
+                     'select' => ['entities.entity_label']]
                 )['entity_label'];
             }
             if (!empty($listInstancesDetails)) {
