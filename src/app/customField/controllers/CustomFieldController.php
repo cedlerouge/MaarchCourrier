@@ -4,6 +4,7 @@
  * Copyright Maarch since 2008 under licence GPLv3.
  * See LICENCE.txt file at the root folder for more details.
  * This file is part of Maarch software.
+ *
  * @brief   ParametersController
  * @author  dev <dev@maarch.org>
  * @ingroup core
@@ -49,6 +50,7 @@ class CustomFieldController
     /**
      * @param Request $request
      * @param Response $response
+     *
      * @return Response
      */
     public function get(Request $request, Response $response): Response
@@ -105,6 +107,7 @@ class CustomFieldController
     /**
      * @param Request $request
      * @param Response $response
+     *
      * @return Response
      * @throws Exception
      */
@@ -151,7 +154,12 @@ class CustomFieldController
                 return $response->withStatus(400)->withJson($control);
             }
         } else {
-            unset($body['values']['key'], $body['values']['label'], $body['values']['table'], $body['values']['clause']);
+            unset(
+                $body['values']['key'],
+                $body['values']['label'],
+                $body['values']['table'],
+                $body['values']['clause']
+            );
         }
 
         $id = CustomFieldModel::create([
@@ -177,6 +185,7 @@ class CustomFieldController
      * @param Request $request
      * @param Response $response
      * @param array $args
+     *
      * @return Response
      * @throws Exception
      */
@@ -328,6 +337,7 @@ class CustomFieldController
      * @param Request $request
      * @param Response $response
      * @param array $args
+     *
      * @return Response
      * @throws Exception
      */
@@ -350,23 +360,31 @@ class CustomFieldController
             ['postSet' => ['custom_fields' => "custom_fields - '{$args['id']}'"], 'where' => ['1 = ?'], 'data' => [1]]
         );
 
+        $parameters = "jsonb_set(parameters, '{requiredFields}', ";
+        $parameters .= "(parameters->'requiredFields') - 'indexingCustomField_{$args['id']}')";
         ActionModel::update([
-            'postSet' => ['parameters' => "jsonb_set(parameters, '{requiredFields}', (parameters->'requiredFields') - 'indexingCustomField_{$args['id']}')"],
+            'postSet' => [
+                'parameters' => $parameters
+            ],
             'where'   => ["parameters->'requiredFields' @> ?"],
             'data'    => ['"indexingCustomField_' . $args['id'] . '"']
         ]);
 
+        $table = "actions a, ";
+        $table.= "jsonb_array_elements( a.parameters->'fillRequiredFields') with ordinality arr(elem, position)";
         $itemsPositionToRemove = DatabaseModel::select([
             'select' => ['a.id as action_id', 'position'],
-            'table'  => ["actions a, jsonb_array_elements( a.parameters->'fillRequiredFields') with ordinality arr(elem, position)"],
+            'table'  => [$table],
             'where'  => ["a.parameters->'fillRequiredFields' IS NOT NULL AND elem->>'id' = ?"],
             'data'   => ['indexingCustomField_' . $args['id']]
         ]);
         if (!empty($itemsPositionToRemove)) {
             foreach ($itemsPositionToRemove as $key => $item) {
                 $item['position']--;
+                $parameters = "jsonb_set(parameters, '{fillRequiredFields}', ";
+                $parameters.= "(parameters->'fillRequiredFields') - {$item['position']}) ";
                 ActionModel::update([
-                    'postSet' => ['parameters' => "jsonb_set(parameters, '{fillRequiredFields}', (parameters->'fillRequiredFields') - {$item['position']}) "],
+                    'postSet' => ['parameters' => $parameters],
                     'where'   => ["parameters->'fillRequiredFields' IS NOT NULL AND id = ?"],
                     'data'    => [$item['action_id']]
                 ]);
@@ -453,6 +471,7 @@ class CustomFieldController
     /**
      * @param Request $request
      * @param Response $response
+     *
      * @return Response
      * @throws Exception
      */
@@ -483,6 +502,7 @@ class CustomFieldController
 
     /**
      * @param array $args
+     *
      * @return string[]|true
      * @throws Exception
      */

@@ -14,18 +14,25 @@
 
 namespace Entity\models;
 
-use SrcCore\models\ValidatorModel;
+use Exception;
 use SrcCore\models\DatabaseModel;
+use SrcCore\models\ValidatorModel;
 
 class ListInstanceHistoryDetailModel
 {
-    public static function get(array $args)
+    /**
+     * @param array $args
+     *
+     * @return array
+     * @throws Exception
+     */
+    public static function get(array $args): array
     {
         ValidatorModel::notEmpty($args, ['select']);
         ValidatorModel::arrayType($args, ['select', 'where', 'data', 'orderBy', 'groupBy']);
         ValidatorModel::intType($args, ['limit']);
 
-        $listInstances = DatabaseModel::select([
+        return DatabaseModel::select([
             'select'    => $args['select'],
             'table'     => ['listinstance_history_details'],
             'where'     => empty($args['where']) ? [] : $args['where'],
@@ -34,15 +41,29 @@ class ListInstanceHistoryDetailModel
             'groupBy'   => empty($args['groupBy']) ? [] : $args['groupBy'],
             'limit'     => empty($args['limit']) ? 0 : $args['limit']
         ]);
-
-        return $listInstances;
     }
 
-    public static function create(array $args)
+    /**
+     * @param array $args
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public static function create(array $args): bool
     {
-        ValidatorModel::notEmpty($args, ['listinstance_history_id', 'res_id', 'item_id', 'item_type', 'item_mode', 'added_by_user', 'difflist_type']);
+        ValidatorModel::notEmpty($args, [
+            'listinstance_history_id',
+            'res_id',
+            'item_id',
+            'item_type',
+            'item_mode',
+            'added_by_user',
+            'difflist_type'
+        ]);
         ValidatorModel::intVal($args, ['listinstance_history_id', 'res_id', 'sequence', 'item_id', 'added_by_user']);
-        ValidatorModel::stringType($args, ['item_type', 'item_mode', 'difflist_type', 'process_date', 'process_comment']);
+        ValidatorModel::stringType(
+            $args, ['item_type', 'item_mode', 'difflist_type', 'process_date', 'process_comment']
+        );
 
         DatabaseModel::insert([
             'table'         => 'listinstance_history_details',

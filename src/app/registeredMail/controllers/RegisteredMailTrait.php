@@ -1,30 +1,42 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-* @brief   AcknowledgementReceiptTrait
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ * @brief   AcknowledgementReceiptTrait
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 namespace RegisteredMail\controllers;
 
 use Contact\models\ContactModel;
+use Exception;
 use Parameter\models\ParameterModel;
 use RegisteredMail\models\IssuingSiteModel;
 use RegisteredMail\models\RegisteredMailModel;
 use RegisteredMail\models\RegisteredNumberRangeModel;
 use Resource\models\ResModel;
+use setasign\Fpdi\PdfParser\CrossReference\CrossReferenceException;
+use setasign\Fpdi\PdfParser\Filter\FilterException;
+use setasign\Fpdi\PdfParser\PdfParserException;
+use setasign\Fpdi\PdfParser\Type\PdfTypeException;
+use setasign\Fpdi\PdfReader\PdfReaderException;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\ValidatorModel;
 
 trait RegisteredMailTrait
 {
-    public static function saveAndPrintRegisteredMail(array $args)
+    /**
+     * @param array $args
+     *
+     * @return array
+     * @throws Exception
+     */
+    public static function saveAndPrintRegisteredMail(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resId', 'data']);
         ValidatorModel::intVal($args, ['resId']);
@@ -49,8 +61,21 @@ trait RegisteredMailTrait
 
         $args['data']['recipient'] = ContactModel::getById(
             [
-            'select' => ['company', 'lastname', 'firstname', 'address_town as "addressTown"', 'address_number as "addressNumber"', 'address_street as "addressStreet"', 'address_country as "addressCountry"', 'address_postcode as "addressPostcode"', 'address_additional1 as addressAdditional1', 'address_additional2 as addressAdditional2', 'department'],
-            'id' => $args['data']['recipient'][0]['id']]
+                'select' => [
+                    'company',
+                    'lastname',
+                    'firstname',
+                    'address_town as "addressTown"',
+                    'address_number as "addressNumber"',
+                    'address_street as "addressStreet"',
+                    'address_country as "addressCountry"',
+                    'address_postcode as "addressPostcode"',
+                    'address_additional1 as addressAdditional1',
+                    'address_additional2 as addressAdditional2',
+                    'department'
+                ],
+                'id'     => $args['data']['recipient'][0]['id']
+            ]
         );
 
         if (empty($args['data']['recipient']['lastname']) && !empty($args['data']['recipient']['department'])) {
@@ -58,22 +83,42 @@ trait RegisteredMailTrait
         }
         unset($args['data']['recipient']['department']);
 
-        if ((empty($args['data']['recipient']['company']) && (empty($args['data']['recipient']['lastname']) || empty($args['data']['recipient']['firstname']))) || empty($args['data']['recipient']['addressStreet']) || empty($args['data']['recipient']['addressPostcode']) || empty($args['data']['recipient']['addressTown']) || empty($args['data']['recipient']['addressCountry'])) {
-            return ['errors' => ['company and firstname/lastname, or addressStreet, addressPostcode, addressTown or addressCountry is empty in Recipient'], 'lang' => 'argumentRegisteredMailRecipientEmpty'];
+        if (
+            (empty($args['data']['recipient']['company']) &&
+                (empty($args['data']['recipient']['lastname']) || empty($args['data']['recipient']['firstname']))) ||
+            empty($args['data']['recipient']['addressStreet']) ||
+            empty($args['data']['recipient']['addressPostcode']) || empty($args['data']['recipient']['addressTown']) ||
+            empty($args['data']['recipient']['addressCountry'])
+        ) {
+            $info = 'company and firstname/lastname, or addressStreet, addressPostcode, addressTown';
+            $info .= ' or addressCountry is empty in Recipient';
+            return [
+                'errors' => [$info],
+                'lang'   => 'argumentRegisteredMailRecipientEmpty'
+            ];
         }
 
         $issuingSite = IssuingSiteModel::getById([
-            'id'        => $args['data']['issuingSiteId'],
-            'select'    => ['label', 'address_number', 'address_street', 'address_additional1', 'address_additional2', 'address_postcode', 'address_town', 'address_country']
+            'id'     => $args['data']['issuingSiteId'],
+            'select' => [
+                'label',
+                'address_number',
+                'address_street',
+                'address_additional1',
+                'address_additional2',
+                'address_postcode',
+                'address_town',
+                'address_country'
+            ]
         ]);
         if (empty($issuingSite)) {
             return ['errors' => ['Issuing site does not exist'], 'lang' => 'argumentRegisteredMailIssuingSiteEmpty'];
         }
 
         $range = RegisteredNumberRangeModel::get([
-            'select'    => ['id', 'range_end', 'current_number'],
-            'where'     => ['type = ?', 'status = ?'],
-            'data'      => [$args['data']['type'], 'OK']
+            'select' => ['id', 'range_end', 'current_number'],
+            'where'  => ['type = ?', 'status = ?'],
+            'data'   => [$args['data']['type'], 'OK']
         ]);
         if (empty($range)) {
             return ['errors' => ['No range found'], 'lang' => 'NoRangeAvailable'];
@@ -92,23 +137,25 @@ trait RegisteredMailTrait
             'data'  => [$range[0]['id']]
         ]);
 
-        $date      = new \DateTime($resource['departure_date']);
-        $date      = $date->format('d/m/Y');
+        $date = new \DateTime($resource['departure_date']);
+        $date = $date->format('d/m/Y');
         $reference = "{$date} - {$args['data']['reference']}";
 
         RegisteredMailModel::create([
-            'res_id'        => $args['resId'],
-            'type'          => $args['data']['type'],
-            'issuing_site'  => $args['data']['issuingSiteId'],
-            'warranty'      => $args['data']['warranty'],
-            'letter'        => empty($args['data']['letter']) ? 'false' : 'true',
-            'recipient'     => json_encode($args['data']['recipient']),
-            'number'        => $range[0]['current_number'],
-            'reference'     => $reference,
-            'generated'     => empty($args['data']['generated']) ? 'false' : 'true',
+            'res_id'       => $args['resId'],
+            'type'         => $args['data']['type'],
+            'issuing_site' => $args['data']['issuingSiteId'],
+            'warranty'     => $args['data']['warranty'],
+            'letter'       => empty($args['data']['letter']) ? 'false' : 'true',
+            'recipient'    => json_encode($args['data']['recipient']),
+            'number'       => $range[0]['current_number'],
+            'reference'    => $reference,
+            'generated'    => empty($args['data']['generated']) ? 'false' : 'true',
         ]);
 
-        $registeredMailNumber = RegisteredMailController::getRegisteredMailNumber(['type' => $args['data']['type'], 'rawNumber' => $range[0]['current_number'], 'countryCode' => 'FR']);
+        $registeredMailNumber = RegisteredMailController::getRegisteredMailNumber(
+            ['type' => $args['data']['type'], 'rawNumber' => $range[0]['current_number'], 'countryCode' => 'FR']
+        );
         ResModel::update([
             'set'   => ['alt_identifier' => $registeredMailNumber],
             'where' => ['res_id = ?'],
@@ -141,30 +188,73 @@ trait RegisteredMailTrait
                 'resId'                => $args['resId'],
                 'savePdf'              => false
             ]);
-            return ['data' => ['fileContent' => base64_encode($registeredMailPDF['fileContent']), 'registeredMailNumber' => $registeredMailNumber]];
+            return [
+                'data' => [
+                    'fileContent'          => base64_encode($registeredMailPDF['fileContent']),
+                    'registeredMailNumber' => $registeredMailNumber
+                ]
+            ];
         }
     }
 
-    public static function printRegisteredMail(array $args)
+    /**
+     * @param array $args
+     *
+     * @return array
+     * @throws CrossReferenceException
+     * @throws FilterException
+     * @throws PdfParserException
+     * @throws PdfTypeException
+     * @throws PdfReaderException
+     */
+    public static function printRegisteredMail(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
 
         static $data;
 
-        $registeredMail = RegisteredMailModel::getByResId(['select' => ['issuing_site', 'type', 'number', 'warranty', 'letter', 'recipient', 'reference'], 'resId' => $args['resId']]);
+        $registeredMail = RegisteredMailModel::getByResId(
+            [
+                'select' => ['issuing_site', 'type', 'number', 'warranty', 'letter', 'recipient', 'reference'],
+                'resId'  => $args['resId']
+            ]
+        );
         $recipient = json_decode($registeredMail['recipient'], true);
         if (empty($registeredMail)) {
             return ['errors' => ['No registered mail for this resource'], 'lang' => 'registeredMailNotFound'];
-        } elseif (empty($recipient) || empty($registeredMail['issuing_site']) || empty($registeredMail['type']) || empty($registeredMail['number']) || empty($registeredMail['warranty'])) {
-            return ['errors' => ['recipient, issuing_site, type, number or warranty is missing to print registered mail']];
-        } elseif ((empty($recipient['company']) && (empty($recipient['lastname']) || empty($recipient['firstname']))) || empty($recipient['addressStreet']) || empty($recipient['addressPostcode']) || empty($recipient['addressTown']) || empty($recipient['addressCountry'])) {
-            return ['errors' => ['company and firstname/lastname, or addressStreet, addressPostcode, addressTown or addressCountry is empty in Recipient'], 'lang' => 'argumentRegisteredMailRecipientEmpty'];
+        } elseif (
+            empty($recipient) || empty($registeredMail['issuing_site']) || empty($registeredMail['type']) ||
+            empty($registeredMail['number']) || empty($registeredMail['warranty'])
+        ) {
+            return [
+                'errors' => ['recipient, issuing_site, type, number or warranty is missing to print registered mail']
+            ];
+        } elseif (
+            (empty($recipient['company']) && (empty($recipient['lastname']) || empty($recipient['firstname']))) ||
+            empty($recipient['addressStreet']) || empty($recipient['addressPostcode']) ||
+            empty($recipient['addressTown']) || empty($recipient['addressCountry'])
+        ) {
+            $info = 'company and firstname/lastname, or addressStreet, addressPostcode, addressTown';
+            $info .= ' or addressCountry is empty in Recipient';
+            return [
+                'errors' => [$info],
+                'lang'   => 'argumentRegisteredMailRecipientEmpty'
+            ];
         }
 
         $issuingSite = IssuingSiteModel::getById([
-            'id'        => $registeredMail['issuing_site'],
-            'select'    => ['label', 'address_number', 'address_street', 'address_additional1', 'address_additional2', 'address_postcode', 'address_town', 'address_country']
+            'id'     => $registeredMail['issuing_site'],
+            'select' => [
+                'label',
+                'address_number',
+                'address_street',
+                'address_additional1',
+                'address_additional2',
+                'address_postcode',
+                'address_town',
+                'address_country'
+            ]
         ]);
 
         $resource = ResModel::getById(['select' => ['alt_identifier'], 'resId' => $args['resId']]);
@@ -230,7 +320,17 @@ trait RegisteredMailTrait
         return ['data' => $data];
     }
 
-    public static function printDepositList(array $args)
+    /**
+     * @param array $args
+     *
+     * @return array
+     * @throws CrossReferenceException
+     * @throws FilterException
+     * @throws PdfParserException
+     * @throws PdfReaderException
+     * @throws PdfTypeException
+     */
+    public static function printDepositList(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -263,7 +363,16 @@ trait RegisteredMailTrait
         }
 
         $registeredMail = RegisteredMailModel::getWithResources([
-            'select' => ['issuing_site', 'type', 'number', 'warranty', 'recipient', 'generated', 'departure_date', 'deposit_id'],
+            'select' => [
+                'issuing_site',
+                'type',
+                'number',
+                'warranty',
+                'recipient',
+                'generated',
+                'departure_date',
+                'deposit_id'
+            ],
             'where'  => ['res_letterbox.res_id = ?'],
             'data'   => [$args['resId']]
         ]);
@@ -276,7 +385,8 @@ trait RegisteredMailTrait
             return ['errors' => ['Registered mail not generated for this resource']];
         }
 
-        $uniqueType = $registeredMail['type'] . '_' . $registeredMail['issuing_site'] . '_' . $registeredMail['warranty'] . '_' . $registeredMail['departure_date'];
+        $uniqueType = $registeredMail['type'] . '_' . $registeredMail['issuing_site'] . '_' .
+            $registeredMail['warranty'] . '_' . $registeredMail['departure_date'];
 
         $site = IssuingSiteModel::getById(['id' => $registeredMail['issuing_site']]);
 
@@ -293,7 +403,13 @@ trait RegisteredMailTrait
             $registeredMails = RegisteredMailModel::getWithResources([
                 'select'  => ['number', 'warranty', 'reference', 'recipient', 'res_letterbox.res_id', 'alt_identifier'],
                 'where'   => ['type = ?', 'issuing_site = ?', 'departure_date = ?', 'warranty = ?', 'generated = ?'],
-                'data'    => [$registeredMail['type'], $registeredMail['issuing_site'], $registeredMail['departure_date'], $registeredMail['warranty'], true],
+                'data'    => [
+                    $registeredMail['type'],
+                    $registeredMail['issuing_site'],
+                    $registeredMail['departure_date'],
+                    $registeredMail['warranty'],
+                    true
+                ],
                 'orderBy' => ['number']
             ]);
 

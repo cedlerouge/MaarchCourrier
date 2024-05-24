@@ -15,15 +15,17 @@
 namespace Notification\models;
 
 use Exception;
-use SrcCore\models\ValidatorModel;
-use SrcCore\models\CoreConfigModel;
 use History\controllers\HistoryController;
+use SrcCore\models\CoreConfigModel;
+use SrcCore\models\ValidatorModel;
 
 abstract class NotificationScheduleModelAbstract
 {
     /**
      * @param array $aArgs
+     *
      * @return bool
+     * @throws Exception
      */
     public static function saveCrontab(array $aArgs = []): bool
     {
@@ -71,6 +73,7 @@ abstract class NotificationScheduleModelAbstract
 
     /**
      * @param array $aArgs
+     *
      * @return array
      */
     public static function getCrontab(array $aArgs = []): array
@@ -150,6 +153,7 @@ abstract class NotificationScheduleModelAbstract
 
     /**
      * @param array $aArgs
+     *
      * @return bool
      * @throws Exception
      */

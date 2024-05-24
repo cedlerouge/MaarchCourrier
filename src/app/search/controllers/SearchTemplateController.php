@@ -1,30 +1,44 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Search Template Controller
-* @author dev@maarch.org
-*/
+ * @brief Search Template Controller
+ * @author dev@maarch.org
+ */
 
 namespace Search\controllers;
 
+use Exception;
 use History\controllers\HistoryController;
+use Respect\Validation\Validator;
 use Search\models\SearchTemplateModel;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
-use Respect\Validation\Validator;
 
 class SearchTemplateController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
-        $searchTemplates = SearchTemplateModel::get(['select' => ['id', 'label', 'query'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']], 'orderBy' => ['label']]);
+        $searchTemplates = SearchTemplateModel::get(
+            [
+                'select' => ['id', 'label', 'query'],
+                'where' => ['user_id = ?'],
+                'data' => [$GLOBALS['id']],
+                'orderBy' => ['label']
+            ]
+        );
         foreach ($searchTemplates as $key => $searchTemplate) {
             $searchTemplates[$key]['query'] = json_decode($searchTemplate['query'], true);
         }
@@ -32,7 +46,14 @@ class SearchTemplateController
         return $response->withJson(['searchTemplates' => $searchTemplates]);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
         if (!Validator::notEmpty()->arrayType()->validate($body['query'])) {
@@ -43,9 +64,9 @@ class SearchTemplateController
         }
 
         $templateId = SearchTemplateModel::create([
-            'user_id'       => $GLOBALS['id'],
-            'label'         => $body['label'],
-            'query'         => json_encode($body['query'])
+            'user_id' => $GLOBALS['id'],
+            'label'   => $body['label'],
+            'query'   => json_encode($body['query'])
         ]);
 
         HistoryController::add([
@@ -60,15 +81,27 @@ class SearchTemplateController
         return $response->withJson(['id' => $templateId]);
     }
 
-    public function delete(Request $request, Response $response, $args = [])
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param $args
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, $args = []): Response
     {
         if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Query id is empty or not a numeric']);
         }
 
-        $searchTemplate = SearchTemplateModel::get(['select' => [1], 'where' => ['user_id = ?', 'id = ?'], 'data' => [$GLOBALS['id'], $args['id']]]);
+        $searchTemplate = SearchTemplateModel::get(
+            ['select' => [1], 'where' => ['user_id = ?', 'id = ?'], 'data' => [$GLOBALS['id'], $args['id']]]
+        );
         if (empty($searchTemplate)) {
-            return $response->withStatus(400)->withJson(['errors' => 'This template does not exists or it is not your template']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'This template does not exists or it is not your template']
+            );
         }
 
         SearchTemplateModel::delete(['where' => ['id = ?'], 'data' => [$args['id']]]);
