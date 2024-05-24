@@ -100,3 +100,14 @@
     text-overflow: ellipsis;
     word-break: break-all;
 }
+
+.selected-resources {
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    padding: 8px;
+    justify-content: flex-end;
+    letter-spacing: 2px;
+    font-size: 15px;
+}

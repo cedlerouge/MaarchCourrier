@@ -25,6 +25,8 @@ export class SignatureBookService {
 
     selectedDocToSign: SelectedAttachment = new SelectedAttachment();
 
+    selectedResources: Attachment[] = [];
+
     constructor(
         private http: HttpClient,
         private notifications: NotificationService,
@@ -140,5 +142,14 @@ export class SignatureBookService {
                 return of(false);
             })
         ).subscribe();
+    }
+
+    async toggleSelection(checked: boolean, userId: number, groupId: number, basketId: number, resource: Attachment): Promise<void> {
+        if (checked) {
+            const res: Attachment[] = (await this.initDocuments(userId, groupId, basketId, resource.resId)).resourcesToSign;
+            this.selectedResources = this.selectedResources.concat(res);
+        } else {
+            this.selectedResources = this.selectedResources.filter((doc: Attachment) => doc.resIdMaster !== resource.resId || doc.resId !== resource.resId);
+        }
     }
 }

@@ -57,6 +57,8 @@ export interface AttachmentInterface {
     resourceUrn: string;
 
     stamps?: StampInterface[];
+
+    isAttachment: boolean;
 }
 
 export class Attachment implements AttachmentInterface {
@@ -73,12 +75,13 @@ export class Attachment implements AttachmentInterface {
     canUpdate: boolean = false;
     resourceUrn: string = '';
     stamps: StampInterface[] = [];
+    isAttachment: boolean = false;
 
     constructor(json: any = null) {
         if (json) {
             Object.assign(this, json);
             if (this.resId) {
-                const type = json?.resIdMaster ? 'attachments' : 'resources';
+                const type = json.isAttachment ? 'attachments' : 'resources';
                 this.resourceUrn = `rest/${type}/${json.resId}/content`;
             }
         }

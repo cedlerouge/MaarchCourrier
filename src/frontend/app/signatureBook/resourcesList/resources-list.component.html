@@ -12,6 +12,9 @@
 <div *ngIf="loading" class="loader">
     <mat-spinner style="margin:auto;"></mat-spinner>
 </div>
+<div *ngIf="resources.length > 0" class="selected-resources">
+    <span>{{ getTotalSelectedResources() }} / {{ getTotalResources() }} {{'lang.selectedRes' | translate}}</span>
+</div>
 <cdk-virtual-scroll-viewport [itemSize]="85" class="virtual-scroll-viewport" #viewport [style.height.px]="viewportHeight">
     <div *cdkVirtualFor="let resource of resources"
         style="cursor: pointer;"
@@ -52,7 +55,10 @@
             <div class="col-md-1">
                 <mat-checkbox color="primary"
                     aria-label="Sélectionner cette ressource"
-                    (click)="$event.stopPropagation();">
+                    [checked]="resId === resource.resId || isResourceSelected(resource)"
+                    [disabled]="resId === resource.resId"
+                    (click)="$event.stopPropagation()"
+                    (change)="signatureBookService.toggleSelection($event.checked, userId, groupId, basketId, resource)">
                 </mat-checkbox>
             </div>
             <div class="col-md-2" [title]="resource.subject">

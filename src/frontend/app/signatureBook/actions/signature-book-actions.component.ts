@@ -83,6 +83,7 @@ export class SignatureBookActionsComponent implements OnInit {
     }
 
     async processAction(action: any) {
+        const resIds: number[] = this.signatureBookService.docsToSign.concat(this.signatureBookService.selectedResources).map((resource: Attachment) => resource.resIdMaster);
         this.http
             .get(`../rest/resources/${this.resId}?light=true`)
             .pipe(
@@ -92,8 +93,8 @@ export class SignatureBookActionsComponent implements OnInit {
                         this.userId,
                         this.groupId,
                         this.basketId,
-                        [this.resId],
-                        { ...data, docsToSign: this.signatureBookService.docsToSign },
+                        [... new Set(resIds)],
+                        { ...data, docsToSign: this.signatureBookService.docsToSign.concat(this.signatureBookService.selectedResources) },
                         false
                     );
                 }),

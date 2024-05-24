@@ -24,9 +24,9 @@ export class MaarchSbTabsComponent implements OnInit {
 
     ngOnInit(): void {
         if (this.position === 'left') {
-            this.selectedId = this.signatureBookService.selectedAttachment.index;
+            this.signatureBookService.selectedAttachment.index = this.selectedId;
         } else if (this.position === 'right') {
-            this.selectedId = this.signatureBookService.selectedDocToSign.index;
+            this.signatureBookService.selectedDocToSign.index = this.selectedId;
         }
     }
 
