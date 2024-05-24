@@ -28,6 +28,7 @@ use MaarchCourrier\Tests\Unit\Attachment\Mock\AttachmentRepositoryMock;
 use MaarchCourrier\Tests\Unit\Authorization\Mock\MainResourcePerimeterCheckerServiceMock;
 use MaarchCourrier\Tests\Unit\Authorization\Mock\PrivilegeCheckerMock;
 use MaarchCourrier\Tests\Unit\DocumentConversion\Mock\ConvertPdfServiceMock;
+use MaarchCourrier\Tests\Unit\DocumentConversion\Mock\SignatureMainDocumentRepositoryMock;
 use MaarchCourrier\Tests\Unit\MainResource\Mock\MainResourceRepositoryMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\CurrentUserInformationsMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Repository\VisaWorkflowRepositoryMock;
@@ -42,6 +43,7 @@ class RetrieveSignatureBookTest extends TestCase
     private CurrentUserInformationsMock $currentUserInformationsMock;
     private MainResourcePerimeterCheckerServiceMock $mainResourceAccessControlServiceMock;
     private SignatureBookRepositoryMock $signatureBookRepositoryMock;
+    private SignatureMainDocumentRepositoryMock $signatureMainDocumentRepositoryMock;
     private ConvertPdfServiceMock $convertPdfServiceMock;
     private AttachmentRepositoryMock $attachmentRepositoryMock;
     private PrivilegeCheckerMock $privilegeCheckerMock;
@@ -55,6 +57,7 @@ class RetrieveSignatureBookTest extends TestCase
         $this->currentUserInformationsMock = new CurrentUserInformationsMock();
         $this->mainResourceAccessControlServiceMock = new MainResourcePerimeterCheckerServiceMock();
         $this->signatureBookRepositoryMock = new SignatureBookRepositoryMock();
+        $this->signatureMainDocumentRepositoryMock = new SignatureMainDocumentRepositoryMock();
         $this->convertPdfServiceMock = new ConvertPdfServiceMock();
 
         $this->attachmentRepositoryMock = new AttachmentRepositoryMock();
@@ -82,6 +85,7 @@ class RetrieveSignatureBookTest extends TestCase
             $this->currentUserInformationsMock,
             $this->mainResourceAccessControlServiceMock,
             $this->signatureBookRepositoryMock,
+            $this->signatureMainDocumentRepositoryMock,
             $this->convertPdfServiceMock,
             $this->attachmentRepositoryMock,
             $this->privilegeCheckerMock,
@@ -497,6 +501,23 @@ class RetrieveSignatureBookTest extends TestCase
         $this->privilegeCheckerMock->hasPrivilege = true;
         $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
         $this->assertTrue($signatureBook->isCanSignResources());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testGetSignatureBookWithNoResourcesToSign(): void
+    {
+        $this->signatureMainDocumentRepositoryMock->mainDocumentIsSigned = true;
+        $this->attachmentRepositoryMock->attachmentsInSignatureBook = [];
+
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+
+        $this->assertEmpty($signatureBook->getResourcesToSign());
+        $this->assertNotEmpty($signatureBook->getResourcesAttached());
     }
 
     /**
