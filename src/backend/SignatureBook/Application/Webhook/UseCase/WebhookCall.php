@@ -30,6 +30,12 @@ use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;
 
 class WebhookCall
 {
+    /**
+     * @param WebhookValidation $webhookValidation
+     * @param RetrieveSignedResource $retrieveSignedResource
+     * @param StoreSignedResource $storeSignedResource
+     * @param SignatureHistoryServiceInterface $historyService
+     */
     public function __construct(
         private readonly WebhookValidation $webhookValidation,
         private readonly RetrieveSignedResource $retrieveSignedResource,

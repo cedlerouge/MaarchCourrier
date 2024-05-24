@@ -15,6 +15,7 @@
 namespace MaarchCourrier\SignatureBook\Application\Webhook;
 
 use DateTime;
+use Exception;
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\ResourceToSignRepositoryInterface;
@@ -38,15 +39,16 @@ class WebhookValidation
 
     /**
      * @param array $body
+     * @param array $decodedToken
      * @return SignedResource
      * @throws AttachmentOutOfPerimeterProblem
+     * @throws CurrentTokenIsNotFoundProblem
      * @throws ResourceAlreadySignProblem
      * @throws ResourceIdEmptyProblem
      * @throws ResourceIdMasterNotCorrespondingProblem
      * @throws RetrieveDocumentUrlEmptyProblem
-     * @throws CurrentTokenIsNotFoundProblem
      * @throws UserDoesNotExistProblem
-     * @throws \Exception
+     * @throws Exception
      */
     public function validateAndCreateResource(array $body, array $decodedToken): SignedResource
     {
@@ -113,10 +115,8 @@ class WebhookValidation
             }
 
             $signedResource->setResIdMaster($decodedToken['resIdMaster']);
-        } else {
-            if ($this->resourceToSignRepository->isResourceSigned($decodedToken['resId'])) {
-                throw new ResourceAlreadySignProblem();
-            }
+        } elseif ($this->resourceToSignRepository->isResourceSigned($decodedToken['resId'])) {
+            throw new ResourceAlreadySignProblem();
         }
 
         $signedResource->setResIdSigned($decodedToken['resId']);

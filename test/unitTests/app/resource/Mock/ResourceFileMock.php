@@ -21,17 +21,18 @@ class ResourceFileMock implements ResourceFileInterface
     public bool $doesResourceConvertToThumbnailFailed = false;
     public bool $returnResourceThumbnailFileContent = false;
     public bool $doesResourceConvertOnePageToThumbnailFailed = false;
-    public bool $triggerAnExceptionWhenGetTheNumberOfPagesInThePdfFile = false;
-
     public string $mainResourceFileContent = 'original file content';
     public string $mainWatermarkInResourceFileContent = 'watermark in file content';
     public string $docserverPath = 'install/samples/resources/';
-    public string $documentFingerprint  = 'file fingerprint';
-    public string $resourceThumbnailFileContent  = 'resource thumbnail of an img';
-    public string $noThumbnailFileContent  = 'thumbnail of no img';
+    public string $documentFingerprint = 'file fingerprint';
+    public string $resourceThumbnailFileContent = 'resource thumbnail of an img';
+    public string $noThumbnailFileContent = 'thumbnail of no img';
 
     /**
-     * @inheritDoc
+     * @param string $docserverPath
+     * @param string $documentPath
+     * @param string $documentFilename
+     * @return string
      */
     public function buildFilePath(string $docserverPath, string $documentPath, string $documentFilename): string
     {
@@ -42,6 +43,10 @@ class ResourceFileMock implements ResourceFileInterface
         return $this->docserverPath . str_replace('#', DIRECTORY_SEPARATOR, $documentPath) . $documentFilename;
     }
 
+    /**
+     * @param string $folderPath
+     * @return bool
+     */
     public function folderExists(string $folderPath): bool
     {
         if (empty($folderPath)) {
@@ -50,6 +55,10 @@ class ResourceFileMock implements ResourceFileInterface
         return $this->doesFolderExist;
     }
 
+    /**
+     * @param string $filePath
+     * @return bool
+     */
     public function fileExists(string $filePath): bool
     {
         if (empty($filePath)) {
@@ -58,6 +67,11 @@ class ResourceFileMock implements ResourceFileInterface
         return $this->doesFileExist;
     }
 
+    /**
+     * @param string $docserverTypeId
+     * @param string $filePath
+     * @return string
+     */
     public function getFingerPrint(string $docserverTypeId, string $filePath): string
     {
         if (empty($docserverTypeId)) {
@@ -71,7 +85,9 @@ class ResourceFileMock implements ResourceFileInterface
     }
 
     /**
-     * @inheritDoc
+     * @param string $filePath
+     * @param bool $isEncrypted
+     * @return string|null
      */
     public function getFileContent(string $filePath, bool $isEncrypted = false): ?string
     {
@@ -80,13 +96,13 @@ class ResourceFileMock implements ResourceFileInterface
         }
 
         if ($this->doesResourceFileGetContentFail) {
-            if ($this->returnResourceThumbnailFileContent && strpos($filePath, 'noThumbnail.png') !== false) {
+            if ($this->returnResourceThumbnailFileContent && str_contains($filePath, 'noThumbnail.png')) {
                 return $this->noThumbnailFileContent;
             }
             return null;
         }
 
-        if ($this->returnResourceThumbnailFileContent && strpos($filePath, 'noThumbnail.png') !== false) {
+        if ($this->returnResourceThumbnailFileContent && str_contains($filePath, 'noThumbnail.png')) {
             return $this->noThumbnailFileContent;
         }
 
@@ -94,7 +110,9 @@ class ResourceFileMock implements ResourceFileInterface
     }
 
     /**
-     * @inheritDoc
+     * @param int $resId
+     * @param string|null $fileContent
+     * @return string|null
      */
     public function getWatermark(int $resId, ?string $fileContent): ?string
     {
@@ -109,6 +127,13 @@ class ResourceFileMock implements ResourceFileInterface
         }
     }
 
+    /**
+     * @param int $resId
+     * @param int $version
+     * @param string $fileContent
+     * @param string $extension
+     * @return array|string[]
+     */
     public function convertToThumbnail(int $resId, int $version, string $fileContent, string $extension): array
     {
         if ($this->doesResourceConvertToThumbnailFailed) {
@@ -118,18 +143,22 @@ class ResourceFileMock implements ResourceFileInterface
     }
 
     /**
-     * @inheritDoc
+     * @param int $resId
+     * @param string $type
+     * @param int $page
+     * @return string
      */
     public function convertOnePageToThumbnail(int $resId, string $type, int $page): string
     {
         if ($this->doesResourceConvertOnePageToThumbnailFailed) {
             return 'errors:';
         }
-       return 'true';
+        return 'true';
     }
 
     /**
-     * @inheritDoc
+     * @param string $filePath
+     * @return int
      */
     public function getTheNumberOfPagesInThePdfFile(string $filePath): int
     {
