@@ -371,7 +371,7 @@ class CustomFieldController
         ]);
 
         $table = "actions a, ";
-        $table.= "jsonb_array_elements( a.parameters->'fillRequiredFields') with ordinality arr(elem, position)";
+        $table .= "jsonb_array_elements( a.parameters->'fillRequiredFields') with ordinality arr(elem, position)";
         $itemsPositionToRemove = DatabaseModel::select([
             'select' => ['a.id as action_id', 'position'],
             'table'  => [$table],
@@ -382,7 +382,7 @@ class CustomFieldController
             foreach ($itemsPositionToRemove as $key => $item) {
                 $item['position']--;
                 $parameters = "jsonb_set(parameters, '{fillRequiredFields}', ";
-                $parameters.= "(parameters->'fillRequiredFields') - {$item['position']}) ";
+                $parameters .= "(parameters->'fillRequiredFields') - {$item['position']}) ";
                 ActionModel::update([
                     'postSet' => ['parameters' => $parameters],
                     'where'   => ["parameters->'fillRequiredFields' IS NOT NULL AND id = ?"],

@@ -62,7 +62,8 @@ class ListInstanceHistoryDetailModel
         ]);
         ValidatorModel::intVal($args, ['listinstance_history_id', 'res_id', 'sequence', 'item_id', 'added_by_user']);
         ValidatorModel::stringType(
-            $args, ['item_type', 'item_mode', 'difflist_type', 'process_date', 'process_comment']
+            $args,
+            ['item_type', 'item_mode', 'difflist_type', 'process_date', 'process_comment']
         );
 
         DatabaseModel::insert([

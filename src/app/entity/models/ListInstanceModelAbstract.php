@@ -56,7 +56,9 @@ abstract class ListInstanceModelAbstract
             ['res_id', 'item_id', 'item_type', 'item_mode', 'added_by_user', 'difflist_type']
         );
         ValidatorModel::intVal($args, ['res_id', 'sequence', 'viewed', 'item_id', 'added_by_user']);
-        ValidatorModel::stringType($args, ['item_type', 'item_mode', 'difflist_type', 'process_date', 'process_comment']
+        ValidatorModel::stringType(
+            $args,
+            ['item_type', 'item_mode', 'difflist_type', 'process_date', 'process_comment']
         );
 
         DatabaseModel::insert([

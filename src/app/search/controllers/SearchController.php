@@ -55,8 +55,10 @@ use Tag\models\ResourceTagModel;
 use User\controllers\UserController;
 use User\models\UserModel;
 use Zend_Search_Lucene;
+use Zend_Search_Lucene_Analysis_Analyzer;
 use Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive;
 use Zend_Search_Lucene_Exception;
+use Zend_Search_Lucene_Search_QueryParser;
 
 class SearchController
 {
@@ -88,7 +90,8 @@ class SearchController
         ini_set('memory_limit', -1);
 
         $userdataClause = SearchController::getUserDataClause([
-            'userId' => $GLOBALS['id'], 'login' => $GLOBALS['login']
+            'userId' => $GLOBALS['id'],
+            'login'  => $GLOBALS['login']
         ]);
         $searchWhere = $userdataClause['searchWhere'];
         $searchData = $userdataClause['searchData'];
@@ -1593,16 +1596,7 @@ class SearchController
                 foreach ($query_fulltext as $key => $value) {
                     if (
                         str_contains($value, "*") &&
-                        (strlen(
-                                substr(
-                                    $value,
-                                    0,
-                                    strpos(
-                                        $value,
-                                        "*"
-                                    )
-                                )
-                            ) < 4 || preg_match("([,':!+])", $value) === 1)
+                        (strlen(substr($value, 0, strpos($value, "*"))) < 4 || preg_match("([,':!+])", $value) === 1)
                     ) {
                         return null;
                     }
@@ -1611,13 +1605,13 @@ class SearchController
                 $args['body']['fulltext']['values'] = implode(" ", $query_fulltext);
             }
 
-            \Zend_Search_Lucene_Analysis_Analyzer::setDefault(
+            Zend_Search_Lucene_Analysis_Analyzer::setDefault(
                 new Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive()
             );
-            \Zend_Search_Lucene_Search_QueryParser::setDefaultOperator(
-                \Zend_Search_Lucene_Search_QueryParser::B_AND
+            Zend_Search_Lucene_Search_QueryParser::setDefaultOperator(
+                Zend_Search_Lucene_Search_QueryParser::B_AND
             );
-            \Zend_Search_Lucene_Search_QueryParser::setDefaultEncoding('utf-8');
+            Zend_Search_Lucene_Search_QueryParser::setDefaultEncoding('utf-8');
 
             $whereRequest = [];
             foreach (['letterbox_coll', 'attachments_coll'] as $tmpCollection) {
@@ -1776,7 +1770,7 @@ class SearchController
                     }
                 }
                 if (!empty($folders)) {
-                    $searchWhere[]='res_id in (select distinct res_id from resources_folders where folder_id in (?))';
+                    $searchWhere[] = 'res_id in (select distinct res_id from resources_folders where folder_id in (?))';
                     $searchData[] = $folders;
                 }
             }
