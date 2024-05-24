@@ -17,6 +17,7 @@ namespace MaarchCourrier\Tests\Unit\SignatureBook\Application\Webhook;
 use MaarchCourrier\SignatureBook\Application\Webhook\WebhookValidation;
 use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\IdParapheurIsMissingProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceAlreadySignProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorrespondingProblem;
@@ -40,6 +41,9 @@ class WebhookValidationTest extends TestCase
             'state'       => 'VAL',
             'message'     => '',
             'updatedDate' => "2024-03-01T13:19:59+01:00"
+        ],
+        'payload'        => [
+            'idParapheur' => 30
         ],
         'token'          => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyZXNfaWQi
                              OjE1OSwidXNlcklkIjoxMH0.olM35fZrHlsYXTRceohEqijjIOqCNolVSbw0v5eKW78',
@@ -73,6 +77,9 @@ class WebhookValidationTest extends TestCase
                 'state'       => 'VAL',
                 'message'     => '',
                 'updatedDate' => null
+            ],
+            'payload'        => [
+                'idParapheur' => 30
             ],
             'token'          => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyZXNfaWQiOjE1O
                                  SwidXNlcklkIjoxMH0.olM35fZrHlsYXTRceohEqijjIOqCNolVSbw0v5eKW78',
@@ -252,6 +259,13 @@ class WebhookValidationTest extends TestCase
     {
         unset($this->bodySentByMP['token']);
         $this->expectException(CurrentTokenIsNotFoundProblem::class);
+        $this->webhookValidation->validateAndCreateResource($this->bodySentByMP, $this->decodedToken);
+    }
+
+    public function testValidationErrorIfIdParapheurIsNotSet(): void
+    {
+        unset($this->bodySentByMP['payload']['idParapheur']);
+        $this->expectException(IdParapheurIsMissingProblem::class);
         $this->webhookValidation->validateAndCreateResource($this->bodySentByMP, $this->decodedToken);
     }
 }
