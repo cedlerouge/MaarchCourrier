@@ -16,7 +16,6 @@ use PHPUnit\Framework\TestCase;
 use Resource\Application\RetrieveDocserverAndFilePath;
 use Resource\Application\RetrieveResource;
 use Resource\Domain\Exceptions\ConvertedResultException;
-use Resource\Domain\Exceptions\ParameterCanNotBeEmptyException;
 use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;
