@@ -51,7 +51,6 @@ class RetrieveResourceTest extends TestCase
      * @throws ResourceHasNoFileException
      * @throws ResourceNotFoundInDocserverException
      * @throws ConvertedResultException
-     * @throws ParameterCanNotBeEmptyException
      * @throws ParameterMustBeGreaterThanZeroException
      */
     public function testCannotGetMainFileBecauseResourceDoesNotExist(): void
@@ -60,13 +59,12 @@ class RetrieveResourceTest extends TestCase
 
         $this->expectExceptionObject(new ResourceDoesNotExistException());
 
-        $this->retrieveResource->getResourceFile(1);
+        $this->retrieveResource->getResourceFile(1, true);
     }
 
     /**
      * @return void
      * @throws ConvertedResultException
-     * @throws ParameterCanNotBeEmptyException
      * @throws ParameterMustBeGreaterThanZeroException
      * @throws ResourceDocserverDoesNotExistException
      * @throws ResourceDoesNotExistException
@@ -81,13 +79,12 @@ class RetrieveResourceTest extends TestCase
 
         $this->expectExceptionObject(new ResourceHasNoFileException());
 
-        $this->retrieveResource->getResourceFile(1);
+        $this->retrieveResource->getResourceFile(1, true);
     }
 
     /**
      * @return void
      * @throws ConvertedResultException
-     * @throws ParameterCanNotBeEmptyException
      * @throws ParameterMustBeGreaterThanZeroException
      * @throws ResourceDocserverDoesNotExistException
      * @throws ResourceDoesNotExistException
@@ -102,13 +99,12 @@ class RetrieveResourceTest extends TestCase
 
         $this->expectExceptionObject(new ResourceDocserverDoesNotExistException());
 
-        $this->retrieveResource->getResourceFile(1);
+        $this->retrieveResource->getResourceFile(1, true);
     }
 
     /**
      * @return void
      * @throws ConvertedResultException
-     * @throws ParameterCanNotBeEmptyException
      * @throws ParameterMustBeGreaterThanZeroException
      * @throws ResourceDocserverDoesNotExistException
      * @throws ResourceDoesNotExistException
@@ -123,13 +119,12 @@ class RetrieveResourceTest extends TestCase
 
         $this->expectExceptionObject(new ResourceNotFoundInDocserverException());
 
-        $this->retrieveResource->getResourceFile(1);
+        $this->retrieveResource->getResourceFile(1, true);
     }
 
     /**
      * @return void
      * @throws ConvertedResultException
-     * @throws ParameterCanNotBeEmptyException
      * @throws ParameterMustBeGreaterThanZeroException
      * @throws ResourceDocserverDoesNotExistException
      * @throws ResourceDoesNotExistException
@@ -144,13 +139,12 @@ class RetrieveResourceTest extends TestCase
 
         $this->expectExceptionObject(new ResourceFingerPrintDoesNotMatchException());
 
-        $this->retrieveResource->getResourceFile(1);
+        $this->retrieveResource->getResourceFile(1, true);
     }
 
     /**
      * @return void
      * @throws ConvertedResultException
-     * @throws ParameterCanNotBeEmptyException
      * @throws ParameterMustBeGreaterThanZeroException
      * @throws ResourceDocserverDoesNotExistException
      * @throws ResourceDoesNotExistException
@@ -166,13 +160,12 @@ class RetrieveResourceTest extends TestCase
 
         $this->expectExceptionObject(new ResourceFailedToGetDocumentFromDocserverException());
 
-        $this->retrieveResource->getResourceFile(1);
+        $this->retrieveResource->getResourceFile(1, true);
     }
 
     /**
      * @return void
      * @throws ConvertedResultException
-     * @throws ParameterCanNotBeEmptyException
      * @throws ParameterMustBeGreaterThanZeroException
      * @throws ResourceDocserverDoesNotExistException
      * @throws ResourceDoesNotExistException
@@ -186,7 +179,7 @@ class RetrieveResourceTest extends TestCase
         $this->resourceFileMock->returnResourceThumbnailFileContent = false;
         $this->resourceFileMock->doesWatermarkInResourceFileContentFail = true;
 
-        $result = $this->retrieveResource->getResourceFile(1);
+        $result = $this->retrieveResource->getResourceFile(1, false);
 
         $this->assertNotEmpty($result->getPathInfo());
         $this->assertNotEmpty($result->getFileContent());
@@ -199,7 +192,6 @@ class RetrieveResourceTest extends TestCase
     /**
      * @return void
      * @throws ConvertedResultException
-     * @throws ParameterCanNotBeEmptyException
      * @throws ParameterMustBeGreaterThanZeroException
      * @throws ResourceDocserverDoesNotExistException
      * @throws ResourceDoesNotExistException
@@ -212,7 +204,7 @@ class RetrieveResourceTest extends TestCase
     {
         $this->resourceFileMock->returnResourceThumbnailFileContent = false;
 
-        $result = $this->retrieveResource->getResourceFile(1);
+        $result = $this->retrieveResource->getResourceFile(1, true);
 
         $this->assertNotEmpty($result->getPathInfo());
         $this->assertNotEmpty($result->getFileContent());
@@ -225,7 +217,6 @@ class RetrieveResourceTest extends TestCase
     /**
      * @return void
      * @throws ConvertedResultException
-     * @throws ParameterCanNotBeEmptyException
      * @throws ParameterMustBeGreaterThanZeroException
      * @throws ResourceDocserverDoesNotExistException
      * @throws ResourceDoesNotExistException
@@ -238,13 +229,12 @@ class RetrieveResourceTest extends TestCase
     {
         $this->expectException(ParameterMustBeGreaterThanZeroException::class);
 
-        $this->retrieveResource->getResourceFile(0);
+        $this->retrieveResource->getResourceFile(0, true);
     }
 
     /**
      * @return void
      * @throws ConvertedResultException
-     * @throws ParameterCanNotBeEmptyException
      * @throws ParameterMustBeGreaterThanZeroException
      * @throws ResourceDocserverDoesNotExistException
      * @throws ResourceDoesNotExistException
@@ -264,7 +254,6 @@ class RetrieveResourceTest extends TestCase
     /**
      * @return void
      * @throws ConvertedResultException
-     * @throws ParameterCanNotBeEmptyException
      * @throws ParameterMustBeGreaterThanZeroException
      * @throws ResourceDocserverDoesNotExistException
      * @throws ResourceDoesNotExistException
