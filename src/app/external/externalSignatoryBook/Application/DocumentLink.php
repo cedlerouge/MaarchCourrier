@@ -14,12 +14,12 @@
 
 namespace ExternalSignatoryBook\Application;
 
+use ExternalSignatoryBook\Domain\Exceptions\ParameterCanNotBeEmptyException;
+use ExternalSignatoryBook\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use ExternalSignatoryBook\Domain\Ports\AttachmentRepositoryInterface;
 use ExternalSignatoryBook\Domain\Ports\HistoryRepositoryInterface;
 use ExternalSignatoryBook\Domain\Ports\ResourceRepositoryInterface;
 use ExternalSignatoryBook\Domain\Ports\UserRepositoryInterface;
-use ExternalSignatoryBook\Domain\Exceptions\ParameterCanNotBeEmptyException;
-use ExternalSignatoryBook\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 
 class DocumentLink
 {
@@ -35,18 +35,22 @@ class DocumentLink
         AttachmentRepositoryInterface $attachmentRepositoryInterface,
         HistoryRepositoryInterface $historyRepositoryInterface
     ) {
-        $this->userRepository       = $userRepository;
-        $this->resourceRepository   = $resourceRepositoryInterface;
+        $this->userRepository = $userRepository;
+        $this->resourceRepository = $resourceRepositoryInterface;
         $this->attachmentRepository = $attachmentRepositoryInterface;
-        $this->historyRepository    = $historyRepositoryInterface;
+        $this->historyRepository = $historyRepositoryInterface;
     }
 
     /**
      * @throws ParameterCanNotBeEmptyException
      * @throws ParameterMustBeGreaterThanZeroException
      */
-    public function removeExternalLink(int $docItemResId, string $docItemTitle, string $type, string $docItemExternalId): void
-    {
+    public function removeExternalLink(
+        int $docItemResId,
+        string $docItemTitle,
+        string $type,
+        string $docItemExternalId
+    ): void {
         if ($docItemResId <= 0) {
             throw new ParameterMustBeGreaterThanZeroException('docItemResId');
         }
@@ -72,9 +76,10 @@ class DocumentLink
             $historyMessage = _DOC_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY;
         } else {
             $this->attachmentRepository->removeExternalLink($docItemResId, $docItemExternalId);
-            $historyMessage = _ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY[0] . " '$docItemTitle' " . _ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY[1];
+            $historyMessage = _ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY[0] . " '$docItemTitle' " .
+                _ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY[1];
         }
 
-        $this->historyRepository->addHistoryForResource($docItemResId, $rootUser->getId(), $historyMessage);
+        $this->historyRepository->addHistoryForResource((string)$docItemResId, $rootUser->getId(), $historyMessage);
     }
 }
