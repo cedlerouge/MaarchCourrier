@@ -107,7 +107,7 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
             this.pluginInstance.loadDocument({
                 fileName: this.documentData.title,
                 content: this.documentContent,
-            }, this.signatureBookService.docsToSign[this.signatureBookService.selectedAttachment.index].stamps);
+            }, this.signatureBookService.docsToSign[this.currentIndexDocument].stamps);
         } else {
             this.initPlugin();
         }
