@@ -2,18 +2,22 @@
 
 namespace MaarchCourrier\SignatureBook\Application\ProofFile;
 
+use Exception;
+use MaarchCourrier\Core\Domain\MainResource\Problem\ResourceDoesNotExistProblem;
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
+use MaarchCourrier\SignatureBook\Domain\Port\ResourceToSignRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookProofServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
+use MaarchCourrier\SignatureBook\Domain\Problem\DocumentIsNotSignedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\ExternalIdNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
-use MaarchCourrier\SignatureBook\Infrastructure\Repository\ResourceToSignRepository;
 
 class RetrieveProofFile
 {
     public function __construct(
         private readonly CurrentUserInterface $currentUser,
         private readonly SignatureBookProofServiceInterface $proofService,
-        private readonly ResourceToSignRepository $resourceToSignRepository,
+        private readonly ResourceToSignRepositoryInterface $resourceToSignRepository,
         private readonly SignatureServiceConfigLoaderInterface $signatureServiceConfigLoader
     ) {
     }
@@ -22,22 +26,48 @@ class RetrieveProofFile
      * @param  int  $resId
      * @param  bool  $isAttachment
      * @return array
+     * @throws DocumentIsNotSignedProblem
+     * @throws ExternalIdNotFoundProblem
+     * @throws ResourceDoesNotExistProblem
      * @throws SignatureBookNoConfigFoundProblem
+     * @throws Exception
      */
     public function execute(int $resId, bool $isAttachment): array
     {
-        //test existence resId
+        $infosDoc = ($isAttachment) ? $this->resourceToSignRepository->getAttachmentInformations($resId)
+            : $this->resourceToSignRepository->getResourceInformations($resId);
+
+        if (empty($infosDoc)) {
+            throw new ResourceDoesNotExistProblem();
+        }
+
+        if ($isAttachment) {
+            if (!$this->resourceToSignRepository->isAttachementSigned($resId)) {
+                throw new DocumentIsNotSignedProblem();
+            }
+        } else {
+            if (!$this->resourceToSignRepository->isResourceSigned($resId)) {
+                throw new DocumentIsNotSignedProblem();
+            }
+        }
+
+        if (!$infosDoc['external_id']) {
+            throw new ExternalIdNotFoundProblem();
+        }
+
+        $infosDoc = json_decode($infosDoc['external_id'], true);
+
+        if (empty($infosDoc['maarchParapheurApi'])) {
+            throw new ExternalIdNotFoundProblem();
+        }
+
         $signatureBookConfig = $this->signatureServiceConfigLoader->getSignatureServiceConfig();
         if ($signatureBookConfig === null) {
             throw new SignatureBookNoConfigFoundProblem();
         }
+
         $this->proofService->setConfig($signatureBookConfig);
 
-        $infosDoc = ($isAttachment) ? $this->resourceToSignRepository->getAttachmentInformations($resId)
-            : $this->resourceToSignRepository->getResourceInformations($resId);
-
-        //test si external_id est renseigné
-        $infosDoc = json_decode($infosDoc['external_id'], true);
         $idParapheur = $infosDoc['maarchParapheurApi'];
 
         $accessToken = $this->currentUser->generateNewToken();

@@ -50,6 +50,9 @@ class RetrieveProofFileController
 
         $result = $retrieveProofFile->execute($args['resId'], isset($queryParams['isAttachment']));
 
+        if (isset($queryParams['mode']) && $queryParams['mode'] == 'base64') {
+            return $response->withJson($result);
+        }
         $response->write(base64_decode($result['encodedProofDocument']));
         $response = $response->withAddedHeader(
             'Content-Disposition',
