@@ -28,6 +28,8 @@ export class SignatureBookService {
 
     selectedResources: Attachment[] = [];
 
+    downloadingProof: boolean = false;
+
     constructor(
         private http: HttpClient,
         private notifications: NotificationService,
@@ -147,6 +149,7 @@ export class SignatureBookService {
     }
 
     downloadProof(resId: number, isAttachment: boolean): Promise<boolean> {
+        this.downloadingProof = true;
         return new Promise((resolve) => {
             this.http.get(`../rest/documents/${resId}/proofSignature`, { responseType: 'blob' as 'json', params: { isAttachment: isAttachment } })
                 .pipe(
@@ -158,10 +161,12 @@ export class SignatureBookService {
                         downloadLink.setAttribute('download', filename);
                         document.body.appendChild(downloadLink);
                         downloadLink.click();
+                        this.downloadingProof = false;
                         resolve(true);
                     }),
                     catchError((err: any) => {
                         this.notifications.handleErrors(err);
+                        this.downloadingProof = false;
                         resolve(false);
                         return of(false);
                     })
