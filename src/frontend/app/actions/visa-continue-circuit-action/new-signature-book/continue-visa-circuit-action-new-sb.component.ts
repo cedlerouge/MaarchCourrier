@@ -20,6 +20,7 @@ import { MatSidenav } from "@angular/material/sidenav";
 import { Attachment } from "@models/attachment.model";
 import { MaarchPluginFortifyInterface } from '@models/maarch-plugin-fortify-model';
 import { StripTagsPipe } from 'ngx-pipes';
+import { Router } from '@angular/router';
 
 @Component({
     templateUrl: 'continue-visa-circuit-action-new-sb.component.html',
@@ -27,7 +28,7 @@ import { StripTagsPipe } from 'ngx-pipes';
     providers: [StripTagsPipe]
 })
 export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
-    @ViewChild('myPlugin', { read: ViewContainerRef, static: true }) myPlugin: ViewContainerRef;
+    @ViewChild('myPlugin', { read: ViewContainerRef, static: false }) myPlugin: ViewContainerRef;
     @ViewChild('noteEditor', { static: false }) noteEditor: NoteEditorComponent;
     @ViewChild('appVisaWorkflow', { static: false }) appVisaWorkflow: VisaWorkflowComponent;
     @ViewChild('snav2', { static: false }) public snav2: MatSidenav;
@@ -59,11 +60,24 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
         private notify: NotificationService,
         private pluginManagerService: PluginManagerService,
         private authService: AuthService,
-        private headerService: HeaderService
+        private headerService: HeaderService,
+        private router: Router
     ) {}
 
     async ngOnInit(): Promise<void> {
         this.loading = true;
+        if (this.router.url.indexOf('basketList') > -1) {
+            this.signatureBookService.selectedResources = [];
+            for (let i = 0; i < this.data.resIds.length; i++) {
+                await this.signatureBookService.toggleSelection(true, this.data.userId, this.data.groupId, this.data.basketId, new Attachment({ resId: this.data.resIds[i] }));
+            }
+            this.data = {
+                ... this.data,
+                resource: {
+                    docsToSign: this.signatureBookService.selectedResources
+                }
+            }
+        }
         await this.checkSignatureBook();
         this.loading = false;
     }
@@ -125,21 +139,27 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
             this.myPlugin,
             this.setPluginData()
         );
-        this.componentInstance
-            .open()
-            .pipe(
-                tap((data: any) => {
-                    if (!this.functions.empty(data) && typeof data === 'object') {
-                        this.executeAction(realResSelected, this.formatDataToSend(data));
-                    } else if (!data) {
-                        this.loading = false;
-                    }
-                }),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
+        if (this.componentInstance) {
+            this.componentInstance
+                .open()
+                .pipe(
+                    tap((data: any) => {
+                        if (!this.functions.empty(data) && typeof data === 'object') {
+                            this.executeAction(realResSelected, this.formatDataToSend(data));
+                        } else if (!data) {
+                            this.loading = false;
+                            this.noteExpanded = false;
+                        }
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err);
+                        return of(false);
+                    })
+                ).subscribe();
+        } else {
+            this.loading  = false;
+            this.noteExpanded = false;
+        }
     }
 
     executeAction(realResSelected: number[], objToSend: ContinueVisaCircuitObjectInterface = null) {
