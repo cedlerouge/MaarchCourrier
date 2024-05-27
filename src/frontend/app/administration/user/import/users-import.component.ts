@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewChild } from '@angular/core';
+import { Component, Inject, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '@service/notification/notification.service';
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef, MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
@@ -18,7 +18,7 @@ import { Papa } from 'ngx-papaparse';
     templateUrl: 'users-import.component.html',
     styleUrls: ['users-import.component.scss']
 })
-export class UsersImportComponent implements OnInit {
+export class UsersImportComponent {
 
     @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
 
@@ -55,9 +55,6 @@ export class UsersImportComponent implements OnInit {
         private papa: Papa,
         @Inject(MAT_DIALOG_DATA) public data: any,
     ) {
-    }
-
-    ngOnInit(): void {
     }
 
     changeColumn(coldb: string, colCsv: string) {
@@ -141,8 +138,8 @@ export class UsersImportComponent implements OnInit {
             this.countAdd = this.csvData.filter((data: any, index: number) => index > 0 && this.functionsService.empty(data[this.associatedColmuns['id']])).length;
             this.countUp = this.csvData.filter((data: any, index: number) => index > 0 && !this.functionsService.empty(data[this.associatedColmuns['id']])).length;
         } else {
-            this.countAdd = this.csvData.filter((data: any, index: number) => this.functionsService.empty(data[this.associatedColmuns['id']])).length;
-            this.countUp = this.csvData.filter((data: any, index: number) => !this.functionsService.empty(data[this.associatedColmuns['id']])).length;
+            this.countAdd = this.csvData.filter((data: any) => this.functionsService.empty(data[this.associatedColmuns['id']])).length;
+            this.countUp = this.csvData.filter((data: any) => !this.functionsService.empty(data[this.associatedColmuns['id']])).length;
         }
         this.initData();
     }
