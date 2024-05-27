@@ -115,7 +115,15 @@ describe('ResourcesListComponent', () => {
             tick(100);
 
             const secondResource = fixture.nativeElement.querySelectorAll('#resourceElement')[0];
-            secondResource.click();
+            function triggerDoubleClick(element: HTMLElement) {
+                const clickEvent = new MouseEvent('dblclick', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                });
+                element.dispatchEvent(clickEvent);
+            }
+            triggerDoubleClick(secondResource);
 
             fixture.detectChanges();
             tick(100);
