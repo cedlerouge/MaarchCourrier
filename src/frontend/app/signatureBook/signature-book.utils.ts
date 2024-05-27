@@ -4,7 +4,7 @@ import { Attachment } from "@models/attachment.model";
 export function mapAttachment(data: any): Attachment {
     return new Attachment({
         resId: data.resId,
-        resIdMaster: data.resIdMaster,
+        resIdMaster: data.resIdMaster ?? data.resId,
         signedResId: data.signedResId,
         chrono: data.chrono,
         title: data.title,
