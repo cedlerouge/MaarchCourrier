@@ -35,10 +35,10 @@ export class SignatureBookActionsComponent implements OnInit {
     constructor(
         public http: HttpClient,
         public functions: FunctionsService,
+        public signatureBookService: SignatureBookService,
         private notify: NotificationService,
         private actionsService: ActionsService,
-        private router: Router,
-        private signatureBookService: SignatureBookService
+        private router: Router
     ) {
         /*this.subscription = this.actionsService
             .catchActionWithData()
@@ -83,7 +83,6 @@ export class SignatureBookActionsComponent implements OnInit {
     }
 
     async processAction(action: any) {
-        const resIds: number[] = this.signatureBookService.docsToSign.concat(this.signatureBookService.selectedResources).map((resource: Attachment) => resource.resIdMaster);
         this.http
             .get(`../rest/resources/${this.resId}?light=true`)
             .pipe(
@@ -93,7 +92,7 @@ export class SignatureBookActionsComponent implements OnInit {
                         this.userId,
                         this.groupId,
                         this.basketId,
-                        [... new Set(resIds)],
+                        this.signatureBookService.nbrCheckedRes,
                         { ...data, docsToSign: this.signatureBookService.docsToSign.concat(this.signatureBookService.selectedResources) },
                         false
                     );

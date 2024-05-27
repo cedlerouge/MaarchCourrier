@@ -8,7 +8,7 @@
         <mat-sidenav-container autosize style="height:100%;">
             <mat-sidenav-content style="background: white;padding:10px;">
                 <div class="digital-certificate" [attr.aria-label]="'lang.digitalCertificate' | translate">
-                    <mat-checkbox
+                    <mat-checkbox *ngIf="!loading && data.resource.docsToSign.length > 0"
                         name="digitalCertificate"
                         color="primary"
                         [title]="'lang.digitalCertificate' | translate"
@@ -111,7 +111,7 @@
                         </li>
                     </ul>
                 </app-maarch-message>
-                <div *ngIf="!loading && data.resIds.length > 0 && data.resource.docsToSign?.length > 0" class="div-container">
+                <div *ngIf="!loading && data.resIds.length > 0 " class="div-container">
                     <div class="docs-title"
                         [title]="data.resource.docsToSign.length + ' ' + ('lang.docsToSign' | translate)"
                         [attr.aria-label]="data.resource.docsToSign.length + ' ' + ('lang.docsToSign' | translate)">
@@ -119,28 +119,33 @@
                     </div>
                     <div class="docs-container">
                         <div class="docs-to-sign">
-                            <div class="content" *ngFor="let resource of data.resource.docsToSign"
-                                [attr.aria-label]="resource.chrono + ' - ' + resource.title"
-                                [title]="resource.chrono + ' - ' + resource.title">
-                                <div class="chrono-stamp"
-                                    [attr.aria-label]="('lang.chrono' | translate) + ' : ' + resource.chrono">
-                                    <span class="chrono" [title]="resource.chrono">{{resource.chrono}}</span>
-                                    <div *ngIf="resource.stamps.length === 0"
-                                        class="empty-stamp-warn"
-                                        [title]="'lang.noStampDesc' | translate">
-                                        <mat-icon class="fas fa-circle-exclamation" color="warn"></mat-icon>
-                                        <span
-                                            [attr.aria-label]="'lang.noStamp' | translate"
-                                            class="empty-stamp">
-                                            {{'lang.noStamp' | translate}}
-                                        </span>
+                            <ng-container *ngIf="data.resource.docsToSign?.length > 0">
+                                <div class="content" *ngFor="let resource of data.resource.docsToSign"
+                                    [attr.aria-label]="resource.chrono + ' - ' + resource.title"
+                                    [title]="resource.chrono + ' - ' + resource.title">
+                                    <div class="chrono-stamp"
+                                        [attr.aria-label]="('lang.chrono' | translate) + ' : ' + resource.chrono">
+                                        <span class="chrono" [title]="resource.chrono">{{resource.chrono}}</span>
+                                        <div *ngIf="resource.stamps.length === 0"
+                                            class="empty-stamp-warn"
+                                            [title]="'lang.noStampDesc' | translate">
+                                            <mat-icon class="fas fa-circle-exclamation" color="warn"></mat-icon>
+                                            <span
+                                                [attr.aria-label]="'lang.noStamp' | translate"
+                                                class="empty-stamp">
+                                                {{'lang.noStamp' | translate}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="resource-title"
+                                        [attr.aria-label]="('lang.subject' | translate) + ' : ' + resource.title">
+                                        <span [title]="resource.title">{{resource.title}}</span>
                                     </div>
                                 </div>
-                                <div class="resource-title"
-                                    [attr.aria-label]="('lang.subject' | translate) + ' : ' + resource.title">
-                                    <span [title]="resource.title">{{resource.title}}</span>
-                                </div>
-                            </div>
+                            </ng-container>
+                            <ng-container *ngIf="data.resource.docsToSign?.length === 0">
+                                <span class="empty-docs-to-sign" [title]="'lang.emptyDocsToSign' | translate">{{'lang.emptyDocsToSign' | translate}}</span>
+                            </ng-container>
                         </div>
                     </div>
                 </div>
@@ -177,7 +182,7 @@
     </div>
     <span class="divider-modal"></span>
     <div mat-dialog-actions class="actions">
-        <button mat-raised-button mat-button color="primary" [disabled]="loading || !isValidAction()"
+        <button mat-raised-button mat-button color="primary" [disabled]="loading || !isValidAction() || data.resource.docsToSign?.length === 0"
             (click)="onSubmit()">{{'lang.validate' | translate}}</button>
         <button mat-raised-button mat-button [disabled]="loading" [mat-dialog-close]="">{{'lang.cancel' | translate}}</button>
     </div>

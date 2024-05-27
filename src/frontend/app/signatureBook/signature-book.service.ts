@@ -27,6 +27,8 @@ export class SignatureBookService {
 
     selectedResources: Attachment[] = [];
 
+    nbrCheckedRes: number[] = [];
+
     constructor(
         private http: HttpClient,
         private notifications: NotificationService,
@@ -63,6 +65,7 @@ export class SignatureBookService {
                     return { resourcesToSign: resourcesToSign, resourcesAttached: resourcesAttached };
                 }),
                 tap((data: { resourcesToSign: Attachment[], resourcesAttached: Attachment[] }) => {
+                    this.nbrCheckedRes.push(resId);
                     resolve(data);
                 }),
                 catchError((err: any) => {
@@ -146,10 +149,14 @@ export class SignatureBookService {
 
     async toggleSelection(checked: boolean, userId: number, groupId: number, basketId: number, resource: Attachment): Promise<void> {
         if (checked) {
+            this.nbrCheckedRes.push(resource.resId);
             const res: Attachment[] = (await this.initDocuments(userId, groupId, basketId, resource.resId)).resourcesToSign;
             this.selectedResources = this.selectedResources.concat(res);
         } else {
-            this.selectedResources = this.selectedResources.filter((doc: Attachment) => doc.resIdMaster !== resource.resId || doc.resId !== resource.resId);
+            const index: number = this.nbrCheckedRes.indexOf(resource.resId);
+            this.nbrCheckedRes.splice(index, 1);
+            this.selectedResources = this.selectedResources.filter((doc: Attachment) => doc.resIdMaster !== resource.resId);
         }
+        this.nbrCheckedRes = [... new Set(this.nbrCheckedRes)];
     }
 }

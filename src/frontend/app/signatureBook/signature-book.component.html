@@ -56,7 +56,7 @@
                                     style="display: contents;"
                                 ></app-maarch-sb-content>
                                 <app-maarch-sb-actions
-                                    *ngIf="!loadingDocsToSign && signatureBookService.docsToSign.length > 0"
+                                    *ngIf="!loadingDocsToSign && (signatureBookService.docsToSign.length > 0 || signatureBookService.selectedResources.length > 0)"
                                     [resId]="resId"
                                     [userId]="userId"
                                     [basketId]="basketId"

@@ -63,7 +63,7 @@ export class SignatureBookComponent implements OnDestroy {
         this.subscription = this.actionsService.catchActionWithData().pipe(
             filter((data: MessageActionInterface) => data.id === 'selectedStamp'),
             tap(() => {
-                this.stampsPanel.close();
+                this.stampsPanel?.close();
             })
         ).subscribe();
 
