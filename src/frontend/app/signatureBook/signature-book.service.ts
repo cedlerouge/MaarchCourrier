@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Attachment } from "@models/attachment.model";
+import { Attachment, AttachmentInterface } from "@models/attachment.model";
 import { ResourcesList } from "@models/resources-list.model";
 import { FiltersListService } from "@service/filtersList.service";
 import { HeaderService } from "@service/header.service";
@@ -65,7 +65,6 @@ export class SignatureBookService {
                     return { resourcesToSign: resourcesToSign, resourcesAttached: resourcesAttached };
                 }),
                 tap((data: { resourcesToSign: Attachment[], resourcesAttached: Attachment[] }) => {
-                    this.nbrCheckedRes.push(resId);
                     resolve(data);
                 }),
                 catchError((err: any) => {
@@ -147,8 +146,8 @@ export class SignatureBookService {
         ).subscribe();
     }
 
-    async toggleSelection(checked: boolean, userId: number, groupId: number, basketId: number, resource: Attachment): Promise<void> {
-        if (checked && this.nbrCheckedRes.find((resId: number) => resId === resource.resId) === undefined) {
+    async toggleSelection(checked: boolean, userId: number, groupId: number, basketId: number, resource: AttachmentInterface): Promise<void> {
+        if (checked && this.nbrCheckedRes.find((resId: number) => resId === resource.resId) === undefined && this.docsToSign.find((doc: Attachment) => doc.resIdMaster === resource.resIdMaster) === undefined) {
             this.nbrCheckedRes.push(resource.resId);
             const res: Attachment[] = (await this.initDocuments(userId, groupId, basketId, resource.resId)).resourcesToSign;
             this.selectedResources = this.selectedResources.concat(res);
@@ -158,5 +157,15 @@ export class SignatureBookService {
             this.selectedResources = this.selectedResources.filter((doc: Attachment) => doc.resIdMaster !== resource.resId);
         }
         this.nbrCheckedRes = [... new Set(this.nbrCheckedRes)];
+    }
+
+    getAllDocsToSign(): Attachment[] {
+        this.docsToSign.forEach((resource: Attachment) => {
+            if (this.selectedResources.find((doc: Attachment) => doc.resIdMaster === resource.resIdMaster) === undefined) {
+                this.selectedResources.push(resource);
+            }
+        })
+
+        return this.selectedResources;
     }
 }

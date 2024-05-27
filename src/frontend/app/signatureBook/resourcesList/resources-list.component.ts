@@ -248,8 +248,4 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
             this.viewport.scrollToIndex(index);
         }
     }
-
-    getTotalResources(): number {
-        return this.resources.map((resource: ResourcesList) => resource.resId).length;
-    }
 }

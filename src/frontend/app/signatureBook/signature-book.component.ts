@@ -133,6 +133,9 @@ export class SignatureBookComponent implements OnDestroy {
             this.signatureBookService.docsToSign = data.resourcesToSign;
             this.signatureBookService.selectedDocToSign.attachment = data.resourcesToSign[0];
             this.attachments = data.resourcesAttached;
+            if (this.signatureBookService.nbrCheckedRes.indexOf(this.resId) === -1) {
+                this.signatureBookService.nbrCheckedRes.push(this.resId);
+            }
             this.loadingAttachments = false;
             this.loadingDocsToSign = false;
             this.loading = false;
