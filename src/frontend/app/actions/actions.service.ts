@@ -829,7 +829,7 @@ export class ActionsService implements OnDestroy {
     }
 
     async continueVisaCircuitAction() {
-        await this.signatureBookService.getInternalSignatureBookConfig();
+        // await this.signatureBookService.getInternalSignatureBookConfig();
         const dialogConfig: MatDialogConfig<any> = {
             panelClass: 'maarch-modal',
             autoFocus: false,
@@ -895,7 +895,11 @@ export class ActionsService implements OnDestroy {
     }
 
     signatureBookAction() {
-        this.router.navigate([`/signatureBook/users/${this.currentUserId}/groups/${this.currentGroupId}/baskets/${this.currentBasketId}/resources/${this.currentResIds}`]);
+        if (this.signatureBookService.config.isNewInternalParaph) {
+            this.router.navigate([`/signatureBookNew/users/${this.currentUserId}/groups/${this.currentGroupId}/baskets/${this.currentBasketId}/resources/${this.currentResIds}`]);
+        } else {
+            this.router.navigate([`/signatureBook/users/${this.currentUserId}/groups/${this.currentGroupId}/baskets/${this.currentBasketId}/resources/${this.currentResIds}`]);
+        }
     }
 
     documentDetails() {

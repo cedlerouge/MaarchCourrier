@@ -61,7 +61,7 @@ export class AppGuard  {
             const tokenInfo = this.authService.getToken();
             // debugger;
             if (tokenInfo !== null) {
-                if (urlArr.filter((url: any) => ['signatureBook', 'content'].indexOf(url) > -1).length > 0) {
+                if (urlArr.filter((url: any) => ['signatureBookNew', 'signatureBook', 'content'].indexOf(url) > -1).length > 0) {
                     this.headerService.hideSideBar = true;
                 } else {
                     this.headerService.hideSideBar = false;
