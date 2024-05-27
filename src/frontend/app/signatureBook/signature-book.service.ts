@@ -147,7 +147,7 @@ export class SignatureBookService {
     }
 
     async toggleSelection(checked: boolean, userId: number, groupId: number, basketId: number, resource: AttachmentInterface): Promise<void> {
-        if (checked && this.nbrCheckedRes.find((resId: number) => resId === resource.resId) === undefined && this.docsToSign.find((doc: Attachment) => doc.resIdMaster === resource.resIdMaster) === undefined) {
+        if (checked && this.nbrCheckedRes.find((resId: number) => resId === resource.resId) === undefined) {
             this.nbrCheckedRes.push(resource.resId);
             const res: Attachment[] = (await this.initDocuments(userId, groupId, basketId, resource.resId)).resourcesToSign;
             this.selectedResources = this.selectedResources.concat(res);
