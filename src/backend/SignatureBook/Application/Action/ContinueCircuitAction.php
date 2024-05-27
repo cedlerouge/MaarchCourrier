@@ -69,7 +69,7 @@ class ContinueCircuitAction
             foreach ($data[$resId] as $document) {
                 $missingData = [];
 
-                if ($data['digitalCertificate']) {
+                if (isset($data['digitalCertificate'])) {
                     $requiredData = [
                         'resId',
                         'documentId',

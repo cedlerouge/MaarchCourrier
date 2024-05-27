@@ -136,6 +136,7 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
                     }
                 }),
                 catchError((err: any) => {
+                    this.loading = false;
                     this.notify.handleSoftErrors(err);
                     return of(false);
                 })
