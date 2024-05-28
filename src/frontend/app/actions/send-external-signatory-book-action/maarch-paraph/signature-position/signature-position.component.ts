@@ -7,10 +7,12 @@ import { of } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { DateOptionModalComponent } from './dateOption/date-option-modal.component';
 import { FunctionsService } from '@service/functions.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 
 @Component({
     templateUrl: 'signature-position.component.html',
     styleUrls: ['signature-position.component.scss'],
+    providers: [ExternalSignatoryBookManagerService]
 })
 export class SignaturePositionComponent implements OnInit {
 
@@ -62,12 +64,13 @@ export class SignaturePositionComponent implements OnInit {
     resizing: boolean = false;
 
     constructor(
+        @Inject(MAT_DIALOG_DATA) public data: any,
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         public dialog: MatDialog,
         public dialogRef: MatDialogRef<SignaturePositionComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: any,
+        public externalSignatoryBookManagerService: ExternalSignatoryBookManagerService,
+        private notify: NotificationService,
         private functions: FunctionsService
     ) { }
 
@@ -274,13 +277,5 @@ export class SignaturePositionComponent implements OnInit {
                 return of(false);
             })
         ).subscribe();
-    }
-
-    checkExternalUser() {
-        if (this.data.workflow[this.currentUser].item_id !== null) {
-            return true;
-        } else {
-            return this.data.workflow[this.currentUser]?.externalInformations.type !== 'fast';
-        }
     }
 }

@@ -364,12 +364,12 @@ class CoreConfigModel
             $mailevaConfig['uri'] = rtrim($configuration['uri'], '/');
 
             if (!empty($mailevaConfig['uri']) && $mailevaConfig['uri'] == 'https://api.maileva.com') {
-                $mailevaConfig['clientId'] = '69d315c2b3694accbce85f2871add37d';
-                $mailevaConfig['clientSecret'] = 'caae36511f324acb9a3419b94ce9cbc6';
+                $mailevaConfig['clientId'] = 'MAARCH';
+                $mailevaConfig['clientSecret'] = '2GjUnmwE7e6U9WKovvAOUPA3WCJ1DaGi';
             }
             if (!empty($mailevaConfig['uri']) && $mailevaConfig['uri'] == 'https://api.sandbox.maileva.net') {
-                $mailevaConfig['clientId'] = 'c42ca6698b5e4008b8ebf84e465ae216';
-                $mailevaConfig['clientSecret'] = 'e49ab08848f543678287b5c8f7f79812';
+                $mailevaConfig['clientId'] = 'MAARCH-sandbox';
+                $mailevaConfig['clientSecret'] = 'mWHPb3KDMvgHtuDJYCMgadxzi9i2PzDh';
             }
         }
 

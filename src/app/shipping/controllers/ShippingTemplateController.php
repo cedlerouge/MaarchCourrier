@@ -84,21 +84,23 @@ class ShippingTemplateController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        return $response->withJson([
-            'shippings' => ShippingTemplateModel::get(
-                [
-                    'select' => [
-                        'id',
-                        'label',
-                        'description',
-                        'options',
-                        'fee',
-                        'entities',
-                        "account->>'id' as accountid"
+        return $response->withJson(
+            [
+                'shippings' => ShippingTemplateModel::get(
+                    [
+                        'select' => [
+                            'id',
+                            'label',
+                            'description',
+                            'options',
+                            'fee',
+                            'entities',
+                            "account->>'id' as accountid"
+                        ]
                     ]
-                ]
-            )
-        ]);
+                )
+            ]
+        );
     }
 
     /**
@@ -106,6 +108,7 @@ class ShippingTemplateController
      * @param Response $response
      * @param array $args
      * @return Response
+     * @throws Exception
      */
     public function getById(Request $request, Response $response, array $args): Response
     {
@@ -1246,6 +1249,7 @@ class ShippingTemplateController
                 )
             ]
         ]);
+
         if ($curlAuth['code'] != 200) {
             return ['errors' => 'Maileva authentication failed'];
         }

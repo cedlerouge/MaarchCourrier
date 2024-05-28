@@ -311,6 +311,11 @@ class CurlModel
                     $postData .= "Content-Disposition: form-data; " .
                         "name=\"{$key}\"; filename=\"{$value['filename']}\"\r\n";
                     $postData .= "\r\n{$value['content']}\r\n";
+                } elseif (!empty($value['priority']) && !empty($value['name'])) {
+                    $postData .= "Content-Type: application/json\r\n";
+                    $postData .= "Content-Disposition: form-data; name=\"{$key}\"\r\n";
+                    $value = json_encode($value);
+                    $postData .= "\r\n{$value}\r\n";
                 } else {
                     $postData .= "Content-Disposition: form-data; name=\"{$key}\"\r\n";
                     $postData .= "\r\n{$value}\r\n";
