@@ -83,6 +83,8 @@ export class SignatureBookActionsComponent implements OnInit {
     }
 
     async processAction(action: any) {
+        let resIds: number[] = [this.resId];
+        resIds = resIds.concat(this.signatureBookService.nbrCheckedRes);
         this.http
             .get(`../rest/resources/${this.resId}?light=true`)
             .pipe(
@@ -92,7 +94,7 @@ export class SignatureBookActionsComponent implements OnInit {
                         this.userId,
                         this.groupId,
                         this.basketId,
-                        this.signatureBookService.nbrCheckedRes,
+                        [... new Set(resIds)],
                         { ...data, docsToSign: this.signatureBookService.getAllDocsToSign() },
                         false
                     );

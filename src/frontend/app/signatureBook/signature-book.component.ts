@@ -46,6 +46,7 @@ export class SignatureBookComponent implements OnDestroy {
     canGoToNext: boolean = false;
     canGoToPrevious: boolean = false;
     hidePanel: boolean = true;
+    initSelection: boolean = true;
 
     constructor(
         public http: HttpClient,
@@ -133,8 +134,9 @@ export class SignatureBookComponent implements OnDestroy {
             this.signatureBookService.docsToSign = data.resourcesToSign;
             this.signatureBookService.selectedDocToSign.attachment = data.resourcesToSign[0];
             this.attachments = data.resourcesAttached;
-            if (this.signatureBookService.nbrCheckedRes.indexOf(this.resId) === -1) {
+            if (this.initSelection && this.signatureBookService.nbrCheckedRes.indexOf(this.resId) === -1) {
                 this.signatureBookService.nbrCheckedRes.push(this.resId);
+                this.initSelection = false;
             }
             this.loadingAttachments = false;
             this.loadingDocsToSign = false;

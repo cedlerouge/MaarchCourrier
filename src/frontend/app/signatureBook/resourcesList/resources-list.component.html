@@ -56,7 +56,6 @@
                 <mat-checkbox color="primary"
                     aria-label="Sélectionner cette ressource"
                     [checked]="signatureBookService.nbrCheckedRes.indexOf(resource.resId) > -1"
-                    [disabled]="resId === resource.resId"
                     (click)="$event.stopPropagation()"
                     (change)="signatureBookService.toggleSelection($event.checked, userId, groupId, basketId, resource)">
                 </mat-checkbox>
