@@ -2864,5 +2864,6 @@
     "seenAsVisaUser": "Vous serez considéré comme <b color=\"warn\">viseur</b>.",
     "resourceOverview": "Vue d'ensemble du courrier",
     "downloadProof": "Télécharger le faisceau de preuve",
-    "selectedRes": "courrier(s) sélectionné(s)"
+    "selectedRes": "courrier(s) sélectionné(s)",
+    "externalIdNotFoundProblemProof": "Le faisceau de preuve est indisponible pour ce document"
 }

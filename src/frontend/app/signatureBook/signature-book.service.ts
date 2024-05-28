@@ -10,6 +10,7 @@ import { mapAttachment } from "./signature-book.utils";
 import { SignatureBookConfig, SignatureBookConfigInterface } from "@models/signature-book.model";
 import { SelectedAttachment } from "@models/signature-book.model";
 import { DatePipe } from "@angular/common";
+import { TranslateService } from "@ngx-translate/core";
 
 @Injectable({
     providedIn: 'root'
@@ -35,7 +36,8 @@ export class SignatureBookService {
         private notifications: NotificationService,
         private filtersListService: FiltersListService,
         private headerService: HeaderService,
-        private datePipe: DatePipe
+        private datePipe: DatePipe,
+        private translate: TranslateService
     ) {}
 
     getInternalSignatureBookConfig(): Promise<SignatureBookConfigInterface | null> {
@@ -166,7 +168,11 @@ export class SignatureBookService {
                         resolve(true);
                     }),
                     catchError((err: any) => {
-                        this.notifications.handleErrors(err);
+                        if (err.status === 400) {
+                            this.notifications.handleErrors(this.translate.instant('lang.externalIdNotFoundProblemProof'));
+                        } else {
+                            this.notifications.handleSoftErrors(err);
+                        }
                         this.downloadingProof = false;
                         resolve(false);
                         return of(false);
