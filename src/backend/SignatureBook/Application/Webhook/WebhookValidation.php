@@ -21,7 +21,6 @@ use MaarchCourrier\Core\Domain\User\Port\UserRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\ResourceToSignRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\ResourceAlreadySignProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorrespondingProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
@@ -30,6 +29,11 @@ use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;
 
 class WebhookValidation
 {
+    /**
+     * @param ResourceToSignRepositoryInterface $resourceToSignRepository
+     * @param UserRepositoryInterface $userRepository
+     * @param CurrentUserInterface $currentUser
+     */
     public function __construct(
         private readonly ResourceToSignRepositoryInterface $resourceToSignRepository,
         private readonly UserRepositoryInterface $userRepository,
@@ -43,7 +47,6 @@ class WebhookValidation
      * @return SignedResource
      * @throws AttachmentOutOfPerimeterProblem
      * @throws CurrentTokenIsNotFoundProblem
-     * @throws ResourceAlreadySignProblem
      * @throws ResourceIdEmptyProblem
      * @throws ResourceIdMasterNotCorrespondingProblem
      * @throws RetrieveDocumentUrlEmptyProblem
@@ -110,13 +113,7 @@ class WebhookValidation
                 throw new AttachmentOutOfPerimeterProblem();
             }
 
-            if ($this->resourceToSignRepository->isAttachementSigned($decodedToken['resId'])) {
-                throw new ResourceAlreadySignProblem();
-            }
-
             $signedResource->setResIdMaster($decodedToken['resIdMaster']);
-        } elseif ($this->resourceToSignRepository->isResourceSigned($decodedToken['resId'])) {
-            throw new ResourceAlreadySignProblem();
         }
 
         $signedResource->setResIdSigned($decodedToken['resId']);

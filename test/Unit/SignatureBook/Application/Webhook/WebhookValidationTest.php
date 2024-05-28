@@ -51,6 +51,7 @@ class WebhookValidationTest extends TestCase
         'userSerialId' => 10
     ];
 
+
     protected function setUp(): void
     {
         $this->resourceToSignRepositoryMock = new ResourceToSignRepositoryMock();
@@ -88,7 +89,6 @@ class WebhookValidationTest extends TestCase
     /**
      * @throws AttachmentOutOfPerimeterProblem
      * @throws CurrentTokenIsNotFoundProblem
-     * @throws ResourceAlreadySignProblem
      * @throws ResourceIdEmptyProblem
      * @throws ResourceIdMasterNotCorrespondingProblem
      * @throws RetrieveDocumentUrlEmptyProblem
@@ -111,7 +111,6 @@ class WebhookValidationTest extends TestCase
     /**
      * @throws AttachmentOutOfPerimeterProblem
      * @throws CurrentTokenIsNotFoundProblem
-     * @throws ResourceAlreadySignProblem
      * @throws ResourceIdEmptyProblem
      * @throws ResourceIdMasterNotCorrespondingProblem
      * @throws RetrieveDocumentUrlEmptyProblem
@@ -127,7 +126,6 @@ class WebhookValidationTest extends TestCase
     /**
      * @throws AttachmentOutOfPerimeterProblem
      * @throws CurrentTokenIsNotFoundProblem
-     * @throws ResourceAlreadySignProblem
      * @throws ResourceIdEmptyProblem
      * @throws ResourceIdMasterNotCorrespondingProblem
      * @throws RetrieveDocumentUrlEmptyProblem
@@ -143,7 +141,6 @@ class WebhookValidationTest extends TestCase
     /**
      * @throws AttachmentOutOfPerimeterProblem
      * @throws CurrentTokenIsNotFoundProblem
-     * @throws ResourceAlreadySignProblem
      * @throws ResourceIdEmptyProblem
      * @throws ResourceIdMasterNotCorrespondingProblem
      * @throws RetrieveDocumentUrlEmptyProblem
@@ -164,48 +161,7 @@ class WebhookValidationTest extends TestCase
     }
 
     /**
-     * @throws AttachmentOutOfPerimeterProblem
      * @throws CurrentTokenIsNotFoundProblem
-     * @throws ResourceAlreadySignProblem
-     * @throws ResourceIdEmptyProblem
-     * @throws ResourceIdMasterNotCorrespondingProblem
-     * @throws RetrieveDocumentUrlEmptyProblem
-     * @throws UserDoesNotExistProblem
-     */
-    public function testValidationErrorIfResourceIsAlreadySigned(): void
-    {
-        $this->resourceToSignRepositoryMock->resourceAlreadySigned = true;
-
-        $this->expectException(ResourceAlreadySignProblem::class);
-        $this->webhookValidation->validateAndCreateResource($this->bodySentByMP, $this->decodedToken);
-    }
-
-    /**
-     * @throws AttachmentOutOfPerimeterProblem
-     * @throws CurrentTokenIsNotFoundProblem
-     * @throws ResourceAlreadySignProblem
-     * @throws ResourceIdEmptyProblem
-     * @throws ResourceIdMasterNotCorrespondingProblem
-     * @throws RetrieveDocumentUrlEmptyProblem
-     * @throws UserDoesNotExistProblem
-     */
-    public function testValidationErrorIfAttachmentAlreadySigned(): void
-    {
-        $this->decodedToken = [
-            'resId'        => 159,
-            'resIdMaster'  => 75,
-            'userSerialId' => 10
-        ];
-
-        $this->resourceToSignRepositoryMock->resourceAlreadySigned = true;
-
-        $this->expectException(ResourceAlreadySignProblem::class);
-        $this->webhookValidation->validateAndCreateResource($this->bodySentByMP, $this->decodedToken);
-    }
-
-    /**
-     * @throws CurrentTokenIsNotFoundProblem
-     * @throws ResourceAlreadySignProblem
      * @throws ResourceIdEmptyProblem
      * @throws ResourceIdMasterNotCorrespondingProblem
      * @throws UserDoesNotExistProblem
@@ -229,7 +185,6 @@ class WebhookValidationTest extends TestCase
      * @throws AttachmentOutOfPerimeterProblem
      * @throws CurrentTokenIsNotFoundProblem
      * @throws ResourceIdEmptyProblem
-     * @throws ResourceAlreadySignProblem
      * @throws RetrieveDocumentUrlEmptyProblem
      * @throws ResourceIdMasterNotCorrespondingProblem
      */
@@ -243,7 +198,6 @@ class WebhookValidationTest extends TestCase
     /**
      * @throws AttachmentOutOfPerimeterProblem
      * @throws ResourceIdEmptyProblem
-     * @throws ResourceAlreadySignProblem
      * @throws ResourceIdMasterNotCorrespondingProblem
      * @throws UserDoesNotExistProblem
      * @throws RetrieveDocumentUrlEmptyProblem
