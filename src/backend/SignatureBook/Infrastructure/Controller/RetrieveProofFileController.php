@@ -14,7 +14,10 @@
 
 namespace MaarchCourrier\SignatureBook\Infrastructure\Controller;
 
+use MaarchCourrier\Core\Domain\MainResource\Problem\ResourceDoesNotExistProblem;
 use MaarchCourrier\SignatureBook\Application\ProofFile\RetrieveProofFile;
+use MaarchCourrier\SignatureBook\Domain\Problem\DocumentIsNotSignedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\ExternalIdNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 use MaarchCourrier\SignatureBook\Infrastructure\MaarchParapheurProofService;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\ResourceToSignRepository;
@@ -26,29 +29,70 @@ use SrcCore\http\Response;
 class RetrieveProofFileController
 {
     /**
-     * @param  Request  $request
-     * @param  Response  $response
-     * @param  array  $args
-     * @return Response
-     * @throws SignatureBookNoConfigFoundProblem
+     * @return RetrieveProofFile
      */
-    public function getProofFile(Request $request, Response $response, array $args): Response
+    private function retrieveProofFileConstruct(): RetrieveProofFile
     {
-        $queryParams = $request->getQueryParams();
-
         $currentUserInformations = new CurrentUserInformations();
         $resourceToSignRepository = new ResourceToSignRepository();
         $maarchParapheurProofService = new MaarchParapheurProofService();
         $SignatureServiceConfigLoader = new SignatureServiceJsonConfigLoader();
 
-        $retrieveProofFile = new RetrieveProofFile(
+        return new RetrieveProofFile(
             $currentUserInformations,
             $maarchParapheurProofService,
             $resourceToSignRepository,
             $SignatureServiceConfigLoader
         );
+    }
 
-        $result = $retrieveProofFile->execute($args['resId'], isset($queryParams['isAttachment']));
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
+     * @return Response
+     * @throws DocumentIsNotSignedProblem
+     * @throws ExternalIdNotFoundProblem
+     * @throws ResourceDoesNotExistProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
+    public function getResourceProofFile(Request $request, Response $response, array $args): Response
+    {
+        $queryParams = $request->getQueryParams();
+
+        $retrieveProofFile = $this->retrieveProofFileConstruct();
+
+        $result = $retrieveProofFile->execute($args['resId'], false);
+
+        if (isset($queryParams['mode']) && $queryParams['mode'] == 'base64') {
+            return $response->withJson($result);
+        }
+        $response->write(base64_decode($result['encodedProofDocument']));
+        $response = $response->withAddedHeader(
+            'Content-Disposition',
+            "inline; filename=maarch_history_proof." . $result['format']
+        );
+
+        return $response->withHeader('Content-Type', 'application/zip');
+    }
+
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
+     * @return Response
+     * @throws SignatureBookNoConfigFoundProblem
+     * @throws ResourceDoesNotExistProblem
+     * @throws DocumentIsNotSignedProblem
+     * @throws ExternalIdNotFoundProblem
+     */
+    public function getAttachmentProofFile(Request $request, Response $response, array $args): Response
+    {
+        $queryParams = $request->getQueryParams();
+
+        $retrieveProofFile = $this->retrieveProofFileConstruct();
+
+        $result = $retrieveProofFile->execute($args['resId'], true);
 
         if (isset($queryParams['mode']) && $queryParams['mode'] == 'base64') {
             return $response->withJson($result);
