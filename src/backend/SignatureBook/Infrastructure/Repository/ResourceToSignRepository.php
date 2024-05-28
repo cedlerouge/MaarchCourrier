@@ -138,7 +138,7 @@ class ResourceToSignRepository implements ResourceToSignRepositoryInterface
     public function setResourceExternalId(int $resId, int $parapheurDocumentId): void
     {
         $externalId = [
-            'maarchParapheurApi' => $parapheurDocumentId
+            'internalParapheur' => $parapheurDocumentId
         ];
 
         ResModel::update([
@@ -151,7 +151,7 @@ class ResourceToSignRepository implements ResourceToSignRepositoryInterface
     public function setAttachmentExternalId(int $resId, int $parapheurDocumentId): void
     {
         $externalId = [
-            'maarchParapheurApi' => $parapheurDocumentId
+            'internalParapheur' => $parapheurDocumentId
         ];
 
         AttachmentModel::update([

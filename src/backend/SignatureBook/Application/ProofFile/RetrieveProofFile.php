@@ -57,7 +57,7 @@ class RetrieveProofFile
 
         $infosDoc = json_decode($infosDoc['external_id'], true);
 
-        if (empty($infosDoc['maarchParapheurApi'])) {
+        if (empty($infosDoc['internalParapheur'])) {
             throw new ExternalIdNotFoundProblem();
         }
 
@@ -68,7 +68,7 @@ class RetrieveProofFile
 
         $this->proofService->setConfig($signatureBookConfig);
 
-        $idParapheur = $infosDoc['maarchParapheurApi'];
+        $idParapheur = $infosDoc['internalParapheur'];
 
         $accessToken = $this->currentUser->generateNewToken();
         return $this->proofService->retrieveProofFile($idParapheur, $accessToken);

@@ -28,7 +28,7 @@ class ResourceToSignRepositoryMock implements ResourceToSignRepositoryInterface
 
     public array $resourceInformations = [
         'version'     => 1,
-        'external_id' => '{"maarchParapheurApi":20}'
+        'external_id' => '{"internalParapheur":20}'
     ];
 
     public array $attachmentInformations = [
@@ -39,7 +39,7 @@ class ResourceToSignRepositoryMock implements ResourceToSignRepositoryInterface
         'recipient_id'   => 6,
         'recipient_type' => 'contact',
         'format'         => 'pdf',
-        'external_id'    => '{"maarchParapheurApi":20}'
+        'external_id'    => '{"internalParapheur":20}'
     ];
 
     public function getResourceInformations(int $resId): array
