@@ -158,6 +158,8 @@ export class SignatureBookComponent implements OnDestroy {
         this.subscription.unsubscribe();
         this.processActionSubscription.unsubscribe();
         this.unlockResource();
+        this.signatureBookService.nbrCheckedRes = [];
+        this.signatureBookService.selectedResources = [];
     }
 
     async unlockResource(): Promise<void> {

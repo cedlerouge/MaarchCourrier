@@ -162,7 +162,7 @@ export class SignatureBookService {
     getAllDocsToSign(): Attachment[] {
         this.docsToSign.forEach((resource: Attachment) => {
             if (this.nbrCheckedRes.indexOf(resource.resIdMaster) > -1) {
-                const findResource: Attachment = this.selectedResources.find((doc: Attachment) => doc.resIdMaster === resource.resIdMaster);
+                const findResource: Attachment = this.selectedResources.find((doc: Attachment) => doc.resId === resource.resId);
                 if (findResource === undefined) {
                     this.selectedResources.push(resource);
                 } else {
@@ -170,7 +170,7 @@ export class SignatureBookService {
                     this.selectedResources[index] = resource;
                 }
             }
-        })
+        });
 
         return this.selectedResources;
     }
