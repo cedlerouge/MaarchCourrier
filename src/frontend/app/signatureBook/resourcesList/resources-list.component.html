@@ -12,8 +12,8 @@
 <div *ngIf="loading" class="loader">
     <mat-spinner style="margin:auto;"></mat-spinner>
 </div>
-<div *ngIf="resources.length > 0" class="selected-resources">
-    <span>{{ signatureBookService.nbrCheckedRes.length }} / {{ signatureBookService.resourcesListIds.length }} {{'lang.selectedRes' | translate}}</span>
+<div *ngIf="resources.length > 0 && getSelectedResources().length > 0" class="selected-resources">
+    <span>{{ getSelectedResources().length }} / {{ signatureBookService.resourcesListIds.length }} {{'lang.selectedRes' | translate}}</span>
 </div>
 <cdk-virtual-scroll-viewport [itemSize]="85" class="virtual-scroll-viewport" #viewport [style.height.px]="viewportHeight">
     <div *cdkVirtualFor="let resource of resources"
@@ -21,7 +21,7 @@
         [title]="resource.subject"
         [class.selectedRes]="resource.resId === resId"
         [class.lockedRes]="resource.isLocked" id="resourceElement"
-        (dblclick)="!resource.isLocked ? goToResource(resource.resId): ''">
+        (click)="!resource.isLocked ? goToResource(resource.resId): ''">
         <div class="row">
             <div class="col-md-1">
                 <button mat-icon-button class="followIcon" [attr.aria-label]="(resource.mailTracking ? 'lang.untrackThisMail' : 'lang.trackThisMail') | translate"
@@ -55,7 +55,6 @@
             <div class="col-md-1">
                 <mat-checkbox color="primary"
                     aria-label="Sélectionner cette ressource"
-                    [checked]="signatureBookService.nbrCheckedRes.indexOf(resource.resId) > -1"
                     (click)="$event.stopPropagation()"
                     (change)="signatureBookService.toggleSelection($event.checked, userId, groupId, basketId, resource)">
                 </mat-checkbox>

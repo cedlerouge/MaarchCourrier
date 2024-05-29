@@ -68,7 +68,6 @@ export class ContinueVisaCircuitActionNewSbComponent implements OnInit {
         this.loading = true;
         if (this.router.url.indexOf('basketList') > -1) {
             this.signatureBookService.selectedResources = [];
-            this.signatureBookService.nbrCheckedRes = [];
             for (let i = 0; i < this.data.resIds.length; i++) {
                 await this.signatureBookService.toggleSelection(true, this.data.userId, this.data.groupId, this.data.basketId, new Attachment({ resId: this.data.resIds[i] }));
             }

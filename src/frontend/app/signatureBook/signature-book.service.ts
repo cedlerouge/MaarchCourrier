@@ -27,8 +27,6 @@ export class SignatureBookService {
 
     selectedResources: Attachment[] = [];
 
-    nbrCheckedRes: number[] = [];
-
     constructor(
         private http: HttpClient,
         private notifications: NotificationService,
@@ -147,28 +145,22 @@ export class SignatureBookService {
     }
 
     async toggleSelection(checked: boolean, userId: number, groupId: number, basketId: number, resource: AttachmentInterface): Promise<void> {
-        if (checked && this.nbrCheckedRes.find((resId: number) => resId === resource.resId) === undefined) {
-            this.nbrCheckedRes.push(resource.resId);
+        if (checked) {
             const res: Attachment[] = (await this.initDocuments(userId, groupId, basketId, resource.resId)).resourcesToSign;
             this.selectedResources = this.selectedResources.concat(res);
         } else {
-            const index: number = this.nbrCheckedRes.indexOf(resource.resId);
-            this.nbrCheckedRes.splice(index, 1);
             this.selectedResources = this.selectedResources.filter((doc: Attachment) => doc.resIdMaster !== resource.resId);
         }
-        this.nbrCheckedRes = [... new Set(this.nbrCheckedRes)];
     }
 
     getAllDocsToSign(): Attachment[] {
         this.docsToSign.forEach((resource: Attachment) => {
-            if (this.nbrCheckedRes.indexOf(resource.resIdMaster) > -1) {
-                const findResource: Attachment = this.selectedResources.find((doc: Attachment) => doc.resId === resource.resId);
-                if (findResource === undefined) {
-                    this.selectedResources.push(resource);
-                } else {
-                    const index: number = this.selectedResources.indexOf(findResource);
-                    this.selectedResources[index] = resource;
-                }
+            const findResource: Attachment = this.selectedResources.find((doc: Attachment) => doc.resId === resource.resId);
+            if (findResource === undefined) {
+                this.selectedResources.push(resource);
+            } else {
+                const index: number = this.selectedResources.indexOf(findResource);
+                this.selectedResources[index] = resource;
             }
         });
 
