@@ -13,6 +13,7 @@ import { FunctionsService } from '@service/functions.service';
 import { TimeLimitPipe } from '../../plugins/timeLimit.pipe';
 import { TranslateService } from '@ngx-translate/core';
 import { LocalStorageService } from '@service/local-storage.service';
+import { SignatureBookService } from "@appRoot/signatureBook/signature-book.service";
 
 @Component({
     templateUrl: 'login.component.html',
@@ -40,8 +41,9 @@ export class LoginComponent implements OnInit {
         private notify: NotificationService,
         public dialog: MatDialog,
         private timeLimit: TimeLimitPipe,
-        
-    ) { 
+        private signatureBookService: SignatureBookService
+
+    ) {
         this.loginForm = new UntypedFormGroup({
             login: new FormControl(null, Validators.required),
             password: new FormControl(null, Validators.required)
@@ -79,6 +81,7 @@ export class LoginComponent implements OnInit {
                 this.localStorage.resetLocal();
                 this.authService.saveTokens(data.headers.get('Token'), data.headers.get('Refresh-Token'));
                 await lastValueFrom(this.authService.getCurrentUserInfo());
+                await this.signatureBookService.getInternalSignatureBookConfig();
                 if (this.authService.getCachedUrl()) {
                     this.router.navigateByUrl(this.authService.getCachedUrl());
                     this.authService.cleanCachedUrl();

@@ -18,6 +18,7 @@ import { DocumentViewerComponent } from '../viewer/document-viewer.component';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { NotesListComponent } from '../notes/notes-list.component';
 import { FiltersListService } from '@service/filtersList.service';
+import { SignatureBookService } from "@appRoot/signatureBook/signature-book.service";
 
 declare let $: any;
 
@@ -25,7 +26,7 @@ declare let $: any;
     templateUrl: 'signature-book.component.html',
     styleUrls: ['signature-book.component.scss'],
 })
-export class SignatureBookComponentOld implements OnInit, OnDestroy {
+export class SignatureBookOldComponent implements OnInit, OnDestroy {
 
     @ViewChild('appVisaWorkflow', { static: false }) appVisaWorkflow: VisaWorkflowComponent;
     @ViewChild('appDocumentViewer', { static: false }) appDocumentViewer: DocumentViewerComponent;
@@ -115,7 +116,8 @@ export class SignatureBookComponentOld implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private zone: NgZone,
-        private notify: NotificationService
+        private notify: NotificationService,
+        private signatureBookService: SignatureBookService
     ) {
         (<any>window).pdfWorkerSrc = 'pdfjs/pdf.worker.min.js';
 
@@ -133,6 +135,11 @@ export class SignatureBookComponentOld implements OnInit, OnDestroy {
             this.basketId = params['basketId'];
             this.groupId = params['groupId'];
             this.userId = params['userId'];
+
+            if (this.signatureBookService.config.isNewInternalParaph) {
+                this.router.navigate([`/signatureBookNew/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${this.resId}`]);
+                return;
+            }
 
             this.signatureBook.resList = []; // This line is added because of manage action behaviour (processAfterAction is called twice)
 

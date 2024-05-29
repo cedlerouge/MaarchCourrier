@@ -21,7 +21,7 @@ import { SearchComponent } from './search/search.component';
 import { ProcessComponent } from './process/process.component';
 import { IndexationComponent } from './indexation/indexation.component';
 import { AppLightGuard } from '@service/app-light.guard';
-import { SignatureBookComponentOld } from "@appRoot/signatureBookOld/signature-book.component";
+import { SignatureBookOldComponent } from "@appRoot/signatureBookOld/signature-book.component";
 
 
 const routes: Routes = [
@@ -31,7 +31,7 @@ const routes: Routes = [
         canActivate: [AppLightGuard],
         loadChildren: () => import('./installer/installer.module').then(m => m.InstallerModule)
     },
-    { path: 'signatureBook/users/:userId/groups/:groupId/baskets/:basketId/resources/:resId', canActivate: [AppGuard], component: SignatureBookComponentOld },
+    { path: 'signatureBook/users/:userId/groups/:groupId/baskets/:basketId/resources/:resId', canActivate: [AppGuard], component: SignatureBookOldComponent },
     { path: 'signatureBookNew/users/:userId/groups/:groupId/baskets/:basketId/resources/:resId', canActivate: [AppGuard], component: SignatureBookComponent },
     { path: 'followed', canActivate: [AppGuard], component: FollowedDocumentListComponent },
     { path: 'saveNumericPackage', canActivate: [AppGuard], component: SaveNumericPackageComponent },
