@@ -20,8 +20,7 @@
         style="cursor: pointer;"
         [title]="resource.subject"
         [class.selectedRes]="resource.resId === resId"
-        [class.lockedRes]="resource.isLocked" id="resourceElement"
-        (click)="!resource.isLocked ? goToResource(resource.resId): ''">
+        [class.lockedRes]="resource.isLocked" id="resourceElement">
         <div class="row">
             <div class="col-md-1">
                 <button mat-icon-button class="followIcon" [attr.aria-label]="(resource.mailTracking ? 'lang.untrackThisMail' : 'lang.trackThisMail') | translate"
@@ -30,7 +29,7 @@
                     <mat-icon [ngClass]="[resource.mailTracking ? 'fas fa-star' : 'far fa-star']" aria-hidden="true"></mat-icon>
                 </button>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-2" (click)="!resource.isLocked ? goToResource(resource.resId): ''">
                 <mat-icon *ngIf="resource.isLocked" title="{{'lang.warnLockResInProgress' | translate}} : {{resource.locker}}" style="color: red; font-size: 21px; margin-right: 11px;" class="fa fa-lock fa-2x"></mat-icon>
                 <ng-container *ngIf="!resource.isLocked">
                     <mat-icon *ngIf="resource.statusLabel === null" class="status-icon fa fa-question-circle fa-2x" [title]="'lang.undefined' | translate"
@@ -45,7 +44,7 @@
                 </ng-container>
                 <span [title]="resource.chrono">{{resource.chrono}}</span>
             </div>
-            <div class="col-md col-md-date">
+            <div class="col-md col-md-date" (click)="!resource.isLocked ? goToResource(resource.resId): ''">
                 <mat-icon color="default" class="fa fa-calendar-alt" aria-hidden="true" [title]="'lang.creationDate' | translate"></mat-icon>
                 <span class="date" [title]="('lang.creationDate' | translate) + ' : ' + (resource.creationDate | date:'dd/MM/y')">{{resource.creationDate | date:'dd/MM/y'}}</span>
             </div>
@@ -60,10 +59,10 @@
                 >
                 </mat-checkbox>
             </div>
-            <div class="col-md-2" [title]="resource.subject">
+            <div class="col-md-2" [title]="resource.subject" (click)="!resource.isLocked ? goToResource(resource.resId): ''">
                <span class="subject">{{resource.subject}}</span>
             </div>
-            <div class="col-md col-md-date">
+            <div class="col-md col-md-date" (click)="!resource.isLocked ? goToResource(resource.resId): ''">
                 <mat-icon color="default" class="fa fa-bell" aria-hidden="true" [title]="'lang.processLimitDate' | translate"></mat-icon>
                 <span class="date" [title]="('lang.processLimitDate' | translate) + ' : ' + (resource.processLimitDate === null ? ('lang.undefined' | translate) : (resource.processLimitDate | date:'dd/MM/y'))">{{resource.processLimitDate === null ? ('lang.undefined' | translate) : resource.processLimitDate | date:'dd/MM/y'}}</span>
             </div>
