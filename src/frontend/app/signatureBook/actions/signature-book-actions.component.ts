@@ -97,7 +97,7 @@ export class SignatureBookActionsComponent implements OnInit {
                         this.groupId,
                         this.basketId,
                         [... new Set(resIds)],
-                        { ...data, docsToSign: docsToSign },
+                        { ...data, docsToSign: [... new Set(docsToSign)] },
                         false
                     );
                 }),

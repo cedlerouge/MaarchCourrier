@@ -164,6 +164,13 @@ export class SignatureBookService {
             }
         });
 
+        // Filter the selectedResources array to remove duplicate entries based on resId
+        this.selectedResources = this.selectedResources.filter((resource: Attachment, index: number, self: Attachment[]) =>
+            // Keep the current resource only if it is the first occurrence of this resId in the array
+            index === self.findIndex((t) => t.resId === resource.resId)
+        );
+
+
         return this.selectedResources;
     }
 }
