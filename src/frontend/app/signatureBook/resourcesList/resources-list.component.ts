@@ -251,7 +251,9 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     }
 
     getSelectedResources(): number[] {
-        const resIds: number[] = this.signatureBookService.selectedResources.map((resource: Attachment) => resource.resIdMaster)
+        const resIds: number[] = this.signatureBookService.selectedResources
+            .filter((resource: Attachment) => resource.resIdMaster !== null)
+            .map((resource: Attachment) => resource.resIdMaster)
         return [... new Set(resIds)];
     }
 }
