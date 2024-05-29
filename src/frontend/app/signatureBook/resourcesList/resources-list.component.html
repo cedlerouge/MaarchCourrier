@@ -15,12 +15,13 @@
 <div *ngIf="resources.length > 0 && selectedResourceCount > 0" class="selected-resources">
     <span>{{ selectedResourceCount }} / {{ signatureBookService.resourcesListIds.length }} {{'lang.selectedRes' | translate}}</span>
 </div>
-<cdk-virtual-scroll-viewport [itemSize]="85" class="virtual-scroll-viewport" #viewport [style.height.px]="viewportHeight">
-    <div *cdkVirtualFor="let resource of resources"
-        style="cursor: pointer;"
+<cdk-virtual-scroll-viewport [itemSize]="100" class="virtual-scroll-viewport" #viewport >
+    <button mat-raised-button *cdkVirtualFor="let resource of resources"
+        class="resource-item"
         [title]="resource.subject"
         [class.selectedRes]="resource.resId === resId"
-        [class.lockedRes]="resource.isLocked" id="resourceElement">
+        [class.lockedRes]="resource.isLocked" id="resourceElement"
+        (keydown.enter)="!resource.isLocked ? goToResource(resource.resId): ''">
         <div class="row">
             <div class="col-md-1">
                 <button mat-icon-button class="followIcon" [attr.aria-label]="(resource.mailTracking ? 'lang.untrackThisMail' : 'lang.trackThisMail') | translate"
@@ -29,7 +30,7 @@
                     <mat-icon [ngClass]="[resource.mailTracking ? 'fas fa-star' : 'far fa-star']" aria-hidden="true"></mat-icon>
                 </button>
             </div>
-            <div class="col-md-2" (click)="!resource.isLocked ? goToResource(resource.resId): ''">
+            <div class="status-chrono col-md-2" (click)="!resource.isLocked ? goToResource(resource.resId): ''">
                 <mat-icon *ngIf="resource.isLocked" title="{{'lang.warnLockResInProgress' | translate}} : {{resource.locker}}" style="color: red; font-size: 21px; margin-right: 11px;" class="fa fa-lock fa-2x"></mat-icon>
                 <ng-container *ngIf="!resource.isLocked">
                     <mat-icon *ngIf="resource.statusLabel === null" class="status-icon fa fa-question-circle fa-2x" [title]="'lang.undefined' | translate"
@@ -59,7 +60,7 @@
                 >
                 </mat-checkbox>
             </div>
-            <div class="col-md-2" [title]="resource.subject" (click)="!resource.isLocked ? goToResource(resource.resId): ''">
+            <div class="col-md-2" style="width: 100%" [title]="resource.subject" (click)="!resource.isLocked ? goToResource(resource.resId): ''">
                <span class="subject">{{resource.subject}}</span>
             </div>
             <div class="col-md col-md-date" (click)="!resource.isLocked ? goToResource(resource.resId): ''">
@@ -67,6 +68,5 @@
                 <span class="date" [title]="('lang.processLimitDate' | translate) + ' : ' + (resource.processLimitDate === null ? ('lang.undefined' | translate) : (resource.processLimitDate | date:'dd/MM/y'))">{{resource.processLimitDate === null ? ('lang.undefined' | translate) : resource.processLimitDate | date:'dd/MM/y'}}</span>
             </div>
         </div>
-        <mat-divider></mat-divider>
-    </div>
+    </button>
 </cdk-virtual-scroll-viewport>

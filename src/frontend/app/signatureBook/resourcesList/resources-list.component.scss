@@ -84,6 +84,14 @@
     background: white;
     height: 100%;
     position: relative;
+
+    ::ng-deep .cdk-virtual-scroll-content-wrapper {
+        padding-right: 15px !important;
+    }
+
+    ::ng-deep .mat-raised-button {
+        box-shadow: none !important;
+    }
 }
 
 .lockedRes {
@@ -106,8 +114,22 @@
     align-items: center;
     position: sticky;
     top: 0;
-    padding: 8px;
+    padding: 10px 13px 3px 0px;
     justify-content: flex-end;
     letter-spacing: 2px;
     font-size: 15px;
+}
+
+.resource-item {
+    cursor: pointer;
+    width: 100%;
+    border-radius: 9px;
+    border: 1px solid #d9d9d9;
+}
+
+.status-chrono {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
 }

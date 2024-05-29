@@ -206,7 +206,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     calculateContainerHeight(): number {
         const resourcesLength: number = this.resources.length;
         // This should be the height of your item in pixels
-        const itemHeight: number = 85;
+        const itemHeight: number = 100;
         // The final number of items to keep visible
         const visibleItems: number = 15;
         setTimeout(() => {
