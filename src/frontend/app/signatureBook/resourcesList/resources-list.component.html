@@ -12,8 +12,8 @@
 <div *ngIf="loading" class="loader">
     <mat-spinner style="margin:auto;"></mat-spinner>
 </div>
-<div *ngIf="resources.length > 0 && selectedResources.length > 0" class="selected-resources">
-    <span>{{ selectedResources.length }} / {{ signatureBookService.resourcesListIds.length }} {{'lang.selectedRes' | translate}}</span>
+<div *ngIf="resources.length > 0 && selectedResourceCount > 0" class="selected-resources">
+    <span>{{ selectedResourceCount }} / {{ signatureBookService.resourcesListIds.length }} {{'lang.selectedRes' | translate}}</span>
 </div>
 <cdk-virtual-scroll-viewport [itemSize]="85" class="virtual-scroll-viewport" #viewport [style.height.px]="viewportHeight">
     <div *cdkVirtualFor="let resource of resources"
@@ -33,15 +33,14 @@
             <div class="col-md-2">
                 <mat-icon *ngIf="resource.isLocked" title="{{'lang.warnLockResInProgress' | translate}} : {{resource.locker}}" style="color: red; font-size: 21px; margin-right: 11px;" class="fa fa-lock fa-2x"></mat-icon>
                 <ng-container *ngIf="!resource.isLocked">
-                    <mat-icon *ngIf="resource.statusLabel === null" class="status-icon" [title]="'lang.undefined' | translate"
+                    <mat-icon *ngIf="resource.statusLabel === null" class="status-icon fa fa-question-circle fa-2x" [title]="'lang.undefined' | translate"
                         [ngStyle]="{'color': resource.priorityColor}" color="primary"
-                        aria-hidden="true"
-                        class="fa fa-question-circle fa-2x">
+                        aria-hidden="true">
                     </mat-icon>
-                    <mat-icon *ngIf="resource.statusLabel !== null" class="status-icon" [title]="resource.statusLabel"
+                    <mat-icon *ngIf="resource.statusLabel !== null" [title]="resource.statusLabel"
                         [ngStyle]="{'color': resource.priorityColor}" color="primary"
                         aria-hidden="true"
-                        class="{{resource.statusImage.substring(0, 2)}} {{resource.statusImage}} {{resource.statusImage.substring(0, 2)}}-2x">
+                        class="status-icon {{resource.statusImage.substring(0, 2)}} {{resource.statusImage}} {{resource.statusImage.substring(0, 2)}}-2x">
                     </mat-icon>
                 </ng-container>
                 <span [title]="resource.chrono">{{resource.chrono}}</span>
@@ -56,7 +55,9 @@
                 <mat-checkbox color="primary"
                     aria-label="Sélectionner cette ressource"
                     (click)="$event.stopPropagation()"
-                    (change)="toggleSelection($event, resource)">
+                    [(ngModel)]="resource.selected"
+                    (change)="toggleResource($event.checked, resource)"
+                >
                 </mat-checkbox>
             </div>
             <div class="col-md-2" [title]="resource.subject">

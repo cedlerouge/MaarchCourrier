@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Attachment, AttachmentInterface } from "@models/attachment.model";
+import { Attachment } from "@models/attachment.model";
 import { ResourcesList } from "@models/resources-list.model";
 import { FiltersListService } from "@service/filtersList.service";
 import { HeaderService } from "@service/header.service";
@@ -144,13 +144,17 @@ export class SignatureBookService {
         ).subscribe();
     }
 
-    async toggleSelection(checked: boolean, userId: number, groupId: number, basketId: number, resource: AttachmentInterface): Promise<void> {
+    async toggleSelection(checked: boolean, userId: number, groupId: number, basketId: number, resId: number): Promise<boolean> {
         if (checked) {
-            const res: Attachment[] = (await this.initDocuments(userId, groupId, basketId, resource.resId)).resourcesToSign;
+            const res: Attachment[] = (await this.initDocuments(userId, groupId, basketId, resId)).resourcesToSign;
             this.selectedResources = this.selectedResources.concat(res);
+            if (res.length === 0) {
+                return false;
+            }
         } else {
-            this.selectedResources = this.selectedResources.filter((doc: Attachment) => doc.resIdMaster !== resource.resId);
+            this.selectedResources = this.selectedResources.filter((doc: Attachment) => doc.resIdMaster !== resId);
         }
+        return true;
     }
 
     getAllDocsToSign(): Attachment[] {
