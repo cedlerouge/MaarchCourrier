@@ -39,6 +39,8 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     lastStartPage: number = 0;
     lastPage: number = 0;
 
+    selectedResources: Attachment[] = [];
+
     constructor(
         public translate: TranslateService,
         public signatureBookService: SignatureBookService,
@@ -250,10 +252,12 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
         }
     }
 
-    getSelectedResources(): number[] {
-        const resIds: number[] = this.signatureBookService.selectedResources
-            .filter((resource: Attachment) => resource.resIdMaster !== null)
-            .map((resource: Attachment) => resource.resIdMaster)
-        return [... new Set(resIds)];
+    toggleSelection(event: any, resource: Attachment): void {
+        this.signatureBookService.toggleSelection(event.checked, this.userId, this.groupId, this.basketId, resource);
+        if (event.checked) {
+            this.selectedResources.push(resource);
+        } else {
+            this.selectedResources = this.selectedResources.filter((item: Attachment) => item.resId !== resource.resId);
+        }
     }
 }
