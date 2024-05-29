@@ -85,7 +85,7 @@ describe('ResourcesListComponent', () => {
             fixture.detectChanges();
             tick(300);
 
-            expect(fixture.nativeElement.querySelectorAll('#resourceElement').length).toEqual(3);
+            expect(fixture.nativeElement.querySelectorAll('#resourceElement').length).toEqual(2);
             flush();
         }));
 
@@ -147,7 +147,7 @@ describe('ResourcesListComponent', () => {
             fixture.detectChanges();
             tick(300);
 
-            const lastResource = fixture.nativeElement.querySelectorAll('#resourceElement')[2];
+            const lastResource = fixture.nativeElement.querySelectorAll('#resourceElement')[1];
             expect(lastResource.classList.contains('lockedRes')).toBeTrue();
 
             fixture.detectChanges();
@@ -186,7 +186,7 @@ function getResources(): ResourcesList[] {
             creationDate: "2024-03-14 11:54:41.258402",
             processLimitDate: null,
             mailTracking: false,
-            isLocked: false,
+            isLocked: true,
             locker: '',
             selected: false
         },
