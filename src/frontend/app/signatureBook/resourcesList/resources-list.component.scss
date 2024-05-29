@@ -41,7 +41,7 @@
 }
 
 .col-md-2 {
-    width: 86%;
+    width: 100%;
     display: flex;
 
     .subject {
@@ -49,9 +49,9 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
-        display: -webkit-box !important;
         -webkit-line-clamp: 1;
         word-break: break-all;
+        max-width: 250px;
     }
 }
 
