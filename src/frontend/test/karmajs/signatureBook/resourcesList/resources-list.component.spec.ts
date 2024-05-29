@@ -114,7 +114,7 @@ describe('ResourcesListComponent', () => {
             fixture.detectChanges();
             tick(100);
 
-            const secondResource = fixture.nativeElement.querySelectorAll('#resourceElement')[0];
+            const secondResource = fixture.nativeElement.querySelectorAll('.col-md-2')[0];
             secondResource.click();
 
             fixture.detectChanges();
@@ -173,7 +173,8 @@ function getResources(): ResourcesList[] {
             processLimitDate: "2024-06-12 23:59:59",
             mailTracking: false,
             isLocked: false,
-            locker: ''
+            locker: '',
+            selected: false
         },
         {
             resId: 102,
@@ -186,7 +187,8 @@ function getResources(): ResourcesList[] {
             processLimitDate: null,
             mailTracking: false,
             isLocked: false,
-            locker: ''
+            locker: '',
+            selected: false
         },
         {
             resId: 101,
@@ -199,7 +201,8 @@ function getResources(): ResourcesList[] {
             processLimitDate: "2024-03-26 23:59:59",
             mailTracking: false,
             isLocked: true,
-            locker: 'Barbara BAIN'
+            locker: 'Barbara BAIN',
+            selected: false
         }
     ];
 
