@@ -24,35 +24,12 @@
     color: var(--maarch-color-secondary);
 }
 
-.row {
+.res-row {
     display: flex;
     align-items: center;
     flex-direction: row;
     padding: 5px;
-}
-
-.col-md-1 {
-    margin-right: 18px;
-    margin-left: -18px;
-
-    .mat-checkbox {
-        margin-left: 12px;
-    }
-}
-
-.col-md-2 {
-    width: 100%;
-    display: flex;
-
-    .subject {
-        font-weight: bold;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        -webkit-line-clamp: 1;
-        word-break: break-all;
-        max-width: 250px;
-    }
+    gap: 5px;
 }
 
 .selectedRes {
@@ -61,17 +38,13 @@
 
 .col-md-date {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
-    width: 40%;
     opacity: 0.8;
-
-    .mat-icon {
-        flex: 1 auto;
-    }
-
-    .date {
-        flex: 2 auto;
+    gap: 10px;
+    width: 95px;
+    span {
+        flex: 1;
     }
 }
 
@@ -80,19 +53,23 @@
     font-size: 21px;
 }
 
+.subject-content {
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 0;
+
+    .subject {
+        font-weight: bold;
+    }
+}
+
 .virtual-scroll-viewport {
     width: 100%;
     background: white;
     height: 100%;
     position: relative;
-
-    ::ng-deep .cdk-virtual-scroll-content-wrapper {
-        padding-right: 15px !important;
-    }
-
-    ::ng-deep .mat-raised-button {
-        box-shadow: none !important;
-    }
 }
 
 .lockedRes {
@@ -105,7 +82,6 @@
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
-    overflow: hidden;
     text-overflow: ellipsis;
     word-break: break-all;
 }
@@ -115,22 +91,24 @@
     align-items: center;
     position: sticky;
     top: 0;
-    padding: 10px 13px 3px 0px;
+    padding: 10px 13px 3px 0;
     justify-content: flex-end;
     letter-spacing: 2px;
     font-size: 15px;
 }
 
 .resource-item {
-    cursor: pointer;
+    padding: 0;
+    padding-right: 10px;
     width: 100%;
-    border-radius: 9px;
-    border: 1px solid #d9d9d9;
+    border-radius: 0;
+    border-bottom: 0.5px solid #d9d9d9;
 }
 
 .status-chrono {
     width: 100%;
     display: flex;
+    flex: 1;
     justify-content: flex-start;
     align-items: center;
 }
