@@ -84,8 +84,8 @@ class RetrieveSignatureBook
             $mainSignatureBookResource->setIsConverted($isConverted);
 
             if (
-                $resource->isInSignatureBook() &&
-                !$this->signatureMainDocument->isMainDocumentSigned($resource->getResId())
+                $resource->isInSignatureBook() /*&&
+                !$this->signatureMainDocument->isMainDocumentSigned($resource->getResId())*/
             ) {
                 $resourcesToSign[] = $mainSignatureBookResource;
             } else {
