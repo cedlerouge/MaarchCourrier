@@ -16,7 +16,7 @@
     <span>{{ selectedResourceCount }} / {{ signatureBookService.resourcesListIds.length }} {{'lang.selectedRes' | translate}}</span>
 </div>
 <cdk-virtual-scroll-viewport [itemSize]="100" class="virtual-scroll-viewport" #viewport [style.height.px]="viewportHeight">
-    <button mat-button *cdkVirtualFor="let resource of resources"
+    <button mat-raised-button *cdkVirtualFor="let resource of resources"
         class="resource-item"
         [title]="resource.subject"
         [class.selectedRes]="resource.resId === resId"
