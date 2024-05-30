@@ -256,5 +256,6 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
             resource.selected = false;
         }
         this.selectedResourceCount = this.resources.filter((res => res.selected)).length;
+        this.signatureBookService.selectedResourceCount = this.selectedResourceCount;
     }
 }

@@ -27,6 +27,8 @@ export class SignatureBookService {
 
     selectedResources: Attachment[] = [];
 
+    selectedResourceCount: number = 0;
+
     constructor(
         private http: HttpClient,
         private notifications: NotificationService,
