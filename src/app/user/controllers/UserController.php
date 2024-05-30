@@ -2721,7 +2721,7 @@ class UserController
             } elseif (
                 !empty($user['phone']) &&
                 (
-                    !preg_match("/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/",$user['phone']) ||
+                    !preg_match("/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/", $user['phone']) ||
                     !Validator::length(1, 32)->validate($user['phone'])
                 )
             ) {
