@@ -253,7 +253,8 @@ class ConfigurationController
                     } elseif (!preg_match('/^(?!https?:\/\/).*$/', $editor['uri'] ?? null)) {
                         return $response->withStatus(400)->withJson(
                             [
-                                'errors' => "Body collaboraonline['uri'] URL or IP address contains protocol http or https",
+                                'errors' => "Body collaboraonline['uri'] URL or IP address" .
+                                    " contains protocol http or https",
                                 'lang'   => 'parameterUrlOrIpHaveProtocol'
                             ]
                         );

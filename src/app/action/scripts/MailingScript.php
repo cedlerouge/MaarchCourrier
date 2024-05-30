@@ -20,6 +20,7 @@ require 'vendor/autoload.php';
 use Action\controllers\ExternalSignatoryBookTrait;
 use Attachment\controllers\AttachmentController;
 use Attachment\models\AttachmentModel;
+use Exception;
 use Resource\models\ResModel;
 use SrcCore\controllers\LogsController;
 use SrcCore\models\DatabasePDO;
@@ -33,7 +34,12 @@ MailingScript::initialize($argv);
 
 class MailingScript
 {
-    public static function initialize($args)
+    /**
+     * @param $args
+     * @return void
+     * @throws Exception
+     */
+    public static function initialize($args): void
     {
         if (array_search('--encodedData', $args) > 0) {
             $cmd = array_search('--encodedData', $args);
@@ -54,7 +60,7 @@ class MailingScript
 
             $currentUser = UserModel::getById(['id' => $data['userId'], 'select' => ['user_id']]);
             $GLOBALS['login'] = $currentUser['user_id'];
-            $GLOBALS['id']    = $data['userId'];
+            $GLOBALS['id'] = $data['userId'];
 
             if ($data['action'] == 'sendExternalSignatoryBookAction') {
                 MailingScript::sendExternalSignatoryBookAction($data);
@@ -64,14 +70,23 @@ class MailingScript
         }
     }
 
-    public static function sendExternalSignatoryBookAction(array $args)
+    /**
+     * @param  array  $args
+     * @return void
+     * @throws Exception
+     */
+    public static function sendExternalSignatoryBookAction(array $args): void
     {
         foreach ($args['resources'] as $resource) {
             $result = ExternalSignatoryBookTrait::sendExternalSignatoryBookAction($resource);
 
             if (!empty($result['errors'])) {
                 if ($args['errorStatus'] != '_NOSTATUS_') {
-                    ResModel::update(['set' => ['status' => $args['errorStatus']], 'where' => ['res_id = ?'], 'data' => [$resource['resId']]]);
+                    ResModel::update([
+                        'set'   => ['status' => $args['errorStatus']],
+                        'where' => ['res_id = ?'],
+                        'data'  => [$resource['resId']]
+                    ]);
                 }
                 LogsController::add([
                     'isTech'    => true,
@@ -84,7 +99,11 @@ class MailingScript
                 ]);
             } else {
                 if ($args['successStatus'] != '_NOSTATUS_') {
-                    ResModel::update(['set' => ['status' => $args['successStatus']], 'where' => ['res_id = ?'], 'data' => [$resource['resId']]]);
+                    ResModel::update([
+                        'set'   => ['status' => $args['successStatus']],
+                        'where' => ['res_id = ?'],
+                        'data'  => [$resource['resId']]
+                    ]);
                 }
                 if (!empty($result['history'])) {
                     LogsController::add([
@@ -101,7 +120,12 @@ class MailingScript
         }
     }
 
-    public static function generateMailing(array $args)
+    /**
+     * @param  array  $args
+     * @return void
+     * @throws Exception
+     */
+    public static function generateMailing(array $args): void
     {
         foreach ($args['resources'] as $resource) {
             $where = ['res_id_master = ?', 'status = ?'];
@@ -113,15 +137,18 @@ class MailingScript
             }
 
             $attachments = AttachmentModel::get([
-                'select'  => ['res_id', 'status'],
-                'where'   => $where,
-                'data'    => $data
+                'select' => ['res_id', 'status'],
+                'where'  => $where,
+                'data'   => $data
             ]);
 
             $mailingSuccess = true;
 
             foreach ($attachments as $attachment) {
-                $result = AttachmentController::generateMailing(['id' => $attachment['res_id'], 'userId' => $GLOBALS['id']]);
+                $result = AttachmentController::generateMailing([
+                    'id'     => $attachment['res_id'],
+                    'userId' => $GLOBALS['id']
+                ]);
 
                 if (!empty($result['errors'])) {
                     $mailingSuccess = false;
@@ -146,9 +173,17 @@ class MailingScript
             }
 
             if ($mailingSuccess && $args['successStatus'] != '_NOSTATUS_') {
-                ResModel::update(['set' => ['status' => $args['successStatus']], 'where' => ['res_id = ?'], 'data' => [$resource['resId']]]);
+                ResModel::update([
+                    'set'   => ['status' => $args['successStatus']],
+                    'where' => ['res_id = ?'],
+                    'data'  => [$resource['resId']]
+                ]);
             } elseif (!$mailingSuccess && $args['errorStatus'] != '_NOSTATUS_') {
-                ResModel::update(['set' => ['status' => $args['errorStatus']], 'where' => ['res_id = ?'], 'data' => [$resource['resId']]]);
+                ResModel::update([
+                    'set'   => ['status' => $args['errorStatus']],
+                    'where' => ['res_id = ?'],
+                    'data'  => [$resource['resId']]
+                ]);
             }
         }
     }

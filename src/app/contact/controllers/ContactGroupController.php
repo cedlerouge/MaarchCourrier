@@ -266,7 +266,11 @@ class ContactGroupController
     public function delete(Request $request, Response $response, array $args): Response
     {
         if (
-            !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id'], 'canUpdate' => true])
+            !ContactGroupController::hasRightById([
+                'id' => $args['id'],
+                'userId' => $GLOBALS['id'],
+                'canUpdate' => true
+            ])
         ) {
             return $response->withStatus(403)->withJson(['errors' => 'Contacts group out of perimeter']);
         }
@@ -626,7 +630,11 @@ class ContactGroupController
     public function addCorrespondents(Request $request, Response $response, array $args): Response
     {
         if (
-            !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id'], 'canUpdate' => true])
+            !ContactGroupController::hasRightById([
+                'id' => $args['id'],
+                'userId' => $GLOBALS['id'],
+                'canUpdate' => true
+            ])
         ) {
             if (
                 !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id']]) ||
@@ -705,7 +713,11 @@ class ContactGroupController
     public function deleteCorrespondents(Request $request, Response $response, array $args): Response
     {
         if (
-            !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id'], 'canUpdate' => true])
+            !ContactGroupController::hasRightById([
+                'id' => $args['id'],
+                'userId' => $GLOBALS['id'],
+                'canUpdate' => true
+            ])
         ) {
             if (
                 !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id']]) ||

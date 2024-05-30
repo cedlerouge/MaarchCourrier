@@ -387,8 +387,8 @@ trait ShippingTrait
                     continue;
                 }
                 $contact[$key]['recipientId'] = $createRecipient['response']['id'] ?? null;
-                $contact[$key]['acknowledgement_of_receipt_url'] = $createRecipient['response']['acknowledgement_of_receipt_url']
-                    ?? null;
+                $contact[$key]['acknowledgement_of_receipt_url'] =
+                    $createRecipient['response']['acknowledgement_of_receipt_url'] ?? null;
                 $recipients[] = $contacts[$key];
             } else {
                 foreach ($contacts[$key] as $contact) {
@@ -412,7 +412,8 @@ trait ShippingTrait
                         continue 2;
                     }
                     $contact['recipientId'] = $createRecipient['response']['id'];
-                    $contact['acknowledgement_of_receipt_url'] = $createRecipient['response']['acknowledgement_of_receipt_url'];
+                    $contact['acknowledgement_of_receipt_url'] =
+                        $createRecipient['response']['acknowledgement_of_receipt_url'];
                     $recipients[] = $contact;
                 }
             }
