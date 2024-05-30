@@ -44,9 +44,10 @@ use IndexingModel\models\IndexingModelModel;
 class EntityController
 {
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
+     * @throws Exception
      */
     public function get(Request $request, Response $response): Response
     {
@@ -130,8 +131,8 @@ class EntityController
             'producerService'           => $entity['producer_service'],
             'business_id'               => $entity['business_id'],
             'external_id'               => $entity['external_id'],
-            'fastParapheurSubscriberId' => json_decode($entity['external_id'], true)['fastParapheurSubscriberId'] ??
-                null,
+            'fastParapheurSubscriberId' =>
+                json_decode($entity['external_id'], true)['fastParapheurSubscriberId'] ?? null,
         ];
 
         $aEntities = EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']]);
@@ -230,7 +231,9 @@ class EntityController
         $models = [];
         $tmpModels = IndexingModelModel::get([
             'select' => ['id', 'label', 'category'],
-            'where'  => ['(id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id = ? OR keyword = ?))'],
+            'where'  => [
+                '(id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id = ? OR keyword = ?))'
+            ],
             'data'   => [$entity['entity_id'], IndexingModelController::ALL_ENTITIES]
         ]);
         foreach ($tmpModels as $key => $model) {
@@ -280,12 +283,11 @@ class EntityController
      */
     public function getContactLinkCount(int $id): ?int
     {
-        $linkCount = count(
+        return count(
             ResourceContactModel::get(
                 ['select' => ['distinct res_id'], 'where' => ['item_id = ?', 'type = ?'], 'data' => [$id, 'entity']]
             )
         );
-        return $linkCount;
     }
 
     /**
@@ -573,7 +575,11 @@ class EntityController
             ['where' => ['correspondent_id = ?', 'correspondent_type = ?'], 'data' => [$entity['id'], 'entity']]
         );
         GroupModel::update([
-            'postSet' => ['indexation_parameters' => "jsonb_set(indexation_parameters, '{entities}', (indexation_parameters->'entities') - '{$entity['id']}')"],
+            'postSet' => [
+                'indexation_parameters' =>
+                    "jsonb_set(indexation_parameters, '{entities}', (indexation_parameters->'entities')" .
+                    " - '{$entity['id']}')"
+            ],
             'where'   => ["indexation_parameters->'entities' @> ?"],
             'data'    => ['"' . $entity['id'] . '"']
         ]);
@@ -742,7 +748,11 @@ class EntityController
         );
         //GroupIndexing
         GroupModel::update([
-            'postSet' => ['indexation_parameters' => "jsonb_set(indexation_parameters, '{entities}', (indexation_parameters->'entities') - '{$dyingEntity['id']}')"],
+            'postSet' => [
+                'indexation_parameters' =>
+                    "jsonb_set(indexation_parameters, '{entities}', (indexation_parameters->'entities')" .
+                    "- '{$dyingEntity['id']}')"
+            ],
             'where'   => ["indexation_parameters->'entities' @> ?"],
             'data'    => ['"' . $dyingEntity['id'] . '"']
         ]);

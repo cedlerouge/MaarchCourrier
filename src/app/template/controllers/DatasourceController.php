@@ -113,9 +113,9 @@ class DatasourceController
                 !empty($res['res_id']) && !empty($preferenceBasket[0]['group_serial_id']) && !empty($basket['id']) &&
                 !empty($aArgs['params']['recipient']['id'])
             ) {
-                $res['linktoprocess'] = trim($aArgs['params']['maarchUrl'], '/') . '/dist/index.html#/process/users/' .
-                    $aArgs['params']['recipient']['id'] . '/groups/' . $preferenceBasket[0]['group_serial_id'] .
-                    '/baskets/' . $basket['id'] . '/resId/' . $res['res_id'];
+                $res['linktoprocess'] = trim($aArgs['params']['maarchUrl'], '/') .
+                    '/dist/index.html#/process/users/' . $aArgs['params']['recipient']['id'] . '/groups/' .
+                    $preferenceBasket[0]['group_serial_id'] . '/baskets/' . $basket['id'] . '/resId/' . $res['res_id'];
             }
 
             if (!empty($res['initiator'])) {
@@ -209,17 +209,18 @@ class DatasourceController
                 $datasources['res_letterbox'][] = $resLetterbox;
             }
 
-            $note['linktodoc'] = trim($aArgs['params']['maarchUrl'], '/') . '/dist/index.html#/resources/' . $resId .
-                '/content';
-            $note['linktodetail'] = trim($aArgs['params']['maarchUrl'], '/') . '/dist/index.html#/resources/' . $resId;
+            $note['linktodoc'] = trim($aArgs['params']['maarchUrl'], '/') .
+                '/dist/index.html#/resources/' . $resId . '/content';
+            $note['linktodetail'] = trim($aArgs['params']['maarchUrl'], '/') .
+                '/dist/index.html#/resources/' . $resId;
 
             if (
                 !empty($resId) && !empty($preferenceBasket[0]['group_serial_id']) && !empty($basket['id']) &&
                 !empty($aArgs['params']['recipient']['id'])
             ) {
-                $note['linktoprocess'] = trim($aArgs['params']['maarchUrl'], '/') . '/dist/index.html#/process/users/' .
-                    $aArgs['params']['recipient']['id'] . '/groups/' . $preferenceBasket[0]['group_serial_id'] .
-                    '/baskets/' . $basket['id'] . '/resId/' . $resId;
+                $note['linktoprocess'] = trim($aArgs['params']['maarchUrl'], '/') .
+                    '/dist/index.html#/process/users/' . $aArgs['params']['recipient']['id'] . '/groups/' .
+                    $preferenceBasket[0]['group_serial_id'] . '/baskets/' . $basket['id'] . '/resId/' . $resId;
             }
 
             if (!empty($resId)) {
@@ -293,7 +294,8 @@ class DatasourceController
                 if (is_array($customField)) {
                     if ($customFieldsTypes[$customId] == 'banAutocomplete') {
                         $customFieldsData['customField_' .
-                        $customId] = "{$customField[0]['addressNumber']} {$customField[0]['addressStreet']} {$customField[0]['addressTown']} ({$customField[0]['addressPostcode']})";
+                        $customId] = "{$customField[0]['addressNumber']} {$customField[0]['addressStreet']}" .
+                            " {$customField[0]['addressTown']} ({$customField[0]['addressPostcode']})";
                     } elseif ($customFieldsTypes[$customId] == 'contact') {
                         $customValues = ContactController::getContactCustomField(['contacts' => $customField]);
                         $customFieldsData['customField_' . $customId] = implode("\n", $customValues);

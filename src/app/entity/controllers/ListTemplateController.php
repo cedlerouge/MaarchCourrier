@@ -34,8 +34,8 @@ use BroadcastList\models\BroadcastListRoleModel;
 class ListTemplateController
 {
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      */
     public function get(Request $request, Response $response): Response
@@ -49,9 +49,9 @@ class ListTemplateController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -138,8 +138,8 @@ class ListTemplateController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -269,9 +269,9 @@ class ListTemplateController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -351,9 +351,9 @@ class ListTemplateController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -414,9 +414,9 @@ class ListTemplateController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -505,7 +505,8 @@ class ListTemplateController
                                 unset($array[$externalRoleIndex]);
                             }
                             $userExists['signatureModes'] = array_values($array);
-                            $listTemplateItems[$itemKey]['externalId']['maarchParapheur'] = $externalId['maarchParapheur'];
+                            $listTemplateItems[$itemKey]['externalId']['maarchParapheur'] =
+                                $externalId['maarchParapheur'];
                             $listTemplateItems[$itemKey]['descriptionToDisplay'] = $userExists['email'];
                             $listTemplateItems[$itemKey]['labelToDisplay'] = $userExists['firstname'] . ' ' .
                                 $userExists['lastname'];
@@ -534,9 +535,9 @@ class ListTemplateController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -590,9 +591,9 @@ class ListTemplateController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -647,9 +648,9 @@ class ListTemplateController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      */
     public function updateTypeRoles(Request $request, Response $response, array $aArgs): Response
@@ -715,8 +716,8 @@ class ListTemplateController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      */
     public function getRoles(Request $request, Response $response): Response
@@ -797,8 +798,8 @@ class ListTemplateController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      */
     public function getAvailableCircuits(Request $request, Response $response): Response
@@ -829,9 +830,9 @@ class ListTemplateController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -904,7 +905,7 @@ class ListTemplateController
     }
 
     /**
-     * @param array $args
+     * @param  array  $args
      * @return string[]|true
      * @throws Exception
      */

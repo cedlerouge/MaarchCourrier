@@ -1576,7 +1576,8 @@ class SearchController
             // "*~: Zend Lucene Search meta characters
             // \s: blank space
             // {1,2}: 1 or 2 characters of this character class
-            // result: captures words of 1 or 2 characters that are not space, not counting Zend Lucene Search meta characters
+            // result: captures words of 1 or 2 characters that are not space,
+            // not counting Zend Lucene Search meta characters
             $args['body']['fulltext']['values'] = preg_replace(
                 '/\b[^"*~\s]{1,2}\b/u',
                 '',
@@ -1596,7 +1597,10 @@ class SearchController
                 foreach ($query_fulltext as $key => $value) {
                     if (
                         str_contains($value, "*") &&
-                        (strlen(substr($value, 0, strpos($value, "*"))) < 4 || preg_match("([,':!+])", $value) === 1)
+                        (
+                            strlen(substr($value, 0, strpos($value, "*"))) < 4 ||
+                            preg_match("([,':!+])", $value) === 1
+                        )
                     ) {
                         return null;
                     }

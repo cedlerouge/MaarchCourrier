@@ -22,7 +22,7 @@ use SrcCore\models\ValidatorModel;
 class SearchModel
 {
     /**
-     * @param array $args
+     * @param  array  $args
      *
      * @return void
      * @throws Exception
@@ -53,9 +53,11 @@ class SearchModel
         $database->query($query);
 
         $joinDestOrder = '';
-        $selectValues = "res_id, priority, type_id, destination, status, category_id, alt_identifier, subject, creation_date, dest_user, process_limit_date, entity_label, type_label";
+        $selectValues = "res_id, priority, type_id, destination, status, category_id, alt_identifier, subject," .
+            " creation_date, dest_user, process_limit_date, entity_label, type_label";
         if (!empty($args['order']) && $args['order'] == 'destUser') {
-            $joinDestOrder = ' LEFT JOIN (SELECT firstname, lastname, id from users) AS us ON us.id = res_view_letterbox.dest_user ';
+            $joinDestOrder = ' LEFT JOIN (SELECT firstname, lastname, id from users) AS us' .
+                ' ON us.id = res_view_letterbox.dest_user ';
             $selectValues .= ', firstname, lastname';
         }
 
@@ -66,7 +68,7 @@ class SearchModel
     }
 
     /**
-     * @param array $args
+     * @param  array  $args
      *
      * @return array
      * @throws Exception

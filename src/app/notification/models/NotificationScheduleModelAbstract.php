@@ -42,7 +42,8 @@ abstract class NotificationScheduleModelAbstract
                 $cmd = $aCrontab[$id]['cmd'] ?? null;
                 $file[$id] = "{$m}\t{$h}\t{$dom}\t{$mon}\t{$dow}\t{$cmd}";
             } elseif ($cronValue['state'] != 'deleted') {
-                $file[$id] = "{$cronValue['m']}\t{$cronValue['h']}\t{$cronValue['dom']}\t{$cronValue['mon']}\t{$cronValue['dow']}\t{$cronValue['cmd']}";
+                $file[$id] = "{$cronValue['m']}\t{$cronValue['h']}\t{$cronValue['dom']}\t{$cronValue['mon']}\t" .
+                    "{$cronValue['dow']}\t{$cronValue['cmd']}";
             }
         }
 
