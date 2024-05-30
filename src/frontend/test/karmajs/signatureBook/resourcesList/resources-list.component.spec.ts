@@ -114,7 +114,7 @@ describe('ResourcesListComponent', () => {
             fixture.detectChanges();
             tick(100);
 
-            const secondResource = fixture.nativeElement.querySelectorAll('.col-md-2')[0];
+            const secondResource = fixture.nativeElement.querySelectorAll('.resource-item')[0];
             secondResource.click();
 
             fixture.detectChanges();
