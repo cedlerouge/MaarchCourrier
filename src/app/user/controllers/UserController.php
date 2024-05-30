@@ -1434,11 +1434,8 @@ class UserController
             return [];
         }
 
-        $pathToSignature = $docserver['path_template'] . str_replace(
-                '#',
-                '/',
-                $signatures[0]['signature_path']
-            ) .
+        $pathToSignature = $docserver['path_template'] .
+            str_replace('#', '/', $signatures[0]['signature_path']) .
             $signatures[0]['signature_file_name'];
         $image = file_get_contents($pathToSignature);
         if ($image === false) {
@@ -2722,11 +2719,11 @@ class UserController
                 ];
                 continue;
             } elseif (
-                !empty($user['phone']) && (!preg_match(
-                        "/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/",
-                        $user['phone']
-                    ) ||
-                    !Validator::length(1, 32)->validate($user['phone']))
+                !empty($user['phone']) &&
+                (
+                    !preg_match("/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/",$user['phone']) ||
+                    !Validator::length(1, 32)->validate($user['phone'])
+                )
             ) {
                 $errors[] = [
                     'error' => "Argument phone is not correct for user {$key}",

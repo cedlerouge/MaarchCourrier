@@ -141,8 +141,8 @@ class ListInstanceController
             $listInstances[$key]['hasPrivilege'] = true;
             if (
                 empty($value['process_date']) &&
-                !PrivilegeController::hasPrivilege(['privilegeId' => 'visa_documents', 'userId' => $value['item_id']])
-                && !PrivilegeController::hasPrivilege(['privilegeId' => 'sign_document', 'userId' => $value['item_id']])
+                !PrivilegeController::hasPrivilege(['privilegeId' => 'visa_documents', 'userId' => $value['item_id']]) &&
+                !PrivilegeController::hasPrivilege(['privilegeId' => 'sign_document', 'userId' => $value['item_id']])
             ) {
                 $listInstances[$key]['hasPrivilege'] = false;
             }
