@@ -96,7 +96,7 @@ class EntitySeparatorController
 
                 $pngWriter = new PngWriter();
                 $qrCodeResult = $pngWriter->write($qrCode);
-                $qrCodeResult = $qrCodeResult->gListInstanceHistoryControlleretString();
+                $qrCodeResult = $qrCodeResult->getString();
 
                 $pdf->Image('@' . $qrCodeResult, 0, 40, 200, '', '', '', '', false, 300, 'C');
             } else {
