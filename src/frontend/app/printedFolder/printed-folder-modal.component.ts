@@ -307,7 +307,7 @@ export class PrintedFolderModalComponent implements OnInit {
         };
         let resource: any = null;
 
-        this.data.resId.forEach((id: any, index: number) => {
+        this.data.resId.forEach((id: any) => {
             resource = {
                 resId: id,
                 document: this.mainDocument
