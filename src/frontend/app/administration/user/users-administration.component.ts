@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, TemplateRef, ViewContainerRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
-import { MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { MatSort } from '@angular/material/sort';
 import { NotificationService } from '@service/notification/notification.service';
@@ -149,7 +149,7 @@ export class UsersAdministrationComponent implements OnInit {
         this.dialogRef = this.dialog.open(UsersAdministrationRedirectModalComponent, { panelClass: 'maarch-modal', data: { user: user } });
         this.dialogRef.afterClosed().pipe(
             filter((res: any) => res === 'success'),
-            tap((res: any) => {
+            tap(() => {
                 this.updateQuota(user, mode);
                 if (user.actionMode === 'delete') {
                     for (const i in this.data) {

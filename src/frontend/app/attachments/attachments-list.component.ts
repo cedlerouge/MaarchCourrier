@@ -54,7 +54,7 @@ export class AttachmentsListComponent implements OnInit {
     @Input() isModal: boolean = false;
 
     @Output() reloadBadgeAttachments = new EventEmitter<string>();
-    @Output() afterActionAttachment = new EventEmitter<string>();
+    @Output() afterActionAttachment = new EventEmitter<string | {id: string, attachment: object}>();
 
     integrationTargets: any[] = [
         {
@@ -199,7 +199,7 @@ export class AttachmentsListComponent implements OnInit {
         this.http.put('../rest/attachments/' + attachment.resId + '/inSignatureBook', {}).pipe(
             tap(() => {
                 attachment.inSignatureBook = !attachment.inSignatureBook;
-                this.afterActionAttachment.emit('setInSignatureBook');
+                this.afterActionAttachment.emit({ id: 'setInSignatureBook', attachment: attachment });
                 this.notify.success(this.translate.instant('lang.actionDone'));
             }),
             catchError((err: any) => {

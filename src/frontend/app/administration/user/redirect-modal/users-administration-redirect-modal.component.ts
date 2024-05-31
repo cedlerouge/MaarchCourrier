@@ -196,7 +196,7 @@ export class UsersAdministrationRedirectModalComponent implements OnInit {
     deleteUser() {
         return new Promise((resolve) => {
             this.http.delete(`../rest/users/${this.data.user.id}`).pipe(
-                tap((data: any) => {
+                tap(() => {
                     this.notify.success(this.translate.instant('lang.userDeleted') + ' « ' + this.data.user.user_id + ' »');
                     resolve(true);
                 }),
@@ -211,7 +211,7 @@ export class UsersAdministrationRedirectModalComponent implements OnInit {
     suspendUser() {
         return new Promise((resolve) => {
             this.http.put(`../rest/users/${this.data.user.id}/suspend`, this.data.user).pipe(
-                tap((data: any) => {
+                tap(() => {
                     this.notify.success(this.translate.instant('lang.userSuspended'));
                     resolve(true);
                 }),

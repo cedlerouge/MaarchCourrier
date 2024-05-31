@@ -15,7 +15,6 @@ import { AccountLinkComponent } from './account-link/account-link.component';
 import { AppService } from '@service/app.service';
 import { PrivilegeService } from '@service/privileges.service';
 import { MaarchFlatTreeComponent } from '../../../plugins/tree/maarch-flat-tree.component';
-import { environment } from '../../../environments/environment';
 import { InputCorrespondentGroupComponent } from '../contact/group/inputCorrespondent/input-correspondent-group.component';
 import { AuthService } from '@service/auth.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
@@ -323,7 +322,7 @@ export class UserAdministrationComponent implements OnInit {
         $('#redirectUser_' + basket.group_id + '_' + basket.basket_id).toggle();
 
         this.http.get('../rest/users')
-            .subscribe((data: any) => {
+            .subscribe(() => {
                 // this.userList = data['users'];
 
             }, (err) => {
@@ -476,7 +475,7 @@ export class UserAdministrationComponent implements OnInit {
 
     updateGroup(group: any) {
         this.http.put('../rest/users/' + this.serialId + '/groups/' + group.group_id, group)
-            .subscribe((data: any) => {
+            .subscribe(() => {
                 this.notify.success(this.translate.instant('lang.groupUpdated'));
             }, (err) => {
                 this.notify.error(err.error.errors);
@@ -749,7 +748,7 @@ export class UserAdministrationComponent implements OnInit {
         });
         if (basketsDisable.length > 0) {
             this.http.put('../rest/users/' + this.serialId + '/baskets', { 'baskets': basketsDisable })
-                .subscribe((data: any) => {
+                .subscribe(() => {
                     this.selectionBaskets.clear();
                     this.notify.success(this.translate.instant('lang.basketsUpdated'));
                 }, (err: any) => {
@@ -970,7 +969,7 @@ export class UserAdministrationComponent implements OnInit {
                 user.authorizedApi = this.user.authorizedApi.split('\n')[0] !== '' ? this.user.authorizedApi.split('\n') : [];
             }
             this.http.put('../rest/users/' + this.serialId, user)
-                .subscribe((data: any) => {
+                .subscribe(() => {
                     if (this.headerService.user.id == this.serialId) {
                         this.headerService.resfreshCurrentUser();
                     }
