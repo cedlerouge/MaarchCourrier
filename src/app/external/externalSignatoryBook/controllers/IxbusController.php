@@ -127,9 +127,9 @@ class IxbusController
 
         $curlResponse = CurlModel::exec([
             'url'     => rtrim(
-                    $config['data']['url'],
-                    '/'
-                ) . '/api/parapheur/v1/nature/' . $args['natureId'] .
+                $config['data']['url'],
+                '/'
+            ) . '/api/parapheur/v1/nature/' . $args['natureId'] .
                 '/redacteur',
             'headers' => ['IXBUS_API:' . $config['data']['tokenAPI']],
             'method'  => 'GET'
