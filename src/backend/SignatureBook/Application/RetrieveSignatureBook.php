@@ -83,10 +83,7 @@ class RetrieveSignatureBook
             $isConverted = $this->convertPdfService->canConvert($resource->getFileFormat());
             $mainSignatureBookResource->setIsConverted($isConverted);
 
-            if (
-                $resource->isInSignatureBook() /*&&
-                !$this->signatureMainDocument->isMainDocumentSigned($resource->getResId())*/
-            ) {
+            if ($resource->isInSignatureBook()) {
                 $resourcesToSign[] = $mainSignatureBookResource;
             } else {
                 $isCreator = $resource->getTypist()->getId() == $this->currentUser->getCurrentUser()->getId();
