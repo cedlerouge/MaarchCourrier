@@ -691,8 +691,8 @@ class ResController extends ResourceControlController
         $watermark = true;
 
         try {
-            if (isset($data['watermark'])) {
-                $watermark = $data['watermark'];
+            if (isset($data['watermark']) && $data['watermark'] === "false") {
+                $watermark = false;
             }
             $mainFile = $retrieveResourceFactory->getResourceFile($args['resId'], $watermark);
         } catch (Throwable $th) {
