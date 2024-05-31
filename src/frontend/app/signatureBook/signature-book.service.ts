@@ -29,8 +29,6 @@ export class SignatureBookService {
 
     selectedResources: Attachment[] = [];
 
-    downloadingProof: boolean = false;
-
     constructor(
         private http: HttpClient,
         private notifications: NotificationService,
@@ -151,10 +149,9 @@ export class SignatureBookService {
     }
 
     downloadProof(resId: number, isAttachment: boolean): Promise<boolean> {
-        this.downloadingProof = true;
         const type: string = isAttachment ? 'attachments' : 'resources';
         return new Promise((resolve) => {
-            this.http.get(`../rest/${type}/${resId}/proofSignature`, { responseType: 'blob' as 'json'})
+            this.http.get(`../rest/${type}/${resId}/proofSignature`, { responseType: 'blob' as 'json' })
                 .pipe(
                     tap((data: any) => {
                         const today = new Date();
@@ -164,7 +161,6 @@ export class SignatureBookService {
                         downloadLink.setAttribute('download', filename);
                         document.body.appendChild(downloadLink);
                         downloadLink.click();
-                        this.downloadingProof = false;
                         resolve(true);
                     }),
                     catchError((err: any) => {
@@ -173,7 +169,6 @@ export class SignatureBookService {
                         } else {
                             this.notifications.handleSoftErrors(err);
                         }
-                        this.downloadingProof = false;
                         resolve(false);
                         return of(false);
                     })

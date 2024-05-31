@@ -185,6 +185,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     isFullScreen: boolean = false;
 
+    downloadingProof: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -1543,5 +1545,10 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         } else if (type === 'out') {
             this.zoom = this.zoom / zoomFactor;
         }
+    }
+
+    async downloadProof(resId: number): Promise<void> {
+        this.downloadingProof = true;
+        await this.signatureBookService.downloadProof(resId, false).then(() => this.downloadingProof = false);
     }
 }

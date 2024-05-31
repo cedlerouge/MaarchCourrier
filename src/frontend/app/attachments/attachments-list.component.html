@@ -83,8 +83,8 @@
                     <button *ngIf="!loading && attachment.status === 'SIGN' && signatureBookService.config.isNewInternalParaph"
                         mat-menu-item
                         [title]="'lang.downloadProof' | translate"
-                        [disabled]="signatureBookService.downloadingProof"
-                        (click)="$event.stopPropagation(); signatureBookService.downloadProof(attachment.resId, true)">
+                        [disabled]="downloadingProof"
+                        (click)="$event.stopPropagation(); downloadProof(attachment.resId, true)">
                         <mat-icon color="primary" class="fas fa-award" style="font-size: 17px;"></mat-icon>
                         <span style="white-space: pre-wrap;">{{'lang.downloadProof' | translate}}</span>
                     </button>

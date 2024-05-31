@@ -96,6 +96,8 @@ export class AttachmentsListComponent implements OnInit {
 
     groupId: any = null;
 
+    downloadingProof: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -350,5 +352,10 @@ export class AttachmentsListComponent implements OnInit {
         }
         const attachTypes: string[] = this.attachments.map((attachment: any) => attachment.type);
         this.filterAttachTypes = filterAttachTypesClone.filter((element: any) => attachTypes.indexOf(element.id) > -1);
+    }
+
+    async downloadProof(resId: number): Promise<void> {
+        this.downloadingProof = true;
+        await this.signatureBookService.downloadProof(resId, true).then(() => this.downloadingProof = false);
     }
 }
