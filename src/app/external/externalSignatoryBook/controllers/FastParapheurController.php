@@ -1818,7 +1818,6 @@ class FastParapheurController
         $config = $args['config'];
 
         if (!empty($config['data']['integratedWorkflow']) && $config['data']['integratedWorkflow'] == 'true') {
-
             $steps = FastParapheurController::prepareSteps($args['steps']);
             if (isset($steps['error'])) {
                 return $steps;
