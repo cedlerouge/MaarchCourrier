@@ -52,6 +52,7 @@ describe('SignatureBookComponent', () => {
     let fixture: ComponentFixture<SignatureBookComponent>;
     let httpTestingController: HttpTestingController;
     let translateService: TranslateService;
+    let signatureBookService: SignatureBookService;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -101,6 +102,9 @@ describe('SignatureBookComponent', () => {
         // Set lang
         translateService = TestBed.inject(TranslateService);
         translateService.use('fr');
+
+        signatureBookService = TestBed.inject(SignatureBookService);
+        signatureBookService.config.isNewInternalParaph = true;
 
         //  TO DO : Set maarchLogoFull SVG
         const iconRegistry = TestBed.inject(MatIconRegistry);
@@ -182,5 +186,5 @@ describe('SignatureBookComponent', () => {
             expect(nativeElement.querySelector('app-document-viewer').attributes['ng-reflect-res-id'].value).toEqual('189');
         }));
     });
-    
+
 });
