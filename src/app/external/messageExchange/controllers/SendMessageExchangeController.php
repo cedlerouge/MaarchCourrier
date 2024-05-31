@@ -105,7 +105,11 @@ class SendMessageExchangeController
             'status'            => 'W',
             'fullMessageObject' => $dataObject,
             'resIdMaster'       => $aArgs['res_id_master'],
-            'SenderOrgNAme'     => $dataObject->TransferringAgency->OrganizationDescriptiveMetadata->Contact[0]->DepartmentName,
+            'SenderOrgNAme'     => $dataObject
+                ->TransferringAgency
+                ->OrganizationDescriptiveMetadata
+                ->Contact[0]
+                ->DepartmentName,
             'RecipientOrgNAme'  => $dataObject->ArchivalAgency->OrganizationDescriptiveMetadata->Name,
             'filePath'          => $aArgs['file_path'],
         ];
@@ -243,7 +247,8 @@ class SendMessageExchangeController
                     if ($AllInfoMainMail['category_id'] == 'outgoing') {
                         $aOutgoingMailInfo = $AllInfoMainMail;
                         $aOutgoingMailInfo['Title'] = $AllInfoMainMail['subject'];
-                        $aOutgoingMailInfo['OriginatingAgencyArchiveUnitIdentifier'] = $AllInfoMainMail['alt_identifier'];
+                        $aOutgoingMailInfo['OriginatingAgencyArchiveUnitIdentifier'] =
+                            $AllInfoMainMail['alt_identifier'];
                         $aOutgoingMailInfo['DocumentType'] = $AllInfoMainMail['type_label'];
                         $aOutgoingMailInfo['tablenameExchangeMessage'] = $AllInfoMainMail['tablenameExchangeMessage'];
                         $mainDocument = [$aOutgoingMailInfo];
@@ -481,7 +486,8 @@ class SendMessageExchangeController
         $messageObject->Date = $date->format(DateTime::ATOM);
 
         $messageObject->MessageIdentifier = new stdClass();
-        $messageObject->MessageIdentifier->value = 'ArchiveTransfer_' . date("Ymd_His") . '_' . $GLOBALS['login'];
+        $messageObject->MessageIdentifier->value = 'ArchiveTransfer_' .
+            date("Ymd_His") . '_' . $GLOBALS['login'];
 
         /********* BINARY DATA OBJECT PACKAGE *********/
         $messageObject->DataObjectPackage = new stdClass();
@@ -703,7 +709,8 @@ class SendMessageExchangeController
     {
         $TransferringAgencyObject = new stdClass();
         $TransferringAgencyObject->Identifier = new stdClass();
-        $TransferringAgencyObject->Identifier->value = $aArgs['TransferringAgency']['EntitiesInformations']['business_id'];
+        $TransferringAgencyObject->Identifier->value =
+            $aArgs['TransferringAgency']['EntitiesInformations']['business_id'];
 
         $TransferringAgencyObject->OrganizationDescriptiveMetadata = new stdClass();
 
@@ -711,7 +718,8 @@ class SendMessageExchangeController
             ['entityId' => $aArgs['TransferringAgency']['EntitiesInformations']['entity_id']]
         );
         $TransferringAgencyObject->OrganizationDescriptiveMetadata->LegalClassification = $entityRoot['entity_label'];
-        $TransferringAgencyObject->OrganizationDescriptiveMetadata->Name = $aArgs['TransferringAgency']['EntitiesInformations']['entity_label'];
+        $TransferringAgencyObject->OrganizationDescriptiveMetadata->Name =
+            $aArgs['TransferringAgency']['EntitiesInformations']['entity_label'];
         $TransferringAgencyObject->OrganizationDescriptiveMetadata->UserIdentifier = $GLOBALS['login'];
 
         $traCommunicationObject = new stdClass();
@@ -759,7 +767,10 @@ class SendMessageExchangeController
 
         $TransferringAgencyObject->OrganizationDescriptiveMetadata->Communication = [$traCommunicationObject];
 
-        $userInfo = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['firstname', 'lastname', 'mail', 'phone']]);
+        $userInfo = UserModel::getById([
+            'id'     => $GLOBALS['id'],
+            'select' => ['firstname', 'lastname', 'mail', 'phone']
+        ]);
 
         $contactUserObject = new stdClass();
         $contactUserObject->DepartmentName = $aArgs['TransferringAgency']['EntitiesInformations']['entity_label'];

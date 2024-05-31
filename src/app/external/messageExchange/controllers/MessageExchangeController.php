@@ -15,6 +15,7 @@
 namespace MessageExchange\controllers;
 
 use Docserver\models\DocserverModel;
+use Exception;
 use MessageExchange\models\MessageExchangeModel;
 use Resource\controllers\ResController;
 use Respect\Validation\Validator;
@@ -25,16 +26,38 @@ use User\models\UserModel;
 
 class MessageExchangeController
 {
-    public function getByResId(Request $request, Response $response, array $args)
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getByResId(Request $request, Response $response, array $args): Response
     {
-        if (!Validator::intVal()->validate($args['resId']) || !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($args['resId']) ||
+            !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
         $messagesModel = MessageExchangeModel::get([
             'select' => [
-                'message_id', 'date', 'reference', 'type', 'sender_org_name', 'account_id', 'recipient_org_identifier', 'recipient_org_name',
-                'reception_date', 'operation_date', 'data', 'res_id_master', 'filename', 'status'
+                'message_id',
+                'date',
+                'reference',
+                'type',
+                'sender_org_name',
+                'account_id',
+                'recipient_org_identifier',
+                'recipient_org_name',
+                'reception_date',
+                'operation_date',
+                'data',
+                'res_id_master',
+                'filename',
+                'status'
             ],
             'where'  => ['res_id_master = ?', "(type = 'ArchiveTransfer' or reference like '%_ReplySent')"],
             'data'   => [$args['resId']]
@@ -74,7 +97,14 @@ class MessageExchangeController
         return $response->withJson(['messageExchanges' => $messages]);
     }
 
-    public function getById(Request $request, Response $response, array $args)
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getById(Request $request, Response $response, array $args): Response
     {
         if (!Validator::stringType()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Query param id is not a string']);
@@ -94,7 +124,11 @@ class MessageExchangeController
         }
 
         $aMessageReview = [];
-        $messageReview  = MessageExchangeModel::get(['where' => ['reference = ?'], 'data' => [$message['reference'] . '_Notification'], 'orderBy' => ['date asc']]);
+        $messageReview = MessageExchangeModel::get([
+            'where'   => ['reference = ?'],
+            'data'    => [$message['reference'] . '_Notification'],
+            'orderBy' => ['date asc']
+        ]);
         foreach ($messageReview as $review) {
             $oMessageReview = json_decode($review['data']);
             $aMessageReview[] = $oMessageReview->Comment[0]->value;
@@ -121,10 +155,11 @@ class MessageExchangeController
         $transferringAgencyMetaData = $messageData['TransferringAgency']['OrganizationDescriptiveMetadata'];
         $from = $transferringAgencyMetaData['Contact'][0]['PersonName'] . ' (' . $transferringAgencyMetaData['Name'] . ')';
 
-        $archivalAgency         = $messageData['ArchivalAgency'];
+        $archivalAgency = $messageData['ArchivalAgency'];
         $archivalAgencyMetaData = $archivalAgency['OrganizationDescriptiveMetadata'] ?? null;
         $communicationType = $archivalAgencyMetaData['Communication'][0]['value'] ?? null;
-        $contactInfo       = $archivalAgencyMetaData['Name'] . ' - <b>' . $archivalAgency['Identifier']['value'] . '</b> - ' . $archivalAgencyMetaData['Contact'][0]['PersonName'];
+        $contactInfo = $archivalAgencyMetaData['Name'] . ' - <b>' . $archivalAgency['Identifier']['value'] . '</b> - ' .
+            $archivalAgencyMetaData['Contact'][0]['PersonName'];
 
         if (!empty($archivalAgencyMetaData['Contact'][0]['Address'][0])) {
             $addressInfo = $archivalAgencyMetaData['Contact'][0]['Address'][0]['PostOfficeBox']
@@ -135,8 +170,8 @@ class MessageExchangeController
             $contactInfo .= ', ' . $addressInfo;
         }
 
-        $body        = $messageData['Comment'][0]['value'] ?? null;
-        $object      = $messageData['DataObjectPackage']['DescriptiveMetadata']['ArchiveUnit'][0]['Content']['Title'][0] ?? null;
+        $body = $messageData['Comment'][0]['value'] ?? null;
+        $object = $messageData['DataObjectPackage']['DescriptiveMetadata']['ArchiveUnit'][0]['Content']['Title'][0] ?? null;
 
         $unitIdentifier = MessageExchangeModel::getUnitIdentifierByMessageId(['messageId' => $args['id']]);
 
@@ -174,33 +209,43 @@ class MessageExchangeController
         }
 
         $messageExchange = [
-            'userId'                    => $message['account_id'],
-            'messageId'                 => $message['message_id'],
-            'creationDate'              => $message['date'],
-            'type'                      => $messageType,
-            'sender'                    => $sender,
-            'recipient'                 => ['label' => $message['recipient_org_name'], 'm2m' => $message['recipient_org_identifier']],
-            'receptionDate'             => $message['reception_date'],
-            'operationDate'             => $message['operation_date'],
-            'status'                    => $status,
-            'operationComments'         => $operationComments,
-            'from'                      => $from,
-            'communicationType'         => $communicationType,
-            'contactInfo'               => $contactInfo,
-            'body'                      => $body,
-            'object'                    => $object,
-            'notes'                     => $notes,
-            'attachments'               => $attachments,
-            'resMasterAttached'         => $resMasterAttached,
-            'disposition'               => $disposition,
-            'reference'                 => $message['reference'],
-            'messageReview'             => $aMessageReview
+            'userId'            => $message['account_id'],
+            'messageId'         => $message['message_id'],
+            'creationDate'      => $message['date'],
+            'type'              => $messageType,
+            'sender'            => $sender,
+            'recipient'         => [
+                'label' => $message['recipient_org_name'],
+                'm2m'   => $message['recipient_org_identifier']
+            ],
+            'receptionDate'     => $message['reception_date'],
+            'operationDate'     => $message['operation_date'],
+            'status'            => $status,
+            'operationComments' => $operationComments,
+            'from'              => $from,
+            'communicationType' => $communicationType,
+            'contactInfo'       => $contactInfo,
+            'body'              => $body,
+            'object'            => $object,
+            'notes'             => $notes,
+            'attachments'       => $attachments,
+            'resMasterAttached' => $resMasterAttached,
+            'disposition'       => $disposition,
+            'reference'         => $message['reference'],
+            'messageReview'     => $aMessageReview
         ];
 
         return $response->withJson(['messageExchange' => $messageExchange]);
     }
 
-    public function getArchiveContentById(Request $request, Response $response, array $args)
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getArchiveContentById(Request $request, Response $response, array $args): Response
     {
         if (!Validator::stringType()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Query param id is not a string']);
@@ -214,16 +259,22 @@ class MessageExchangeController
             return $response->withStatus(400)->withJson(['errors' => 'Message not found']);
         }
 
-        if (empty($message['res_id_master']) || !ResController::hasRightByResId(['resId' => [$message['res_id_master']], 'userId' => $GLOBALS['id']])) {
+        if (empty($message['res_id_master']) || !ResController::hasRightByResId(
+                ['resId' => [$message['res_id_master']], 'userId' => $GLOBALS['id']]
+            )) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $message['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
+        $docserver = DocserverModel::getByDocserverId(
+            ['docserverId' => $message['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
+        );
         if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $message['path']) . $message['filename'];
+        $pathToDocument = $docserver['path_template'] .
+            str_replace( '#', DIRECTORY_SEPARATOR, $message['path']) .
+            $message['filename'];
         if (!file_exists($pathToDocument)) {
             return $response->withStatus(400)->withJson(['errors' => 'Document not found on docserver']);
         }
@@ -240,7 +291,14 @@ class MessageExchangeController
         return $response->withHeader('Content-Type', $mimeType);
     }
 
-    public function delete(Request $request, Response $response, array $args)
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $args): Response
     {
         if (!Validator::stringType()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Query param id is not a string']);
