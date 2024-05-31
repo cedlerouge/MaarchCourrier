@@ -28,6 +28,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     @Output() closeDrawerResList = new EventEmitter<void>();
 
     resources: ResourcesList[] = [];
+    selectedResourceCount: number = 0;
 
     loading: boolean = true;
     endList: boolean = false;
@@ -84,7 +85,6 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     }
 
     async initData(): Promise<void> {
-        let page = 0;
 
         const listProperties: ListPropertiesInterface = this.filtersListService.initListsProperties(
             this.userId,
@@ -93,7 +93,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
             'basket'
         );
 
-        page = parseInt(listProperties.page);
+        const page: number = parseInt(listProperties.page);
         this.limit = listProperties.pageSize;
 
         this.lastStartPage = page;
@@ -206,7 +206,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     calculateContainerHeight(): number {
         const resourcesLength: number = this.resources.length;
         // This should be the height of your item in pixels
-        const itemHeight: number = 85;
+        const itemHeight: number = 100;
         // The final number of items to keep visible
         const visibleItems: number = 15;
         setTimeout(() => {
@@ -247,5 +247,15 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
         if (index !== -1) {
             this.viewport.scrollToIndex(index);
         }
+    }
+
+    async toggleResource(state: boolean, resource: ResourcesList) {
+        const res = await this.signatureBookService.toggleSelection(state, this.userId, this.groupId, this.basketId, resource.resId);
+        if (!res) {
+            this.notifications.error(this.translate.instant('lang.emptyDocsToSign'));
+            resource.selected = false;
+        }
+        this.selectedResourceCount = this.resources.filter((res => res.selected)).length;
+        this.signatureBookService.selectedResourceCount = this.selectedResourceCount;
     }
 }

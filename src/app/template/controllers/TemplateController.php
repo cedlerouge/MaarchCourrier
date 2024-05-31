@@ -20,6 +20,8 @@ use Convert\controllers\ConvertPdfController;
 use Docserver\controllers\DocserverController;
 use Docserver\models\DocserverModel;
 use Entity\models\EntityModel;
+use Exception;
+use finfo;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Resource\controllers\ResController;
@@ -49,7 +51,12 @@ class TemplateController
         'application/octet-stream'
     ];
 
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_templates', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -60,7 +67,14 @@ class TemplateController
         return $response->withJson(['templates' => $templates]);
     }
 
-    public function getDetailledById(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function getDetailledById(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_templates', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -75,7 +89,9 @@ class TemplateController
             $template['options'] = json_decode($template['options'], true);
         }
 
-        $rawLinkedEntities = TemplateAssociationModel::get(['select' => ['value_field'], 'where' => ['template_id = ?'], 'data' => [$template['template_id']]]);
+        $rawLinkedEntities = TemplateAssociationModel::get(
+            ['select' => ['value_field'], 'where' => ['template_id = ?'], 'data' => [$template['template_id']]]
+        );
         $linkedEntities = [];
         foreach ($rawLinkedEntities as $rawLinkedEntity) {
             $linkedEntities[] = $rawLinkedEntity['value_field'];
@@ -101,15 +117,21 @@ class TemplateController
         }
 
         return $response->withJson([
-            'template'          => $template,
-            'templatesModels'   => TemplateModel::getModels(),
-            'attachmentTypes'   => $attachmentTypes,
-            'datasources'       => TemplateModel::getDatasources(),
-            'entities'          => $entities
+            'template'        => $template,
+            'templatesModels' => TemplateModel::getModels(),
+            'attachmentTypes' => $attachmentTypes,
+            'datasources'     => TemplateModel::getDatasources(),
+            'entities'        => $entities
         ]);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_templates', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -128,49 +150,74 @@ class TemplateController
         }
 
         $template = [
-            'template_label'            => $body['label'],
-            'template_comment'          => $body['description'],
-            'template_type'             => $body['type'],
-            'template_style'            => $body['style'] ?? null,
-            'template_datasource'       => $body['datasource'],
-            'template_target'           => $body['target'],
-            'template_attachment_type'  => $body['template_attachment_type']
+            'template_label'           => $body['label'],
+            'template_comment'         => $body['description'],
+            'template_type'            => $body['type'],
+            'template_style'           => $body['style'] ?? null,
+            'template_datasource'      => $body['datasource'],
+            'template_target'          => $body['target'],
+            'template_attachment_type' => $body['template_attachment_type']
         ];
         if (!empty($body['options'])) {
-            if (!empty($body['options']['acknowledgementReceiptFrom']) && !in_array($body['options']['acknowledgementReceiptFrom'], ['manual', 'destination', 'mailServer', 'user' ])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body options[acknowledgementReceiptFrom] is invalid']);
+            if (
+                !empty($body['options']['acknowledgementReceiptFrom']) && !in_array(
+                    $body['options']['acknowledgementReceiptFrom'],
+                    ['manual', 'destination', 'mailServer', 'user']
+                )
+            ) {
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body options[acknowledgementReceiptFrom] is invalid']
+                );
             }
             $options = ['acknowledgementReceiptFrom' => $body['options']['acknowledgementReceiptFrom']];
             if ($body['options']['acknowledgementReceiptFrom'] == 'manual') {
-                if (!Validator::stringType()->notEmpty()->validate($body['options']['acknowledgementReceiptFromMail'])) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Body options[acknowledgementReceiptFromMail] is empty or not a string']);
+                if (
+                    !Validator::stringType()->notEmpty()->validate(
+                        $body['options']['acknowledgementReceiptFromMail']
+                    )
+                ) {
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => 'Body options[acknowledgementReceiptFromMail] is empty or not a string']
+                    );
                 }
                 $options['acknowledgementReceiptFromMail'] = $body['options']['acknowledgementReceiptFromMail'];
             }
             $template['options'] = json_encode($options);
         }
-        if ($body['type'] == 'TXT' || $body['type'] == 'HTML' || ($body['type'] == 'OFFICE_HTML' && !empty($body['file']['electronic']['content']))) {
-            $template['template_content'] = $body['type'] == 'OFFICE_HTML' ? $body['file']['electronic']['content'] : $body['file']['content'];
+        if (
+            $body['type'] == 'TXT' || $body['type'] == 'HTML' ||
+            ($body['type'] == 'OFFICE_HTML' && !empty($body['file']['electronic']['content']))
+        ) {
+            $template['template_content'] = $body['type'] ==
+            'OFFICE_HTML' ? $body['file']['electronic']['content'] : $body['file']['content'];
         }
-        if ($body['type'] == 'OFFICE' || ($body['type'] == 'OFFICE_HTML' && !empty($body['file']['paper']['content']))) {
+        if (
+            $body['type'] == 'OFFICE' ||
+            ($body['type'] == 'OFFICE_HTML' && !empty($body['file']['paper']['content']))
+        ) {
             $content = $body['type'] == 'OFFICE_HTML' ? $body['file']['paper']['content'] : $body['file']['content'];
             $format = $body['type'] == 'OFFICE_HTML' ? $body['file']['paper']['format'] : $body['file']['format'];
 
             $fileContent = base64_decode($content);
-            $finfo    = new \finfo(FILEINFO_MIME_TYPE);
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
             $mimeType = $finfo->buffer($fileContent);
-            if (!StoreController::isFileAllowed(['extension' => $format, 'type' => $mimeType]) || !in_array($mimeType, self::AUTHORIZED_MIMETYPES)) {
+            if (
+                !StoreController::isFileAllowed(['extension' => $format, 'type' => $mimeType]) ||
+                !in_array($mimeType, self::AUTHORIZED_MIMETYPES)
+            ) {
                 return $response->withStatus(400)->withJson(['errors' => _WRONG_FILE_TYPE . ' : ' . $mimeType]);
             }
 
             $storeResult = DocserverController::storeResourceOnDocServer([
-                'collId'            => 'templates',
-                'docserverTypeId'   => 'TEMPLATES',
-                'encodedResource'   => $content,
-                'format'            => $format
+                'collId'          => 'templates',
+                'docserverTypeId' => 'TEMPLATES',
+                'encodedResource' => $content,
+                'format'          => $format
             ]);
             if (!empty($storeResult['errors'])) {
-                return $response->withStatus(500)->withJson(['errors' => '[storeResource] ' . $storeResult['errors']]);
+                return $response->withStatus(500)->withJson(
+                    ['errors' => '[storeResource] ' . $storeResult['errors']]
+                );
             }
 
             $template['template_path'] = $storeResult['destination_dir'];
@@ -178,8 +225,13 @@ class TemplateController
         }
 
         if (!empty($body['subject'])) {
-            if (!Validator::stringType()->validate($body['subject']) && !Validator::length(1, 255)->validate($body['subject'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body subject is too long or not a string']);
+            if (
+                !Validator::stringType()->validate($body['subject']) &&
+                !Validator::length(1, 255)->validate($body['subject'])
+            ) {
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body subject is too long or not a string']
+                );
             }
             $template['subject'] = $body['subject'];
         }
@@ -203,7 +255,14 @@ class TemplateController
         return $response->withJson(['template' => $id]);
     }
 
-    public function update(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_templates', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -231,56 +290,86 @@ class TemplateController
 
         $subject = null;
         if (!empty($body['subject'])) {
-            if (!Validator::stringType()->validate($body['subject']) && !Validator::length(1, 255)->validate($body['subject'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body subject is too long or not a string']);
+            if (
+                !Validator::stringType()->validate($body['subject']) &&
+                !Validator::length(1, 255)->validate($body['subject'])
+            ) {
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body subject is too long or not a string']
+                );
             }
             $subject = $body['subject'];
         }
 
         $template = [
-            'template_label'            => $body['label'],
-            'template_comment'          => $body['description'],
-            'template_attachment_type'  => $body['template_attachment_type'],
-            'subject'                   => $subject
+            'template_label'           => $body['label'],
+            'template_comment'         => $body['description'],
+            'template_attachment_type' => $body['template_attachment_type'],
+            'subject'                  => $subject
         ];
         if (!empty($body['datasource'])) {
             $template['template_datasource'] = $body['datasource'];
         }
         if (!empty($body['options'])) {
-            if (!empty($body['options']['acknowledgementReceiptFrom']) && !in_array($body['options']['acknowledgementReceiptFrom'], ['manual', 'destination', 'mailServer', 'user' ])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body options[acknowledgementReceiptFrom] is invalid']);
+            if (
+                !empty($body['options']['acknowledgementReceiptFrom']) && !in_array(
+                    $body['options']['acknowledgementReceiptFrom'],
+                    ['manual', 'destination', 'mailServer', 'user']
+                )
+            ) {
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body options[acknowledgementReceiptFrom] is invalid']
+                );
             }
             $options = ['acknowledgementReceiptFrom' => $body['options']['acknowledgementReceiptFrom']];
             if ($body['options']['acknowledgementReceiptFrom'] == 'manual') {
-                if (!Validator::stringType()->notEmpty()->validate($body['options']['acknowledgementReceiptFromMail'])) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Body options[acknowledgementReceiptFromMail] is empty or not a string']);
+                if (
+                    !Validator::stringType()->notEmpty()->validate(
+                        $body['options']['acknowledgementReceiptFromMail']
+                    )
+                ) {
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => 'Body options[acknowledgementReceiptFromMail] is empty or not a string']
+                    );
                 }
                 $options['acknowledgementReceiptFromMail'] = $body['options']['acknowledgementReceiptFromMail'];
             }
             $template['options'] = json_encode($options);
         }
-        if ($body['type'] == 'TXT' || $body['type'] == 'HTML' || ($body['type'] == 'OFFICE_HTML' && !empty($body['file']['electronic']['content']))) {
-            $template['template_content'] = $body['type'] == 'OFFICE_HTML' ? $body['file']['electronic']['content'] : $body['file']['content'];
+        if (
+            $body['type'] == 'TXT' || $body['type'] == 'HTML' ||
+            ($body['type'] == 'OFFICE_HTML' && !empty($body['file']['electronic']['content']))
+        ) {
+            $template['template_content'] = $body['type'] ==
+            'OFFICE_HTML' ? $body['file']['electronic']['content'] : $body['file']['content'];
         }
-        if (($body['type'] == 'OFFICE' && !empty($body['file']['content'])) || ($body['type'] == 'OFFICE_HTML' && !empty($body['file']['paper']['content']))) {
+        if (
+            ($body['type'] == 'OFFICE' && !empty($body['file']['content'])) ||
+            ($body['type'] == 'OFFICE_HTML' && !empty($body['file']['paper']['content']))
+        ) {
             $content = $body['type'] == 'OFFICE_HTML' ? $body['file']['paper']['content'] : $body['file']['content'];
             $format = $body['type'] == 'OFFICE_HTML' ? $body['file']['paper']['format'] : $body['file']['format'];
 
             $fileContent = base64_decode($content);
-            $finfo    = new \finfo(FILEINFO_MIME_TYPE);
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
             $mimeType = $finfo->buffer($fileContent);
-            if (!StoreController::isFileAllowed(['extension' => $format, 'type' => $mimeType]) || !in_array($mimeType, self::AUTHORIZED_MIMETYPES)) {
+            if (
+                !StoreController::isFileAllowed(['extension' => $format, 'type' => $mimeType]) ||
+                !in_array($mimeType, self::AUTHORIZED_MIMETYPES)
+            ) {
                 return $response->withStatus(400)->withJson(['errors' => _WRONG_FILE_TYPE . ' : ' . $mimeType]);
             }
 
             $storeResult = DocserverController::storeResourceOnDocServer([
-                'collId'            => 'templates',
-                'docserverTypeId'   => 'TEMPLATES',
-                'encodedResource'   => $content,
-                'format'            => $format
+                'collId'          => 'templates',
+                'docserverTypeId' => 'TEMPLATES',
+                'encodedResource' => $content,
+                'format'          => $format
             ]);
             if (!empty($storeResult['errors'])) {
-                return $response->withStatus(500)->withJson(['errors' => '[storeResource] ' . $storeResult['errors']]);
+                return $response->withStatus(500)->withJson(
+                    ['errors' => '[storeResource] ' . $storeResult['errors']]
+                );
             }
 
             $template['template_path'] = $storeResult['destination_dir'];
@@ -307,7 +396,14 @@ class TemplateController
         return $response->withStatus(204);
     }
 
-    public function delete(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_templates', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -333,9 +429,19 @@ class TemplateController
         return $response->withJson(['success' => 'success']);
     }
 
-    public function getContentById(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function getContentById(Request $request, Response $response, array $aArgs): Response
     {
-        if (!Validator::intVal()->validate($aArgs['id']) || !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_templates', 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($aArgs['id']) ||
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_templates', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -347,24 +453,38 @@ class TemplateController
             return $response->withStatus(400)->withJson(['errors' => 'Template has no office content']);
         }
 
-        $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]);
-        $pathToTemplate = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $template['template_path']) . $template['template_file_name'];
+        $docserver = DocserverModel::getCurrentDocserver(
+            ['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]
+        );
+        $pathToTemplate = $docserver['path_template'] .
+            str_replace('#', DIRECTORY_SEPARATOR, $template['template_path']) . $template['template_file_name'];
         $extension = pathinfo($pathToTemplate, PATHINFO_EXTENSION);
 
         if (!ConvertPdfController::canConvert(['extension' => $extension])) {
             return $response->withStatus(400)->withJson(['errors' => 'Template can not be converted']);
         }
 
-        $resource =  file_get_contents($pathToTemplate);
-        $convertion = ConvertPdfController::convertFromEncodedResource(['encodedResource' => base64_encode($resource), 'extension' => $extension]);
+        $resource = file_get_contents($pathToTemplate);
+        $convertion = ConvertPdfController::convertFromEncodedResource(
+            ['encodedResource' => base64_encode($resource), 'extension' => $extension]
+        );
         if (!empty($convertion['errors'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Template convertion failed : ' . $convertion['errors']]);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Template convertion failed : ' . $convertion['errors']]
+            );
         }
 
         return $response->withJson(['encodedDocument' => $convertion['encodedResource']]);
     }
 
-    public function duplicate(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function duplicate(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_templates', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -381,22 +501,29 @@ class TemplateController
         }
 
         if ($template['template_type'] == 'OFFICE') {
-            $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]);
+            $docserver = DocserverModel::getCurrentDocserver(
+                ['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]
+            );
 
             $pathOnDocserver = DocserverController::createPathOnDocServer(['path' => $docserver['path_template']]);
-            $docinfo = DocserverController::getNextFileNameInDocServer(['pathOnDocserver' => $pathOnDocserver['pathToDocServer']]);
-            $docinfo['fileDestinationName'] .=  '.' . explode('.', $template['template_file_name'])[1];
+            $docinfo = DocserverController::getNextFileNameInDocServer(
+                ['pathOnDocserver' => $pathOnDocserver['pathToDocServer']]
+            );
+            $docinfo['fileDestinationName'] .= '.' . explode('.', $template['template_file_name'])[1];
 
-            $pathToDocumentToCopy = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $template['template_path']) . $template['template_file_name'];
+            $pathToDocumentToCopy = $docserver['path_template'] .
+                str_replace('#', DIRECTORY_SEPARATOR, $template['template_path']) . $template['template_file_name'];
             $resource = file_get_contents($pathToDocumentToCopy);
 
             $copyResult = DocserverController::copyOnDocServer([
-                'encodedResource'       => base64_encode($resource),
-                'destinationDir'        => $docinfo['destinationDir'],
-                'fileDestinationName'   => $docinfo['fileDestinationName']
+                'encodedResource'     => base64_encode($resource),
+                'destinationDir'      => $docinfo['destinationDir'],
+                'fileDestinationName' => $docinfo['fileDestinationName']
             ]);
             if (!empty($copyResult['errors'])) {
-                return $response->withStatus(500)->withJson(['errors' => 'Template duplication failed : ' . $copyResult['errors']]);
+                return $response->withStatus(500)->withJson(
+                    ['errors' => 'Template duplication failed : ' . $copyResult['errors']]
+                );
             }
             $template['template_path'] = str_replace($docserver['path_template'], '', $docinfo['destinationDir']);
             $template['template_file_name'] = $docinfo['fileDestinationName'];
@@ -409,7 +536,13 @@ class TemplateController
         return $response->withJson(['id' => $templateId]);
     }
 
-    public function initTemplates(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function initTemplates(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_templates', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -440,7 +573,14 @@ class TemplateController
         ]);
     }
 
-    public function getByResId(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getByResId(Request $request, Response $response, array $args): Response
     {
         if (!Validator::intVal()->validate($args['resId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route resId is not an integer']);
@@ -459,7 +599,11 @@ class TemplateController
                 $entities = [0];
             }
         }
-        $where = ['(templates_association.value_field in (?) OR templates_association.template_id IS NULL)', 'templates.template_type = ?', 'templates.template_target = ?'];
+        $where = [
+            '(templates_association.value_field in (?) OR templates_association.template_id IS NULL)',
+            'templates.template_type = ?',
+            'templates.template_target = ?'
+        ];
         $data = [$entities, 'OFFICE', 'attachments'];
 
         $queryParams = $request->getQueryParams();
@@ -470,33 +614,54 @@ class TemplateController
         }
 
         $templates = TemplateModel::getWithAssociation([
-            'select'    => ['DISTINCT(templates.template_id)', 'templates.template_label', 'templates.template_file_name', 'templates.template_path', 'templates.template_attachment_type'],
-            'where'     => $where,
-            'data'      => $data,
-            'orderBy'   => ['templates.template_label']
+            'select'  => [
+                'DISTINCT(templates.template_id)',
+                'templates.template_label',
+                'templates.template_file_name',
+                'templates.template_path',
+                'templates.template_attachment_type'
+            ],
+            'where'   => $where,
+            'data'    => $data,
+            'orderBy' => ['templates.template_label']
         ]);
 
-        $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]);
+        $docserver = DocserverModel::getCurrentDocserver(
+            ['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]
+        );
         foreach ($templates as $key => $template) {
             $explodeFile = explode('.', $template['template_file_name']);
             $ext = $explodeFile[count($explodeFile) - 1];
-            $exists = is_file($docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $template['template_path']) . $template['template_file_name']);
+            $exists = is_file(
+                $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $template['template_path']) .
+                $template['template_file_name']
+            );
 
             $templates[$key] = [
-                'id'                => $template['template_id'],
-                'label'             => $template['template_label'],
-                'extension'         => $ext,
-                'exists'            => $exists,
-                'attachmentType'    => $template['template_attachment_type']
+                'id'             => $template['template_id'],
+                'label'          => $template['template_label'],
+                'extension'      => $ext,
+                'exists'         => $exists,
+                'attachmentType' => $template['template_attachment_type']
             ];
         }
 
         return $response->withJson(['templates' => $templates]);
     }
 
-    public function getEmailTemplatesByResId(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getEmailTemplatesByResId(Request $request, Response $response, array $args): Response
     {
-        if (!Validator::intVal()->validate($args['resId']) || !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($args['resId']) ||
+            !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
@@ -511,14 +676,18 @@ class TemplateController
             }
         }
 
-        $where = ['templates_association.value_field in (?)', 'templates.template_type = ?', 'templates.template_target = ?'];
+        $where = [
+            'templates_association.value_field in (?)',
+            'templates.template_type = ?',
+            'templates.template_target = ?'
+        ];
         $data = [$entities, 'HTML', 'sendmail'];
 
         $templates = TemplateModel::getWithAssociation([
-            'select'    => ['DISTINCT(templates.template_id)', 'templates.template_label', 'templates.subject'],
-            'where'     => $where,
-            'data'      => $data,
-            'orderBy'   => ['templates.template_label']
+            'select'  => ['DISTINCT(templates.template_id)', 'templates.template_label', 'templates.subject'],
+            'where'   => $where,
+            'data'    => $data,
+            'orderBy' => ['templates.template_label']
         ]);
 
         foreach ($templates as $key => $template) {
@@ -532,7 +701,14 @@ class TemplateController
         return $response->withJson(['templates' => $templates]);
     }
 
-    public function mergeEmailTemplate(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function mergeEmailTemplate(Request $request, Response $response, array $args): Response
     {
         if (!Validator::intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route param id is not an integer']);
@@ -557,7 +733,12 @@ class TemplateController
 
         $templates = TemplateModel::getWithAssociation([
             'select'  => ['DISTINCT(templates.template_id)', 'templates.template_content', 'templates.subject'],
-            'where'   => ['(templates_association.value_field in (?) OR templates_association.template_id IS NULL)', 'templates.template_type = ?', 'templates.template_target = ?', 'templates.template_id = ?'],
+            'where'   => [
+                '(templates_association.value_field in (?) OR templates_association.template_id IS NULL)',
+                'templates.template_type = ?',
+                'templates.template_target = ?',
+                'templates.template_id = ?'
+            ],
             'data'    => [$entities, 'HTML', 'sendmail', $args['id']],
             'orderBy' => ['templates.template_id']
         ]);
@@ -591,7 +772,12 @@ class TemplateController
         return $response->withJson(['mergedDocument' => $mergedDocument, 'mergedSubject' => $mergedSubject]);
     }
 
-    private static function controlCreateTemplate(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return bool
+     * @throws Exception
+     */
+    private static function controlCreateTemplate(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['data']);
         ValidatorModel::arrayType($aArgs, ['data']);
@@ -602,14 +788,16 @@ class TemplateController
         $check = Validator::stringType()->notEmpty()->validate($data['label']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['description']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['target']);
-        $check = $check && Validator::stringType()->notEmpty()->validate($data['type']) && in_array($data['type'], $availableTypes);
+        $check = $check && Validator::stringType()->notEmpty()->validate($data['type']) &&
+            in_array($data['type'], $availableTypes);
 
         if ($data['type'] == 'HTML' || $data['type'] == 'TXT') {
             $check = $check && Validator::notEmpty()->validate($data['file']['content']);
         }
 
         if ($data['type'] == 'OFFICE_HTML') {
-            $check = $check && (Validator::notEmpty()->validate($data['file']['paper']['content']) || Validator::notEmpty()->validate($data['file']['electronic']['content']));
+            $check = $check && (Validator::notEmpty()->validate($data['file']['paper']['content']) ||
+                    Validator::notEmpty()->validate($data['file']['electronic']['content']));
             $check = $check && Validator::stringType()->notEmpty()->validate($data['template_attachment_type']);
         }
 
@@ -620,7 +808,12 @@ class TemplateController
         return $check;
     }
 
-    private static function controlUpdateTemplate(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    private static function controlUpdateTemplate(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['data']);
         ValidatorModel::arrayType($args, ['data']);

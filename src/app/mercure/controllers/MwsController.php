@@ -17,6 +17,7 @@ namespace Mercure\controllers;
 use Attachment\models\AttachmentModel;
 use Configuration\models\ConfigurationModel;
 use Docserver\models\DocserverModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use Resource\models\ResModel;
 use SrcCore\controllers\LogsController;
@@ -28,7 +29,10 @@ use SrcCore\models\ValidatorModel;
 
 class MwsController
 {
-    private function getMwsConfiguration()
+    /**
+     * @return array
+     */
+    private function getMwsConfiguration(): array
     {
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
         if (empty($configuration)) {
@@ -57,7 +61,14 @@ class MwsController
         ];
     }
 
-    public function checkAccount(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function checkAccount(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_mercure', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -66,7 +77,7 @@ class MwsController
         $mwsConfig = MwsController::getMwsConfiguration();
         if (isset($mwsConfig['errors'])) {
             return $response->withStatus($mwsConfig['code'])->withJson([
-                'errors' => $mwsConfig['errors'],
+                'errors'    => $mwsConfig['errors'],
                 'mwsConfig' => $mwsConfig
             ]);
         }
@@ -85,7 +96,9 @@ class MwsController
 
         if ($curlResponse['code'] != 200) {
             if ($curlResponse['code'] == 404) {
-                return $response->withStatus(404)->withJson(['errors' => 'Page not found', 'lang' => 'pageNotFound']);
+                return $response->withStatus(404)->withJson(
+                    ['errors' => 'Page not found', 'lang' => 'pageNotFound']
+                );
             } elseif ($curlResponse['code'] == 400) {
                 return $response->withStatus(400)->withJson([
                     'errors' => 'Identifiants invalides',
@@ -101,7 +114,15 @@ class MwsController
         return $response->withJson(['token' => $curlResponse['response']['token'], 'username' => $mwsConfig['login']]);
     }
 
-    public function loadListDocs(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function loadListDocs(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_mercure', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -129,7 +150,13 @@ class MwsController
         ]);
     }
 
-    public static function launchOcrMws(array $aArgs)
+    /**
+     * @param array $aArgs
+     *
+     * @return array|string[]
+     * @throws Exception
+     */
+    public static function launchOcrMws(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['collId', 'resId']);
         ValidatorModel::stringType($aArgs, ['collId']);
@@ -196,7 +223,7 @@ class MwsController
                 'tableName' => $tablename,
                 'recordId'  => $aArgs['resId'],
                 'eventType' => "OCR MWS - Convert to tiff : Error during fileTmp creation",
-                'eventId'   => "response : { $curlResponse }"
+                'eventId'   => "response : " . json_encode($curlResponse)
             ]);
 
             return [
@@ -219,7 +246,13 @@ class MwsController
         return ['convertedFile' => $tmpFileOcr];
     }
 
-    public static function launchLadMws(array $aArgs)
+    /**
+     * @param array $aArgs
+     *
+     * @return array
+     * @throws Exception
+     */
+    public static function launchLadMws(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['encodedResource', 'filename']);
         ValidatorModel::stringType($aArgs, ['encodedResource', 'filename']);
@@ -297,7 +330,14 @@ class MwsController
         return $aReturn;
     }
 
-    public static function loadSubscriptionState(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public static function loadSubscriptionState(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_mercure', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);

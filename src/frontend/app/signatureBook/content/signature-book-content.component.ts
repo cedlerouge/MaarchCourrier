@@ -28,7 +28,7 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
     subscriptionDocument: Subscription;
 
     documentData: AttachmentInterface;
-    currentIndexDocument: number;
+    currentIndexDocument: number = 0;
 
     documentType: 'attachments' | 'resources';
 
@@ -58,6 +58,7 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
                             this.pluginInstance.addStamp(signContent);
                         }
                     } else if (res.id === 'attachmentSelected' && this.position === res.data.position) {
+                        this.currentIndexDocument = res.data.resIndex ?? 0;
                         this.initDocument();
                     }
                 }),
@@ -82,7 +83,8 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
         } else if (this.position === 'left' && this.signatureBookService.selectedAttachment.index !== null) {
             await this.initAnnexe();
         }
-        this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
+
+        this.documentType = this.documentData?.isAttachment ? 'attachments' : 'resources';
         this.loading = false;
     }
 
@@ -105,7 +107,7 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
             this.pluginInstance.loadDocument({
                 fileName: this.documentData.title,
                 content: this.documentContent,
-            }, this.signatureBookService.docsToSign[this.signatureBookService.selectedAttachment.index].stamps);
+            }, this.signatureBookService.docsToSign[this.currentIndexDocument].stamps);
         } else {
             this.initPlugin();
         }

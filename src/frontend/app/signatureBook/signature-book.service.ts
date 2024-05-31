@@ -19,11 +19,15 @@ export class SignatureBookService {
     resourcesListIds: number[] = [];
     docsToSign: Attachment[] = [];
     basketLabel: string = '';
-    config = new SignatureBookConfig();
+    config: SignatureBookConfig = new SignatureBookConfig();
 
     selectedAttachment: SelectedAttachment = new SelectedAttachment();
 
     selectedDocToSign: SelectedAttachment = new SelectedAttachment();
+
+    selectedResources: Attachment[] = [];
+
+    selectedResourceCount: number = 0;
 
     constructor(
         private http: HttpClient,
@@ -140,5 +144,39 @@ export class SignatureBookService {
                 return of(false);
             })
         ).subscribe();
+    }
+
+    async toggleSelection(checked: boolean, userId: number, groupId: number, basketId: number, resId: number): Promise<boolean> {
+        if (checked) {
+            const res: Attachment[] = (await this.initDocuments(userId, groupId, basketId, resId)).resourcesToSign;
+            this.selectedResources = this.selectedResources.concat(res);
+            if (res.length === 0) {
+                return false;
+            }
+        } else {
+            this.selectedResources = this.selectedResources.filter((doc: Attachment) => doc.resIdMaster !== resId);
+        }
+        return true;
+    }
+
+    getAllDocsToSign(): Attachment[] {
+        this.docsToSign.forEach((resource: Attachment) => {
+            const findResource: Attachment = this.selectedResources.find((doc: Attachment) => doc.resId === resource.resId);
+            if (findResource === undefined) {
+                this.selectedResources.push(resource);
+            } else {
+                const index: number = this.selectedResources.indexOf(findResource);
+                this.selectedResources[index] = resource;
+            }
+        });
+
+        // Filter the selectedResources array to remove duplicate entries based on resId
+        this.selectedResources = this.selectedResources.filter((resource: Attachment, index: number, self: Attachment[]) =>
+            // Keep the current resource only if it is the first occurrence of this resId in the array
+            index === self.findIndex((t) => t.resId === resource.resId)
+        );
+
+
+        return this.selectedResources;
     }
 }

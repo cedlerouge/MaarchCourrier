@@ -23,7 +23,10 @@ class CoreConfigModel
 {
     protected static $customId;
 
-    public static function getCustomId()
+    /**
+     * @return mixed|string
+     */
+    public static function getCustomId(): mixed
     {
         // Use for script
         if (!empty($GLOBALS['customId'])) {
@@ -64,6 +67,9 @@ class CoreConfigModel
         return self::$customId;
     }
 
+    /**
+     * @return string
+     */
     public static function getConfigPath(): string
     {
         $customId = CoreConfigModel::getCustomId();
@@ -77,9 +83,10 @@ class CoreConfigModel
     }
 
     /**
+     * @return mixed|string
      * @throws Exception
      */
-    public static function getApplicationName()
+    public static function getApplicationName(): mixed
     {
         static $applicationName;
 
@@ -98,7 +105,10 @@ class CoreConfigModel
         return $applicationName;
     }
 
-    public static function getApplicationVersion()
+    /**
+     * @return mixed
+     */
+    public static function getApplicationVersion(): mixed
     {
         $file = file_get_contents('package.json');
         $file = json_decode($file, true);
@@ -107,9 +117,10 @@ class CoreConfigModel
     }
 
     /**
+     * @return mixed|string
      * @throws Exception
      */
-    public static function getLanguage()
+    public static function getLanguage(): mixed
     {
         $availableLanguages = ['fr'];
 
@@ -125,7 +136,11 @@ class CoreConfigModel
         return 'fr';
     }
 
-    public static function getCustomLanguage($aArgs = [])
+    /**
+     * @param array $aArgs
+     * @return mixed|string
+     */
+    public static function getCustomLanguage(array $aArgs = []): mixed
     {
         $customId = CoreConfigModel::getCustomId();
         if (file_exists('custom/' . $customId . '/lang/lang-' . $aArgs['lang'] . '.ts')) {
@@ -145,7 +160,6 @@ class CoreConfigModel
 
     /**
      * Get the timezone
-     *
      * @return string
      * @throws Exception
      */
@@ -166,7 +180,6 @@ class CoreConfigModel
 
     /**
      * Get the tmp dir
-     *
      * @return string
      */
     public static function getTmpPath(): string
@@ -188,11 +201,9 @@ class CoreConfigModel
 
     /**
      * Get the Encrypt Key
-     *
      * @return string
      * @deprecated This function is deprecated and will be removed in future major versions.
      * Please use getEncryptKey() instead.
-     *
      */
     public static function getOldEncryptKey(): string
     {
@@ -211,7 +222,6 @@ class CoreConfigModel
      * @return bool
      * @deprecated This function will be removed in future major versions.
      * Please use getEncryptKey() instead.
-     *
      */
     public static function useVhostEncryptKey(): bool
     {
@@ -223,7 +233,6 @@ class CoreConfigModel
 
     /**
      * Get the Encrypt Key
-     *
      * @return string
      */
     public static function getEncryptKey(): string
@@ -256,6 +265,9 @@ class CoreConfigModel
             $encryptKey !== "Security Key Maarch Courrier 2008";
     }
 
+    /**
+     * @return string|null
+     */
     public static function getLibrariesDirectory(): ?string
     {
         if (isset($_SERVER['LIBRARIES_DIR'])) {
@@ -269,6 +281,9 @@ class CoreConfigModel
         return $librariesDirectory;
     }
 
+    /**
+     * @return string|null
+     */
     public static function getSetaPdfFormFillerLibrary(): ?string
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
@@ -280,6 +295,9 @@ class CoreConfigModel
         return $libPath;
     }
 
+    /**
+     * @return string|null
+     */
     public static function getFpdiPdfParserLibrary(): ?string
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
@@ -291,6 +309,9 @@ class CoreConfigModel
         return $libPath;
     }
 
+    /**
+     * @return string|null
+     */
     public static function getSetaSignFormFillerLibrary(): ?string
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
@@ -327,6 +348,9 @@ class CoreConfigModel
         return $loggingMethod;
     }
 
+    /**
+     * @return false[]
+     */
     public static function getMailevaConfiguration(): array
     {
         $mailevaConfig = ['enabled' => false];
@@ -340,12 +364,12 @@ class CoreConfigModel
             $mailevaConfig['uri'] = rtrim($configuration['uri'], '/');
 
             if (!empty($mailevaConfig['uri']) && $mailevaConfig['uri'] == 'https://api.maileva.com') {
-                $mailevaConfig['clientId'] = '69d315c2b3694accbce85f2871add37d';
-                $mailevaConfig['clientSecret'] = 'caae36511f324acb9a3419b94ce9cbc6';
+                $mailevaConfig['clientId'] = 'MAARCH';
+                $mailevaConfig['clientSecret'] = '2GjUnmwE7e6U9WKovvAOUPA3WCJ1DaGi';
             }
             if (!empty($mailevaConfig['uri']) && $mailevaConfig['uri'] == 'https://api.sandbox.maileva.net') {
-                $mailevaConfig['clientId'] = 'c42ca6698b5e4008b8ebf84e465ae216';
-                $mailevaConfig['clientSecret'] = 'e49ab08848f543678287b5c8f7f79812';
+                $mailevaConfig['clientId'] = 'MAARCH-sandbox';
+                $mailevaConfig['clientSecret'] = 'mWHPb3KDMvgHtuDJYCMgadxzi9i2PzDh';
             }
         }
 
@@ -379,6 +403,8 @@ class CoreConfigModel
     }
 
     /**
+     * @param array $args
+     * @return array|null
      * @throws Exception
      */
     public static function getJsonLoaded(array $args): array|null
@@ -405,7 +431,6 @@ class CoreConfigModel
 
     /**
      * Database Unique Id Function
-     *
      * @return string $uniqueId
      */
     public static function uniqueId(): string

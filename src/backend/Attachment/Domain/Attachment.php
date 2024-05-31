@@ -24,17 +24,11 @@ use MaarchCourrier\DocumentStorage\Domain\Document;
 class Attachment implements AttachmentInterface
 {
     private int $resId;
-
     private MainResourceInterface $mainResource;
-
     private ?string $title;
-
     private ?string $chrono;
-
     private UserInterface $typist;
-
     private int $relation;
-
     private AttachmentType $type;
     private Document $document;
 

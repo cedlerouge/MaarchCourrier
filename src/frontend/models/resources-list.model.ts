@@ -10,6 +10,7 @@ export interface ResourcesListInterface {
     priorityColor: string;
     mailTracking: boolean;
     isLocked: boolean;
+    selected?: boolean;
 }
 
 export class ResourcesList implements ResourcesListInterface {
@@ -24,6 +25,7 @@ export class ResourcesList implements ResourcesListInterface {
     locker: string = '';
     isLocked: boolean = false;
     mailTracking: boolean = false;
+    selected: boolean = false;
 
     constructor(json: any = null) {
         if (json) {
