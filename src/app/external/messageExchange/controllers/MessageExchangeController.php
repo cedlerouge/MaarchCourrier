@@ -259,9 +259,10 @@ class MessageExchangeController
             return $response->withStatus(400)->withJson(['errors' => 'Message not found']);
         }
 
-        if (empty($message['res_id_master']) || !ResController::hasRightByResId(
-                ['resId' => [$message['res_id_master']], 'userId' => $GLOBALS['id']]
-            )) {
+        if (
+            empty($message['res_id_master']) ||
+            !ResController::hasRightByResId(['resId' => [$message['res_id_master']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
@@ -273,7 +274,7 @@ class MessageExchangeController
         }
 
         $pathToDocument = $docserver['path_template'] .
-            str_replace( '#', DIRECTORY_SEPARATOR, $message['path']) .
+            str_replace('#', DIRECTORY_SEPARATOR, $message['path']) .
             $message['filename'];
         if (!file_exists($pathToDocument)) {
             return $response->withStatus(400)->withJson(['errors' => 'Document not found on docserver']);
