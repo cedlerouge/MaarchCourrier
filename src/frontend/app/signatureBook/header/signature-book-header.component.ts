@@ -51,7 +51,7 @@ export class SignatureBookHeaderComponent {
             if (indexLoop === -1) {
                 this.notification.error(this.translate.instant('lang.warnResourceLockedByUser'));
             } else {
-                const path: string = '/signatureBook/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId + '/resources/' + this.signatureBookService.resourcesListIds[indexLoop];
+                const path: string = '/signatureBookNew/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId + '/resources/' + this.signatureBookService.resourcesListIds[indexLoop];
                 this.router.navigate([path]);
                 this.unlockResource();
                 this.setNextPrevEvent.emit();

@@ -168,6 +168,7 @@ import { SignatureBookHeaderComponent } from './signatureBook/header/signature-b
 import { ContinueVisaCircuitActionNewSbComponent } from './actions/visa-continue-circuit-action/new-signature-book/continue-visa-circuit-action-new-sb.component';
 import { ContinueVisaCircuitActionComponent } from './actions/visa-continue-circuit-action/continue-visa-circuit-action.component';
 import { ResourceToolbarComponent } from "@appRoot/signatureBook/resourceToolbar/resource-toolbar.component";
+import { SignatureBookOldComponent } from "@appRoot/signatureBookOld/signature-book.component";
 
 registerLocaleData(localeFr, 'fr-FR');
 @Injectable()
@@ -251,6 +252,7 @@ export class MyHammerConfig extends HammerGestureConfig {
         RedirectIndexingModelComponent,
         ResetPasswordComponent,
         SaveNumericPackageComponent,
+        SignatureBookOldComponent,
         SignatureBookComponent,
         SignatureBookActionsComponent,
         SignatureBookStampsComponent,

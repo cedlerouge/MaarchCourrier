@@ -19,7 +19,7 @@ export class SignatureBookService {
     resourcesListIds: number[] = [];
     docsToSign: Attachment[] = [];
     basketLabel: string = '';
-    config = new SignatureBookConfig();
+    config: SignatureBookConfig = new SignatureBookConfig();
 
     selectedAttachment: SelectedAttachment = new SelectedAttachment();
 
