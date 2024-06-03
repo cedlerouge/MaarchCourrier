@@ -483,6 +483,7 @@ class CoreConfigModel
                 $keycloakConfig['encryptionKeyPath'] = (string)$loadedXml->ENCRYPTION_KEY_PATH;
                 $keycloakConfig['encryptionKey'] = (string)$loadedXml->ENCRYPTION_KEY;
                 $keycloakConfig['scope'] = (string)$loadedXml->SCOPE;
+                $keycloakConfig['version'] = (string)$loadedXml->VERSION;
 
                 if (empty($keycloakConfig['encryptionAlgorithm'])) {
                     $keycloakConfig['encryptionAlgorithm'] = null;
