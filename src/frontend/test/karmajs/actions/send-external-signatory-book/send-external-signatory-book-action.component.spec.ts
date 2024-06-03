@@ -17,6 +17,7 @@ import { AuthService } from "@service//auth.service";
 import { IParaphComponent } from "@appRoot/actions/send-external-signatory-book-action/i-paraph/i-paraph.component";
 import { AttachmentsListComponent } from "@appRoot/attachments/attachments-list.component";
 import * as langFrJson from '@langs/lang-fr.json';
+import { FiltersListService } from "@service/filtersList.service";
 
 class FakeLoader implements TranslateLoader {
     getTranslation(): Observable<any> {
@@ -59,7 +60,8 @@ describe('SendExternalSignatoryBookActionComponent', () => {
                 DatePipe,
                 AdministrationService,
                 ExternalSignatoryBookManagerService,
-                AttachmentsListComponent
+                AttachmentsListComponent,
+                FiltersListService
             ],
             declarations: [SendExternalSignatoryBookActionComponent, IParaphComponent]
         }).compileComponents();

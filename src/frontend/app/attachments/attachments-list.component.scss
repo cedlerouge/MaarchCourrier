@@ -268,3 +268,10 @@
         color: var(--maarch-color-primary);
     }
 }
+
+.button-item {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 14px;
+}

@@ -22,6 +22,7 @@ import { AuthService } from '@service/auth.service';
 import { LocalStorageService } from '@service/local-storage.service';
 import { Office365SharepointViewerComponent } from '@plugins/office365-sharepoint/office365-sharepoint-viewer.component';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
+import { SignatureBookService } from '@appRoot/signatureBook/signature-book.service';
 
 @Component({
     selector: 'app-document-viewer',
@@ -184,6 +185,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     isFullScreen: boolean = false;
 
+    downloadingProof: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -192,6 +195,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         public functions: FunctionsService,
         public privilegeService: PrivilegeService,
         public externalSignatoryBook: ExternalSignatoryBookManagerService,
+        public signatureBookService: SignatureBookService,
         private notify: NotificationService,
         private dialog: MatDialog,
         private sortPipe: SortPipe,
@@ -1541,5 +1545,10 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         } else if (type === 'out') {
             this.zoom = this.zoom / zoomFactor;
         }
+    }
+
+    async downloadProof(resId: number): Promise<void> {
+        this.downloadingProof = true;
+        await this.signatureBookService.downloadProof(resId, false).then(() => this.downloadingProof = false);
     }
 }

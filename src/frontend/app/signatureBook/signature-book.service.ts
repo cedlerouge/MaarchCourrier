@@ -9,6 +9,8 @@ import { catchError, map, of, tap } from "rxjs";
 import { mapAttachment } from "./signature-book.utils";
 import { SignatureBookConfig, SignatureBookConfigInterface } from "@models/signature-book.model";
 import { SelectedAttachment } from "@models/signature-book.model";
+import { DatePipe } from "@angular/common";
+import { TranslateService } from "@ngx-translate/core";
 
 @Injectable({
     providedIn: 'root'
@@ -33,7 +35,9 @@ export class SignatureBookService {
         private http: HttpClient,
         private notifications: NotificationService,
         private filtersListService: FiltersListService,
-        private headerService: HeaderService
+        private headerService: HeaderService,
+        private datePipe: DatePipe,
+        private translate: TranslateService
     ) {}
 
     getInternalSignatureBookConfig(): Promise<SignatureBookConfigInterface | null> {
@@ -144,6 +148,34 @@ export class SignatureBookService {
                 return of(false);
             })
         ).subscribe();
+    }
+
+    downloadProof(resId: number, isAttachment: boolean): Promise<boolean> {
+        const type: string = isAttachment ? 'attachments' : 'resources';
+        return new Promise((resolve) => {
+            this.http.get(`../rest/${type}/${resId}/proofSignature`, { responseType: 'blob' as 'json' })
+                .pipe(
+                    tap((data: any) => {
+                        const today = new Date();
+                        const filename = 'proof_' + resId + '_' + this.datePipe.transform(today, 'dd-MM-y') + '.' + data.type.replace('application/', '');
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = window.URL.createObjectURL(data);
+                        downloadLink.setAttribute('download', filename);
+                        document.body.appendChild(downloadLink);
+                        downloadLink.click();
+                        resolve(true);
+                    }),
+                    catchError((err: any) => {
+                        if (err.status === 400) {
+                            this.notifications.handleErrors(this.translate.instant('lang.externalIdNotFoundProblemProof'));
+                        } else {
+                            this.notifications.handleSoftErrors(err);
+                        }
+                        resolve(false);
+                        return of(false);
+                    })
+                ).subscribe();
+        });
     }
 
     async toggleSelection(checked: boolean, userId: number, groupId: number, basketId: number, resId: number): Promise<boolean> {
