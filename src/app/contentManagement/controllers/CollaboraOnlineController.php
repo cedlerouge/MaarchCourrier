@@ -23,6 +23,7 @@ use Docserver\models\DocserverTypeModel;
 use Exception;
 use finfo;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Group\controllers\PrivilegeController;
 use Resource\controllers\ResController;
 use Resource\controllers\StoreController;
@@ -35,6 +36,7 @@ use SrcCore\controllers\UrlController;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
 use SrcCore\models\ValidatorModel;
+use stdClass;
 use Template\controllers\TemplateController;
 use Template\models\TemplateAssociationModel;
 use Template\models\TemplateModel;
@@ -365,6 +367,7 @@ class CollaboraOnlineController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public static function isAvailable(Request $request, Response $response): Response
     {
@@ -526,7 +529,7 @@ class CollaboraOnlineController
             'data'   => json_encode($dataToMerge)
         ];
 
-        $jwt = JWT::encode($payload, CoreConfigModel::getEncryptKey());
+        $jwt = JWT::encode($payload, CoreConfigModel::getEncryptKey(), 'HS256');
 
         $urlIFrame = $urlSrc . 'WOPISrc=' . $coreUrl . 'rest/wopi/files/' . $body['resId'] . '&access_token=' . $jwt .
             '&NotWOPIButIframe=true';
@@ -542,6 +545,7 @@ class CollaboraOnlineController
      * @param Request $request
      * @param Response $response
      * @return Response|array
+     * @throws Exception
      */
     public function saveTmpEncodedDocument(Request $request, Response $response): Response|array
     {
@@ -594,8 +598,12 @@ class CollaboraOnlineController
         ValidatorModel::stringType($args, ['token']);
         ValidatorModel::intVal($args, ['id']);
 
+        $headers = new stdClass();
+        $headers->headers = ['HS256'];
+        $encryptKey = CoreConfigModel::getEncryptKey();
+        $key = new Key($encryptKey, 'HS256');
         try {
-            $jwt = JWT::decode($args['token'], CoreConfigModel::getEncryptKey(), ['HS256']);
+            $jwt = JWT::decode($args['token'], $key, $headers);
         } catch (Exception $e) {
             return ['code' => 401, 'errors' => 'Collabora Online access token is invalid'];
         }

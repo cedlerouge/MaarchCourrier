@@ -16,6 +16,7 @@ use DateTime;
 use Docserver\models\DocserverModel;
 use Entity\models\EntityModel;
 use Exception;
+use Firebase\JWT\Key;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Imagick;
@@ -27,6 +28,7 @@ use Resource\controllers\StoreController;
 use Attachment\models\AttachmentModel;
 use Shipping\models\ShippingTemplateModel;
 use Shipping\models\ShippingModel;
+use stdClass;
 use User\models\UserModel;
 use Action\models\ActionModel;
 use Status\models\StatusModel;
@@ -965,7 +967,7 @@ class ShippingTemplateController
             'shippingTemplateId' => $args['shippingTemplateId'],
         ];
 
-        $jwt = JWT::encode($payload, CoreConfigModel::getEncryptKey());
+        $jwt = JWT::encode($payload, CoreConfigModel::getEncryptKey(), 'HS256');
 
         return ['jwt' => $jwt, 'iat' => $now];
     }
@@ -981,8 +983,12 @@ class ShippingTemplateController
         ValidatorModel::stringType($args, ['token', 'mailevaUri']);
         ValidatorModel::intVal($args, ['shippingTemplateId', 'minIAT']);
 
+        $headers = new stdClass();
+        $headers->headers = ['HS256'];
+        $encryptKey = CoreConfigModel::getEncryptKey();
+        $key = new Key($encryptKey, 'HS256');
         try {
-            $payload = JWT::decode($args['token'], CoreConfigModel::getEncryptKey(), ['HS256']);
+            $payload = JWT::decode($args['token'], $key, $headers);
             $payload = (array)$payload;
         } catch (Exception $e) {
             return ['errors' => 'Authentication failed'];

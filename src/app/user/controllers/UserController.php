@@ -33,6 +33,7 @@ use Entity\models\ListTemplateModel;
 use Exception;
 use finfo;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Group\controllers\PrivilegeController;
 use Group\models\GroupModel;
 use History\controllers\HistoryController;
@@ -58,6 +59,7 @@ use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\PasswordModel;
 use SrcCore\models\ValidatorModel;
+use stdClass;
 use Template\models\TemplateModel;
 use User\models\UserBasketPreferenceModel;
 use User\models\UserEmailSignatureModel;
@@ -3019,9 +3021,13 @@ class UserController
             return $response->withStatus(400)->withJson(['errors' => 'Body token or body password is empty']);
         }
 
+        $headers = new stdClass();
+        $headers->headers = ['HS256'];
+        $encryptKey = CoreConfigModel::getEncryptKey();
+        $key = new Key($encryptKey, 'HS256');
         try {
-            $jwt = JWT::decode($body['token'], CoreConfigModel::getEncryptKey(), ['HS256']);
-        } catch (Exception $e) {
+            $jwt = JWT::decode($body['token'], $key, $headers);
+        } catch (Exception) {
             return $response->withStatus(403)->withJson(['errors' => 'Invalid token', 'lang' => 'invalidToken']);
         }
 

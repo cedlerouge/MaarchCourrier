@@ -15,6 +15,7 @@
 namespace MaarchCourrier\SignatureBook\Infrastructure\Controller;
 
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use MaarchCourrier\SignatureBook\Application\Webhook\RetrieveSignedResource;
 use MaarchCourrier\SignatureBook\Application\Webhook\StoreSignedResource;
 use MaarchCourrier\SignatureBook\Application\Webhook\UseCase\WebhookCall;
@@ -37,6 +38,7 @@ use MaarchCourrier\User\Infrastructure\Repository\UserRepository;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
+use stdClass;
 
 class WebhookController
 {
@@ -62,10 +64,14 @@ class WebhookController
     ): Response {
         $body = $request->getParsedBody();
 
+        $headers = new stdClass();
+        $headers->headers = ['HS256'];
+        $encryptKey = CoreConfigModel::getEncryptKey();
+        $key = new Key($encryptKey, 'HS256');
         $decodedToken = (!empty($body['token'])) ? (array)JWT::decode(
             $body['token'],
-            CoreConfigModel::getEncryptKey(),
-            ['HS256']
+            $key,
+            $headers
         ) : [];
 
         //Initialisation

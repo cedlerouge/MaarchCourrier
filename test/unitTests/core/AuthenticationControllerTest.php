@@ -12,15 +12,21 @@ namespace MaarchCourrier\Tests\core;
 
 use Exception;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use SrcCore\controllers\AuthenticationController;
 use SrcCore\controllers\PasswordController;
 use SrcCore\http\Response;
 use MaarchCourrier\Tests\CourrierTestCase;
 use SrcCore\models\CoreConfigModel;
+use stdClass;
 use User\models\UserModel;
 
 class AuthenticationControllerTest extends CourrierTestCase
 {
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testAuthentication()
     {
         $_SERVER['PHP_AUTH_USER'] = 'superadmin';
@@ -89,7 +95,9 @@ class AuthenticationControllerTest extends CourrierTestCase
      */
     public function testIsRouteAvailable()
     {
-        $response = AuthenticationController::isRouteAvailable(['userId' => 23, 'currentRoute' => '/actions', 'currentMethod' => 'POST']);
+        $response = AuthenticationController::isRouteAvailable(
+            ['userId' => 23, 'currentRoute' => '/actions', 'currentMethod' => 'POST']
+        );
         $this->assertSame(true, $response['isRouteAvailable']);
     }
 
@@ -110,7 +118,8 @@ class AuthenticationControllerTest extends CourrierTestCase
         foreach ($rules as $key => $rule) {
             $rules[$key] = (array)$rule;
             $rule = (array)$rule;
-            if ($rule['label'] == 'complexitySpecial' || $rule['label'] == 'complexityNumber' || $rule['label'] == 'complexityUpper') {
+            if ($rule['label'] == 'complexitySpecial' || $rule['label'] == 'complexityNumber' ||
+                $rule['label'] == 'complexityUpper') {
                 $rules[$key]['enabled'] = false;
             }
             if ($rule['label'] == 'minLength') {
@@ -171,7 +180,12 @@ class AuthenticationControllerTest extends CourrierTestCase
         $response = $authenticationController->authenticate($fullRequest, new Response());
         $headers = $response->getHeaders();
         $token = $headers['Token'][0];
-        $payload = (array)JWT::decode($token, CoreConfigModel::getEncryptKey(), ['HS256']);
+        $jwtHeaders = new stdClass();
+        $jwtHeaders->headers = ['HS256'];
+        $encryptKey = CoreConfigModel::getEncryptKey();
+        $key = new Key($encryptKey, 'HS256');
+        $payload = (array)JWT::decode($token, $key, $jwtHeaders);
+
         $jwt['user'] = (array)$payload['user'];
         $this->assertNotNull($jwt['user']['external_id']);
     }

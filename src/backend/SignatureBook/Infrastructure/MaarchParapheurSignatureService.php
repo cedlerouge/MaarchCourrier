@@ -29,6 +29,10 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
 {
     private SignatureBookServiceConfig $config;
 
+    /**
+     * @param SignatureBookServiceConfig $config
+     * @return $this
+     */
     public function setConfig(SignatureBookServiceConfig $config): MaarchParapheurSignatureService
     {
         $this->config = $config;
@@ -65,8 +69,8 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
         $payloadToken['userSerialId'] = $GLOBALS['id'];
 
         $webhook = [
-            'url'     => UrlController::getCoreUrl() . '/rest/signatureBook/webhook',
-            'token'   => JWT::encode($payloadToken, CoreConfigModel::getEncryptKey())
+            'url'   => UrlController::getCoreUrl() . '/rest/signatureBook/webhook',
+            'token' => JWT::encode($payloadToken, CoreConfigModel::getEncryptKey(), 'HS256')
         ];
 
         $response = CurlModel::exec([
@@ -94,6 +98,12 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
         return true;
     }
 
+    /**
+     * @param string $accessToken
+     * @param string $urlRetrieveDoc
+     * @return array
+     * @throws CurlRequestErrorProblem
+     */
     public function retrieveDocumentSign(string $accessToken, string $urlRetrieveDoc): array
     {
         $curlRequest = new CurlRequest();
