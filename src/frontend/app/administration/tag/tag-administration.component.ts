@@ -11,7 +11,6 @@ import { of, Observable } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { ConfirmComponent } from '../../../plugins/modal/confirm.component';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { MatLegacyChipInputEvent as MatChipInputEvent } from '@angular/material/legacy-chips';
 import { MatLegacyAutocompleteSelectedEvent as MatAutocompleteSelectedEvent } from '@angular/material/legacy-autocomplete';
 
 @Component({
@@ -235,7 +234,7 @@ export class TagAdministrationComponent implements OnInit {
                 .on('select_node.jstree', (e: any, item: any) => {
                     this.tag.parentId.setValue(parseInt(item.node.id));
                 })
-                .on('deselect_node.jstree', (e: any, item: any) => {
+                .on('deselect_node.jstree', () => {
                     this.tag.parentId.setValue(null);
                 })
                 .jstree({

@@ -16,6 +16,7 @@ import { AppService } from '@service/app.service';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { FunctionsService } from '@service/functions.service';
 import { ActivatedRoute } from '@angular/router';
+import { SignatureBookService } from '@appRoot/signatureBook/signature-book.service';
 
 @Component({
     selector: 'app-attachments-list',
@@ -53,7 +54,7 @@ export class AttachmentsListComponent implements OnInit {
     @Input() isModal: boolean = false;
 
     @Output() reloadBadgeAttachments = new EventEmitter<string>();
-    @Output() afterActionAttachment = new EventEmitter<string>();
+    @Output() afterActionAttachment = new EventEmitter<string | {id: string, attachment: object}>();
 
     integrationTargets: any[] = [
         {
@@ -95,6 +96,8 @@ export class AttachmentsListComponent implements OnInit {
 
     groupId: any = null;
 
+    downloadingProof: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -102,6 +105,7 @@ export class AttachmentsListComponent implements OnInit {
         public appService: AppService,
         public externalSignatoryBook: ExternalSignatoryBookManagerService,
         public functions: FunctionsService,
+        public signatureBookService: SignatureBookService,
         private notify: NotificationService,
         private headerService: HeaderService,
         private privilegeService: PrivilegeService,
@@ -195,7 +199,7 @@ export class AttachmentsListComponent implements OnInit {
         this.http.put('../rest/attachments/' + attachment.resId + '/inSignatureBook', {}).pipe(
             tap(() => {
                 attachment.inSignatureBook = !attachment.inSignatureBook;
-                this.afterActionAttachment.emit('setInSignatureBook');
+                this.afterActionAttachment.emit({ id: 'setInSignatureBook', attachment: attachment });
                 this.notify.success(this.translate.instant('lang.actionDone'));
             }),
             catchError((err: any) => {
@@ -348,5 +352,10 @@ export class AttachmentsListComponent implements OnInit {
         }
         const attachTypes: string[] = this.attachments.map((attachment: any) => attachment.type);
         this.filterAttachTypes = filterAttachTypesClone.filter((element: any) => attachTypes.indexOf(element.id) > -1);
+    }
+
+    async downloadProof(resId: number): Promise<void> {
+        this.downloadingProof = true;
+        await this.signatureBookService.downloadProof(resId, true).then(() => this.downloadingProof = false);
     }
 }

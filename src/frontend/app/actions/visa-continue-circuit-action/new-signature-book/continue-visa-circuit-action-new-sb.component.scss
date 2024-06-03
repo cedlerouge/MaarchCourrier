@@ -124,6 +124,7 @@
     border: 1px solid #afafaf;
     border-radius:15px;
     padding: 5px;
+    min-width: 500px;
 }
 
 .docs-container {
@@ -263,4 +264,16 @@
     font-weight: bold;
     color: var(--maarch-color-primary-light);
     cursor: pointer;
+}
+
+.empty-docs-to-sign {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    letter-spacing: 4px;
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--maarch-color-danger);
 }

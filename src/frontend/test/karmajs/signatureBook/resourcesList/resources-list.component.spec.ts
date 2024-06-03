@@ -85,7 +85,7 @@ describe('ResourcesListComponent', () => {
             fixture.detectChanges();
             tick(300);
 
-            expect(fixture.nativeElement.querySelectorAll('#resourceElement').length).toEqual(3);
+            expect(fixture.nativeElement.querySelectorAll('#resourceElement').length).toEqual(2);
             flush();
         }));
 
@@ -114,7 +114,7 @@ describe('ResourcesListComponent', () => {
             fixture.detectChanges();
             tick(100);
 
-            const secondResource = fixture.nativeElement.querySelectorAll('#resourceElement')[0];
+            const secondResource = fixture.nativeElement.querySelectorAll('.resource-item')[0];
             secondResource.click();
 
             fixture.detectChanges();
@@ -147,7 +147,7 @@ describe('ResourcesListComponent', () => {
             fixture.detectChanges();
             tick(300);
 
-            const lastResource = fixture.nativeElement.querySelectorAll('#resourceElement')[2];
+            const lastResource = fixture.nativeElement.querySelectorAll('#resourceElement')[1];
             expect(lastResource.classList.contains('lockedRes')).toBeTrue();
 
             fixture.detectChanges();
@@ -173,7 +173,8 @@ function getResources(): ResourcesList[] {
             processLimitDate: "2024-06-12 23:59:59",
             mailTracking: false,
             isLocked: false,
-            locker: ''
+            locker: '',
+            selected: false
         },
         {
             resId: 102,
@@ -185,8 +186,9 @@ function getResources(): ResourcesList[] {
             creationDate: "2024-03-14 11:54:41.258402",
             processLimitDate: null,
             mailTracking: false,
-            isLocked: false,
-            locker: ''
+            isLocked: true,
+            locker: '',
+            selected: false
         },
         {
             resId: 101,
@@ -199,7 +201,8 @@ function getResources(): ResourcesList[] {
             processLimitDate: "2024-03-26 23:59:59",
             mailTracking: false,
             isLocked: true,
-            locker: 'Barbara BAIN'
+            locker: 'Barbara BAIN',
+            selected: false
         }
     ];
 

@@ -36,10 +36,6 @@
                     </div>
                 </a>
             </nav>
-            <app-maarch-message *ngIf="!loading && !checkExternalUser()"
-                [mode]="'info'"
-                [content]="'lang.cannotManageSignature' | translate">
-            </app-maarch-message>
             <div class="signatureContainer">
                 <div id="myBounds" #myBounds style="position: absolute;"
                     [style.width.px]="workingAreaWidth" [style.height.px]="workingAreaHeight">
@@ -90,7 +86,7 @@
                     <mat-icon class="fas fa-plus" style="height: auto"></mat-icon>
                 </button>
                 <mat-menu #actionPosMenu="matMenu">
-                    <button mat-menu-item [disabled]="!emptyDate() || data.workflow[this.currentUser].item_id === null"
+                    <button mat-menu-item [disabled]="!emptyDate() || data.workflow[this.currentUser].item_id === null || !externalSignatoryBookManagerService.canAddDateBlock()"
                         (click)="initDateBlock()">{{'lang.addDateBlock' | translate}}</button>
                     <button mat-menu-item [disabled]="!emptySign()"
                         (click)="initSign()">{{'lang.addSignaturePosition' | translate}}</button>

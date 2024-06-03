@@ -29,4 +29,8 @@ interface ResourceToSignRepositoryInterface
     public function isAttachementSigned(int $resId): bool;
 
     public function checkConcordanceResIdAndResIdMaster(int $resId, int $resIdMaster): bool;
+
+    public function setResourceExternalId(int $resId, int $parapheurDocumentId): void;
+
+    public function setAttachmentExternalId(int $resId, int $parapheurDocumentId): void;
 }

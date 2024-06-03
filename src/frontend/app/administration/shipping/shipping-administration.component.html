@@ -49,7 +49,7 @@
                                         <mat-slide-toggle color="primary" name="{{option}}" [checked]="shipping.options.shapingOptions.indexOf(option) > -1"
                                                           (change)="toggleShapingOption(option)">{{'lang.maileva_' + option | translate}}</mat-slide-toggle>
                                     </mat-list-item>
-                                    <div *ngIf="shipping.options.shapingOptions.indexOf('addressPage') == -1" class="alert-message alert-message-danger" role="alert" style="margin-top: 30px;max-width: none;" [innerHTML]="'lang.warnShapingOption' | translate"></div>
+                                    <div *ngIf="shipping.options.shapingOptions.indexOf('addressPage') === -1" class="alert-message alert-message-danger" role="alert" style="margin-top: 30px;max-width: none;" [innerHTML]="'lang.warnShapingOption' | translate"></div>
                                 </mat-list>
                             </div>
                             <div class="formType ratio-1 col-sm-12">

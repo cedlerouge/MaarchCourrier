@@ -61,7 +61,7 @@
         </mat-menu>
     </ng-container>
 </div>
-<div class="book-footer-stamps">
+<div *ngIf="signatureBookService.selectedDocToSign.attachment !== undefined" class="book-footer-stamps">
     <div *ngIf="userStamp === undefined">
         <mat-spinner class="spinner-white" diameter="50" aria-hidden="true"></mat-spinner>
     </div>

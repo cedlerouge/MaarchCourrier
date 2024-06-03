@@ -126,6 +126,7 @@ $app->put('/attachments/{id}/sign', \SignatureBook\controllers\SignatureBookCont
 $app->put('/attachments/{id}/unsign', \SignatureBook\controllers\SignatureBookController::class . ':unsignAttachment');
 $app->post('/attachments/{id}/mailing', \Attachment\controllers\AttachmentController::class . ':getMailingById');
 $app->get('/attachmentsInformations', \Attachment\controllers\AttachmentController::class . ':getByChrono');
+$app->get('/attachments/{resId}/proofSignature', \MaarchCourrier\SignatureBook\Infrastructure\Controller\RetrieveProofFileController::class . ':getAttachmentProofFile');
 
 //AttachmentsTypes
 $app->get('/attachmentsTypes', \Attachment\controllers\AttachmentTypeController::class . ':get');
@@ -494,6 +495,9 @@ $app->delete('/resources/{resId}/linkedResources/{id}', \Resource\controllers\Li
 $app->delete('/resources/{resId}/circuits/{type}', \Entity\controllers\ListInstanceController::class . ':deleteCircuit');
 $app->get('/resources/{resId}/fileInformation', \Resource\controllers\ResController::class . ':getResourceFileInformation');
 $app->get('/resources/{resId}/baskets', \Resource\controllers\UserFollowedResourceController::class . ':getBaskets');
+$app->get('/resources/{resId}/proofSignature', \MaarchCourrier\SignatureBook\Infrastructure\Controller\RetrieveProofFileController::class . ':getResourceProofFile');
+
+
 
 $app->put('/res/resource/status', \Resource\controllers\ResController::class . ':updateStatus');
 $app->post('/res/list', \Resource\controllers\ResController::class . ':getList');

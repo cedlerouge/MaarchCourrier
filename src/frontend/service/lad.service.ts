@@ -45,7 +45,7 @@ export class LadService {
                     resolve(data);
                 }),
                 catchError((err: any) => {
-                    this.notificationService.handleSoftErrors(err);
+                    this.notificationService.handleSoftErrors(this.translate.instant('lang.mercureLadProcessingError'));
                     resolve(false);
                     return of(false);
                 })

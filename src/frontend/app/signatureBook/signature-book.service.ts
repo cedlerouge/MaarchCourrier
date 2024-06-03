@@ -9,6 +9,8 @@ import { catchError, map, of, tap } from "rxjs";
 import { mapAttachment } from "./signature-book.utils";
 import { SignatureBookConfig, SignatureBookConfigInterface } from "@models/signature-book.model";
 import { SelectedAttachment } from "@models/signature-book.model";
+import { DatePipe } from "@angular/common";
+import { TranslateService } from "@ngx-translate/core";
 
 @Injectable({
     providedIn: 'root'
@@ -19,7 +21,7 @@ export class SignatureBookService {
     resourcesListIds: number[] = [];
     docsToSign: Attachment[] = [];
     basketLabel: string = '';
-    config = new SignatureBookConfig();
+    config: SignatureBookConfig = new SignatureBookConfig();
 
     selectedAttachment: SelectedAttachment = new SelectedAttachment();
 
@@ -27,11 +29,15 @@ export class SignatureBookService {
 
     selectedResources: Attachment[] = [];
 
+    selectedResourceCount: number = 0;
+
     constructor(
         private http: HttpClient,
         private notifications: NotificationService,
         private filtersListService: FiltersListService,
-        private headerService: HeaderService
+        private headerService: HeaderService,
+        private datePipe: DatePipe,
+        private translate: TranslateService
     ) {}
 
     getInternalSignatureBookConfig(): Promise<SignatureBookConfigInterface | null> {
@@ -144,12 +150,65 @@ export class SignatureBookService {
         ).subscribe();
     }
 
-    async toggleSelection(checked: boolean, userId: number, groupId: number, basketId: number, resource: Attachment): Promise<void> {
+    downloadProof(resId: number, isAttachment: boolean): Promise<boolean> {
+        const type: string = isAttachment ? 'attachments' : 'resources';
+        return new Promise((resolve) => {
+            this.http.get(`../rest/${type}/${resId}/proofSignature`, { responseType: 'blob' as 'json' })
+                .pipe(
+                    tap((data: any) => {
+                        const today = new Date();
+                        const filename = 'proof_' + resId + '_' + this.datePipe.transform(today, 'dd-MM-y') + '.' + data.type.replace('application/', '');
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = window.URL.createObjectURL(data);
+                        downloadLink.setAttribute('download', filename);
+                        document.body.appendChild(downloadLink);
+                        downloadLink.click();
+                        resolve(true);
+                    }),
+                    catchError((err: any) => {
+                        if (err.status === 400) {
+                            this.notifications.handleErrors(this.translate.instant('lang.externalIdNotFoundProblemProof'));
+                        } else {
+                            this.notifications.handleSoftErrors(err);
+                        }
+                        resolve(false);
+                        return of(false);
+                    })
+                ).subscribe();
+        });
+    }
+
+    async toggleSelection(checked: boolean, userId: number, groupId: number, basketId: number, resId: number): Promise<boolean> {
         if (checked) {
-            const res: Attachment[] = (await this.initDocuments(userId, groupId, basketId, resource.resId)).resourcesToSign;
+            const res: Attachment[] = (await this.initDocuments(userId, groupId, basketId, resId)).resourcesToSign;
             this.selectedResources = this.selectedResources.concat(res);
+            if (res.length === 0) {
+                return false;
+            }
         } else {
-            this.selectedResources = this.selectedResources.filter((doc: Attachment) => doc.resIdMaster !== resource.resId || doc.resId !== resource.resId);
+            this.selectedResources = this.selectedResources.filter((doc: Attachment) => doc.resIdMaster !== resId);
         }
+        return true;
+    }
+
+    getAllDocsToSign(): Attachment[] {
+        this.docsToSign.forEach((resource: Attachment) => {
+            const findResource: Attachment = this.selectedResources.find((doc: Attachment) => doc.resId === resource.resId);
+            if (findResource === undefined) {
+                this.selectedResources.push(resource);
+            } else {
+                const index: number = this.selectedResources.indexOf(findResource);
+                this.selectedResources[index] = resource;
+            }
+        });
+
+        // Filter the selectedResources array to remove duplicate entries based on resId
+        this.selectedResources = this.selectedResources.filter((resource: Attachment, index: number, self: Attachment[]) =>
+            // Keep the current resource only if it is the first occurrence of this resId in the array
+            index === self.findIndex((t) => t.resId === resource.resId)
+        );
+
+
+        return this.selectedResources;
     }
 }

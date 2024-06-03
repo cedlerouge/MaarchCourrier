@@ -15,6 +15,7 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { BrowserModule, DomSanitizer } from '@angular/platform-browser';
 import * as langFrJson from '@langs/lang-fr.json';
 import { Component } from '@angular/core';
+import { FiltersListService } from "@service/filtersList.service";
 
 /*
  * Test component with empty template to simulate navigation to home page in the event of successful authentication
@@ -53,6 +54,7 @@ describe('LoginComponent', () => {
                 TranslateStore,
                 FoldersService,
                 PrivilegeService,
+                FiltersListService,
                 DatePipe,
                 AdministrationService,
                 HttpClient,

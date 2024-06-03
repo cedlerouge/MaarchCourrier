@@ -76,6 +76,11 @@ class WebhookValidation
 
         $signedResource = new SignedResource();
 
+        if (empty($body['payload']['idParapheur'])) {
+            throw new IdParapheurIsMissingProblem();
+        }
+
+        $signedResource->setId($body['payload']['idParapheur']);
         $signedResource->setStatus($body['signatureState']['state']);
 
         if (!empty($body['signatureState']['message'])) {

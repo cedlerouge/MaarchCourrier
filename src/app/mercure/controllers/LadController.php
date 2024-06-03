@@ -146,7 +146,19 @@ class LadController
         }
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
         if (empty($configuration)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Mercure configuration is not enabled']);
+            $data = json_encode([
+                'enabledLad'     => true,
+                'mwsLadPriority' => false,
+                'mws'            => [
+                    'url'            => "",
+                    'login'          => "",
+                    'password'       => "",
+                    'tokenMws'       => "",
+                    'loginMaarch'    => "",
+                    'passwordMaarch' => "",
+                ]
+            ]);
+            ConfigurationModel::create(['value' => $data, 'privilege' => 'admin_mercure']);
         }
 
         $ladConfiguration = CoreConfigModel::getJsonLoaded(['path' => 'config/ladConfiguration.json']);
@@ -325,6 +337,7 @@ class LadController
             $tabErrors = [];
 
             $tagsErrToCheck = [
+                'not found',
                 'error',
                 'permission denied',
                 'sh: 1'

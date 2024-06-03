@@ -82,7 +82,7 @@ export class IssuingSiteInputComponent implements OnInit {
     setAddress(id: any) {
         if (id === null) {
             this.issuingSiteAddress = null;
-        } else {
+        } else {
             this.http.get(`../rest/registeredMail/sites/${id}`).pipe(
                 tap((data: any) => {
                     this.issuingSiteAddress = data['site'];
