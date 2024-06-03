@@ -1,5 +1,17 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief Signature Book User Service Interface
+ * @author dev@maarch.org
+ */
+
 namespace Group\controllers;
 
 use Action\models\ActionModel;
@@ -8,6 +20,13 @@ use Entity\models\EntityModel;
 use Exception;
 use Group\models\PrivilegeModel;
 use Group\models\GroupModel;
+use MaarchCourrier\Core\Infrastructure\Environment;
+use MaarchCourrier\Group\Domain\Group;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupCreateInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdateInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
+use MaarchCourrier\SignatureBook\Infrastructure\Factory\CreateAndUpdateGroupInSignatoryBookFactory;
+use MaarchCourrier\SignatureBook\Infrastructure\Factory\DeleteGroupInSignatoryBookFactory;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
@@ -35,6 +54,7 @@ class GroupController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function get(Request $request, Response $response): Response
     {
@@ -81,6 +101,9 @@ class GroupController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws GroupCreateInMaarchParapheurFailedProblem
+     * @throws GroupUpdateInMaarchParapheurFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
      */
     public function create(Request $request, Response $response): Response
     {
@@ -111,12 +134,30 @@ class GroupController
             return $response->withStatus(400)->withJson(['errors' => _INVALID_CLAUSE]);
         }
 
+        $env = new Environment();
+        $group = null;
+        $externalId = null;
+
+        if ($env->isNewInternalParapheurEnabled()) {
+            $group = (new Group())
+                ->setLibelle($data['group_desc'])
+                ->setExternalId(null);
+
+            $createGroupFactory = new CreateAndUpdateGroupInSignatoryBookFactory();
+            $createGroup = $createGroupFactory->create();
+            $group = $createGroup->createAndUpdateGroup($group);
+            $externalId = [
+                'external_id ' =>  json_encode($group->getExternalId()),
+            ];
+        }
+
         GroupModel::create(
             [
                 'groupId'     => $data['group_id'],
-                'description' => $data['group_desc'],
+                'description' => $group->getLibelle(),
                 'clause'      => $data['security']['where_clause'],
-                'comment'     => $data['security']['maarch_comment'] ?? null
+                'comment'     => $data['security']['maarch_comment'] ?? null,
+                'external_id' => $externalId['external_id ']
             ]
         );
 
@@ -133,6 +174,9 @@ class GroupController
      * @param Response $response
      * @param array $aArgs
      * @return Response
+     * @throws GroupCreateInMaarchParapheurFailedProblem
+     * @throws GroupUpdateInMaarchParapheurFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
      */
     public function update(Request $request, Response $response, array $aArgs): Response
     {
@@ -140,7 +184,7 @@ class GroupController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $group = GroupModel::getById(['id' => $aArgs['id']]);
+        $group = GroupModel::getById(['id' => $aArgs['id'], 'select' => ['external_id', 'group_id']]);
         if (empty($group)) {
             return $response->withStatus(400)->withJson(['errors' => 'Group not found']);
         }
@@ -158,6 +202,19 @@ class GroupController
             )
         ) {
             return $response->withStatus(400)->withJson(['errors' => _INVALID_CLAUSE]);
+        }
+
+        $env = new Environment();
+        $externalId = json_decode($group['external_id'], true);
+
+        if ($env->isNewInternalParapheurEnabled()) {
+            $groupToUpdate = (new Group())
+                ->setLibelle($data['description'])
+                ->setExternalId($externalId);
+
+            $createGroupFactory = new CreateAndUpdateGroupInSignatoryBookFactory();
+            $createGroup = $createGroupFactory->create();
+            $createGroup->createAndUpdateGroup($groupToUpdate);
         }
 
         GroupModel::update([
@@ -182,6 +239,7 @@ class GroupController
      * @param Response $response
      * @param array $aArgs
      * @return Response
+     * @throws Exception
      */
     public function delete(Request $request, Response $response, array $aArgs): Response
     {
@@ -192,6 +250,17 @@ class GroupController
         $group = GroupModel::getById(['id' => $aArgs['id']]);
         if (empty($group)) {
             return $response->withStatus(400)->withJson(['errors' => 'Group not found']);
+        }
+        $env = new Environment();
+        $externalId = json_decode($group['external_id'], true);
+
+        if ($env->isNewInternalParapheurEnabled()) {
+            $groupToDelete = (new Group())
+                ->setExternalId($externalId);
+
+            $deleteGroupFactory = new DeleteGroupInSignatoryBookFactory();
+            $deleteGroup = $deleteGroupFactory->create();
+            $deleteGroup->deleteGroup($groupToDelete);
         }
 
         GroupModel::delete(['id' => $aArgs['id']]);

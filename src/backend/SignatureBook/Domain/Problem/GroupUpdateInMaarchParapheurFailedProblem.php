@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief User Create In Maarch Parapheur Failed Problem
+ * @brief Signature Book User Service Interface
  * @author dev@maarch.org
  */
 
@@ -16,15 +16,12 @@ namespace MaarchCourrier\SignatureBook\Domain\Problem;
 
 use MaarchCourrier\Core\Domain\Problem\Problem;
 
-class UserCreateInMaarchParapheurFailedProblem extends Problem
+class GroupUpdateInMaarchParapheurFailedProblem extends Problem
 {
-    /**
-     * @param array $content
-     */
     public function __construct(array $content)
     {
         parent::__construct(
-            "user creation in maarch parapheur failed : " . $content['errors'],
+            "Group update in maarch parapheur failed : " . $content['errors'],
             403,
             [
                 'errors' => $content['errors']

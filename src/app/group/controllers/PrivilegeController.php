@@ -1,5 +1,17 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief Signature Book User Service Interface
+ * @author dev@maarch.org
+ */
+
 namespace Group\controllers;
 
 use Basket\models\BasketModel;
@@ -7,6 +19,11 @@ use Basket\models\GroupBasketModel;
 use Basket\models\RedirectBasketModel;
 use Group\models\GroupModel;
 use Group\models\PrivilegeModel;
+use MaarchCourrier\Core\Infrastructure\Environment;
+use MaarchCourrier\Group\Domain\Group;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdatePrivilegeInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
+use MaarchCourrier\SignatureBook\Infrastructure\Factory\UpdatePrivilegeGroupInSignatoryGroupFactory;
 use Resource\controllers\ResController;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
@@ -23,6 +40,10 @@ use User\models\UserModel;
 
 class PrivilegeController
 {
+    /**
+     * @throws SignatureBookNoConfigFoundProblem
+     * @throws GroupUpdatePrivilegeInMaarchParapheurFailedProblem
+     */
     public static function addPrivilege(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']])) {
@@ -53,6 +74,20 @@ class PrivilegeController
         if (empty($group)) {
             return $response->withStatus(400)->withJson(['errors' => 'Group not found']);
         }
+        $updatedGroupPrivilege = null;
+        $env = new Environment();
+
+        if ($env->isNewInternalParapheurEnabled()) {
+            $externalId = json_decode($group['external_id'], true);
+            $newGroup = (new Group())
+                ->setLibelle($group['group_desc'])
+                ->setExternalId($externalId)
+                ->setPrivilege($args['privilegeId']);
+
+            $updateGroupPrivilegeFactory = new UpdatePrivilegeGroupInSignatoryGroupFactory();
+            $updateGroupPrivilege = $updateGroupPrivilegeFactory->create();
+            $updatedGroupPrivilege = $updateGroupPrivilege->updatePrivilege($newGroup, true);
+        }
 
         if (
             PrivilegeModel::groupHasPrivilege(['privilegeId' => $args['privilegeId'], 'groupId' => $group['group_id']])
@@ -62,7 +97,7 @@ class PrivilegeController
 
         PrivilegeModel::addPrivilegeToGroup(['privilegeId' => $args['privilegeId'], 'groupId' => $group['group_id']]);
 
-        if ($args['privilegeId'] == 'admin_users') {
+        if ($updatedGroupPrivilege->getPrivilege() == 'admin_users') {
             $groups = GroupModel::get(['select' => ['id']]);
             $groups = array_column($groups, 'id');
 
@@ -70,7 +105,7 @@ class PrivilegeController
 
             PrivilegeModel::updateParameters([
                 'groupId' => $group['group_id'],
-                'privilegeId' => $args['privilegeId'],
+                'privilegeId' => $updatedGroupPrivilege->getPrivilege(),
                 'parameters' => $parameters
             ]);
         }
@@ -78,6 +113,10 @@ class PrivilegeController
         return $response->withStatus(204);
     }
 
+    /**
+     * @throws SignatureBookNoConfigFoundProblem
+     * @throws GroupUpdatePrivilegeInMaarchParapheurFailedProblem
+     */
     public static function removePrivilege(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']])) {
@@ -96,6 +135,22 @@ class PrivilegeController
             return $response->withStatus(400)->withJson(['errors' => 'Group not found']);
         }
 
+        $updatedGroupPrivilege = null;
+        $env = new Environment();
+
+        if ($env->isNewInternalParapheurEnabled()) {
+            $externalId = json_decode($group['external_id'], true);
+            $newGroup = (new Group())
+                ->setLibelle($group['group_desc'])
+                ->setExternalId($externalId)
+                ->setPrivilege($args['privilegeId'])
+                ->setGroupId($group['group_id']);
+
+            $updateGroupPrivilegeFactory = new UpdatePrivilegeGroupInSignatoryGroupFactory();
+            $updateGroupPrivilege = $updateGroupPrivilegeFactory->create();
+            $updatedGroupPrivilege = $updateGroupPrivilege->updatePrivilege($newGroup, false);
+        }
+
         if (
             !PrivilegeModel::groupHasPrivilege(['privilegeId' => $args['privilegeId'], 'groupId' => $group['group_id']])
         ) {
@@ -103,7 +158,7 @@ class PrivilegeController
         }
 
         PrivilegeModel::removePrivilegeToGroup([
-            'privilegeId' => $args['privilegeId'],
+            'privilegeId' => $updatedGroupPrivilege->getPrivilege(),
             'groupId' => $group['group_id']
         ]);
 
