@@ -686,8 +686,15 @@ class ResController extends ResourceControlController
 
         $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveResource();
 
+        $data = $request->getQueryParams();
+
+        $watermark = true;
+
         try {
-            $mainFile = $retrieveResourceFactory->getResourceFile($args['resId']);
+            if (isset($data['watermark']) && $data['watermark'] === "false") {
+                $watermark = false;
+            }
+            $mainFile = $retrieveResourceFactory->getResourceFile($args['resId'], $watermark);
         } catch (Throwable $th) {
             return $response->withStatus(
                 $th->getCode() > 500 || $th->getCode() < 100 ? 500 : $th->getCode()
@@ -710,8 +717,6 @@ class ResController extends ResourceControlController
             'moduleId'  => 'resource',
             'eventId'   => 'resview',
         ]);
-
-        $data = $request->getQueryParams();
 
         $mimeAndSize = CoreController::getMimeTypeAndFileSize(['encodedFile' => base64_encode($fileContent)]);
         if (!empty($mimeAndSize['errors'])) {

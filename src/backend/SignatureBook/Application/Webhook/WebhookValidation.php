@@ -15,13 +15,13 @@
 namespace MaarchCourrier\SignatureBook\Application\Webhook;
 
 use DateTime;
+use Exception;
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\ResourceToSignRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\IdParapheurIsMissingProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\ResourceAlreadySignProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorrespondingProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
@@ -30,6 +30,11 @@ use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;
 
 class WebhookValidation
 {
+    /**
+     * @param ResourceToSignRepositoryInterface $resourceToSignRepository
+     * @param UserRepositoryInterface $userRepository
+     * @param CurrentUserInterface $currentUser
+     */
     public function __construct(
         private readonly ResourceToSignRepositoryInterface $resourceToSignRepository,
         private readonly UserRepositoryInterface $userRepository,
@@ -38,16 +43,16 @@ class WebhookValidation
     }
 
     /**
-     * @param  array  $body
+     * @param array $body
+     * @param array $decodedToken
      * @return SignedResource
      * @throws AttachmentOutOfPerimeterProblem
-     * @throws ResourceAlreadySignProblem
+     * @throws CurrentTokenIsNotFoundProblem
      * @throws ResourceIdEmptyProblem
      * @throws ResourceIdMasterNotCorrespondingProblem
      * @throws RetrieveDocumentUrlEmptyProblem
-     * @throws CurrentTokenIsNotFoundProblem
      * @throws UserDoesNotExistProblem
-     * @throws \Exception
+     * @throws Exception
      */
     public function validateAndCreateResource(array $body, array $decodedToken): SignedResource
     {
@@ -114,15 +119,7 @@ class WebhookValidation
                 throw new AttachmentOutOfPerimeterProblem();
             }
 
-            if ($this->resourceToSignRepository->isAttachementSigned($decodedToken['resId'])) {
-                throw new ResourceAlreadySignProblem();
-            }
-
             $signedResource->setResIdMaster($decodedToken['resIdMaster']);
-        } else {
-            if ($this->resourceToSignRepository->isResourceSigned($decodedToken['resId'])) {
-                throw new ResourceAlreadySignProblem();
-            }
         }
 
         $signedResource->setResIdSigned($decodedToken['resId']);

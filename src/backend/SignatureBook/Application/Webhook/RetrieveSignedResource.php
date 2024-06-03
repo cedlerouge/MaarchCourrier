@@ -22,6 +22,10 @@ use MaarchCourrier\SignatureBook\Domain\SignedResource;
 
 class RetrieveSignedResource
 {
+    /**
+     * @param CurrentUserInterface $currentUser
+     * @param SignatureServiceInterface $maarchParapheurSignatureService
+     */
     public function __construct(
         private readonly CurrentUserInterface $currentUser,
         private readonly SignatureServiceInterface $maarchParapheurSignatureService,
