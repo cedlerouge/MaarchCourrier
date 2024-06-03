@@ -29,8 +29,8 @@ use SrcCore\models\CoreConfigModel;
 class EntitySeparatorController
 {
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      *
      * @return Response
      * @throws \Com\Tecnick\Barcode\Exception
@@ -61,9 +61,9 @@ class EntitySeparatorController
             }
 
             $entitiesInfo = EntityModel::get([
-                'select' => ['entity_label', 'id'],
-                'where' => ['entity_id in (?)'],
-                'data' => [$body['entities']],
+                'select'   => ['entity_label', 'id'],
+                'where'    => ['entity_id in (?)'],
+                'data'     => [$body['entities']],
                 'order_by' => ['entity_label asc']
             ]);
 
