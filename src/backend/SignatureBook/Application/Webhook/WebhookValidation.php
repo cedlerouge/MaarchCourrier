@@ -20,6 +20,7 @@ use MaarchCourrier\Core\Domain\User\Port\UserRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\ResourceToSignRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\IdParapheurIsMissingProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceAlreadySignProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorrespondingProblem;
@@ -37,7 +38,7 @@ class WebhookValidation
     }
 
     /**
-     * @param array $body
+     * @param  array  $body
      * @return SignedResource
      * @throws AttachmentOutOfPerimeterProblem
      * @throws ResourceAlreadySignProblem
@@ -71,6 +72,11 @@ class WebhookValidation
 
         $signedResource = new SignedResource();
 
+        if (empty($body['payload']['idParapheur'])) {
+            throw new IdParapheurIsMissingProblem();
+        }
+
+        $signedResource->setId($body['payload']['idParapheur']);
         $signedResource->setStatus($body['signatureState']['state']);
 
         if (!empty($body['signatureState']['message'])) {

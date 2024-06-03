@@ -33,6 +33,10 @@ class StoreSignedResource
             $attachment = $this->resourceToSignRepository->getAttachmentInformations($signedResource->getResIdSigned());
             $id = $this->storeSignedResourceService->storeAttachement($signedResource, $attachment);
             $this->resourceToSignRepository->updateAttachementStatus($signedResource->getResIdSigned());
+            $this->resourceToSignRepository->setAttachmentExternalId(
+                $signedResource->getResIdSigned(),
+                $signedResource->getId()
+            );
         } else { //pour les resources
             $storeResource = $this->storeSignedResourceService->storeResource($signedResource);
             if (!empty($storeResource['errors'])) {
@@ -41,6 +45,10 @@ class StoreSignedResource
                 $this->resourceToSignRepository->createSignVersionForResource(
                     $signedResource->getResIdSigned(),
                     $storeResource
+                );
+                $this->resourceToSignRepository->setResourceExternalId(
+                    $signedResource->getResIdSigned(),
+                    $signedResource->getId()
                 );
                 $id = $signedResource->getResIdSigned();
             }
