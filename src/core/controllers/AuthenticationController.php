@@ -20,6 +20,7 @@ use DateTime;
 use Email\controllers\EmailController;
 use Exception;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use History\controllers\HistoryController;
 use Parameter\models\ParameterModel;
 use phpCAS;
@@ -32,6 +33,7 @@ use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
 use SrcCore\models\PasswordModel;
 use SrcCore\models\ValidatorModel;
+use stdClass;
 use Stevenmaguire\OAuth2\Client\Provider\Keycloak;
 use User\controllers\UserController;
 use User\models\UserModel;
@@ -251,10 +253,15 @@ class AuthenticationController
                     $token = str_replace('Bearer ', '', $authorizationHeader);
                 }
             }
+
+            $headers = new stdClass();
+            $headers->headers = ['HS256'];
+            $encryptKey = CoreConfigModel::getEncryptKey();
+            $key = new Key($encryptKey, 'HS256');
             if (!empty($token)) {
                 try {
-                    $jwt = (array)JWT::decode($token, CoreConfigModel::getEncryptKey(), ['HS256']);
-                } catch (Exception $e) {
+                    $jwt = (array)JWT::decode($token, $key, $headers);
+                } catch (Exception) {
                     return null;
                 }
                 $jwt['user'] = (array)$jwt['user'];
@@ -519,8 +526,12 @@ class AuthenticationController
 
         $user['refresh_token'] = json_decode($user['refresh_token'], true);
         foreach ($user['refresh_token'] as $key => $refreshToken) {
+            $headers = new stdClass();
+            $headers->headers = ['HS256'];
+            $encryptKey = CoreConfigModel::getEncryptKey();
+            $jwtKey = new Key($encryptKey, 'HS256');
             try {
-                JWT::decode($refreshToken, CoreConfigModel::getEncryptKey(), ['HS256']);
+                JWT::decode($refreshToken, $jwtKey, $headers);
             } catch (Exception $e) {
                 unset($user['refresh_token'][$key]);
             }
@@ -993,8 +1004,12 @@ class AuthenticationController
             return $response->withStatus(400)->withJson(['errors' => 'Refresh Token is empty']);
         }
 
+        $headers = new stdClass();
+        $headers->headers = ['HS256'];
+        $encryptKey = CoreConfigModel::getEncryptKey();
+        $key = new Key($encryptKey, 'HS256');
         try {
-            $jwt = JWT::decode($queryParams['refreshToken'], CoreConfigModel::getEncryptKey(), ['HS256']);
+            $jwt = JWT::decode($queryParams['refreshToken'], $key, $headers);
         } catch (Exception $e) {
             return $response->withStatus(401)->withJson(['errors' => 'Authentication Failed']);
         }
@@ -1062,7 +1077,7 @@ class AuthenticationController
             'user' => $user
         ];
 
-        return JWT::encode($token, CoreConfigModel::getEncryptKey());
+        return JWT::encode($token, CoreConfigModel::getEncryptKey(), 'HS256');
     }
 
     /**
@@ -1085,7 +1100,7 @@ class AuthenticationController
             ]
         ];
 
-        return JWT::encode($token, CoreConfigModel::getEncryptKey());
+        return JWT::encode($token, CoreConfigModel::getEncryptKey(), 'HS256');
     }
 
     /**
@@ -1101,7 +1116,7 @@ class AuthenticationController
             ]
         ];
 
-        return JWT::encode($token, CoreConfigModel::getEncryptKey());
+        return JWT::encode($token, CoreConfigModel::getEncryptKey(), 'HS256');
     }
 
     /**

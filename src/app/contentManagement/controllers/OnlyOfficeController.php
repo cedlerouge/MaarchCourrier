@@ -19,7 +19,9 @@ use Configuration\models\ConfigurationModel;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Exception;
+use finfo;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Resource\controllers\ResController;
 use Resource\controllers\StoreController;
 use Resource\models\ResModel;
@@ -30,6 +32,7 @@ use SrcCore\controllers\UrlController;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
 use SrcCore\models\ValidatorModel;
+use stdClass;
 use Template\models\TemplateModel;
 
 class OnlyOfficeController
@@ -368,7 +371,7 @@ class OnlyOfficeController
             return $response->withStatus(400)->withJson(['errors' => 'No content found']);
         }
 
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mimeType = $finfo->buffer($fileContent);
         $extension = pathinfo($tmpPath . $filename, PATHINFO_EXTENSION);
         unlink($tmpPath . $filename);
@@ -552,7 +555,7 @@ class OnlyOfficeController
             'fullFilename' => $args['fullFilename']
         ];
 
-        $jwt = JWT::encode($payload, CoreConfigModel::getEncryptKey());
+        $jwt = JWT::encode($payload, CoreConfigModel::getEncryptKey(), 'HS256');
 
         $docUrl = $args['url'] . 'rest/onlyOffice/content?token=' . $jwt;
 
@@ -659,9 +662,13 @@ class OnlyOfficeController
     {
         $queryParams = $request->getQueryParams();
 
+        $headers = new stdClass();
+        $headers->headers = ['HS256'];
+        $encryptKey = CoreConfigModel::getEncryptKey();
+        $key = new Key($encryptKey, 'HS256');
         try {
-            $jwt = JWT::decode($queryParams['token'], CoreConfigModel::getEncryptKey(), ['HS256']);
-        } catch (Exception $e) {
+            $jwt = JWT::decode($queryParams['token'], $key, $headers);
+        } catch (Exception) {
             return $response->withStatus(401)->withJson(['errors' => 'Token is invalid']);
         }
 
@@ -674,7 +681,7 @@ class OnlyOfficeController
             return $response->withStatus(404)->withJson(['errors' => 'Document not found']);
         }
 
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mimeType = $finfo->buffer($fileContent);
         $pathInfo = pathinfo($jwt->fullFilename);
 

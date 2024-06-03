@@ -25,10 +25,10 @@ use User\models\UserModel;
 
 class UserControllerTest extends CourrierTestCase
 {
-    private static $id = null;
-    private static $idEmailSignature = null;
-    private static $redirectId = null;
-    private static $signatureId = null;
+    private static ?int $id = null;
+    private static ?int $idEmailSignature = null;
+    private static ?int $redirectId = null;
+    private static ?int $signatureId = null;
 
     protected function setUp(): void
     {
@@ -1666,7 +1666,7 @@ class UserControllerTest extends CourrierTestCase
             'exp'  => time() + 60 * AuthenticationController::MAX_DURATION_TOKEN,
             'user' => ['id' => self::$id * 1000]
         ];
-        $token = JWT::encode($token, CoreConfigModel::getEncryptKey());
+        $token = JWT::encode($token, CoreConfigModel::getEncryptKey(), 'HS256');
 
         $body = [
             'token'    => $token,
