@@ -18,13 +18,14 @@ use MaarchCourrier\Core\Domain\Problem\Problem;
 
 class SignatureNotAppliedProblem extends Problem
 {
-    public function __construct(string $message)
+    public function __construct(string $message, ?array $context = null)
     {
         parent::__construct(
             "Signature not applied on document : " . $message,
             400,
             [
-                'value' => $message
+                'value' => $message,
+                'context' => $context
             ]
         );
     }

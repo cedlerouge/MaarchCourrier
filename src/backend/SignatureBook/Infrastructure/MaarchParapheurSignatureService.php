@@ -88,11 +88,16 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
                 'webhook'                => $webhook
             ]),
         ]);
-        if ($response['code'] >= 400) {
+
+        if ($response['code'] >= 400 || $response['code'] < 200) {
             $errorMessage = $response['response']['errors'] ??
                 $response['errors'] ??
                 'Error occurred while applying the signature';
-            return ['errors' => $errorMessage];
+
+            $returnCurl['errors'] = $errorMessage;
+            $returnCurl['context'] = $response['response']['context'] ?? null;
+
+            return $returnCurl;
         }
         return true;
     }
