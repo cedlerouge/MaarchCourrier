@@ -155,8 +155,13 @@ class ContinueCircuitAction
                             $resourceToSign
                         );
                 }
+
                 if (is_array($applySuccess)) {
-                    throw new SignatureNotAppliedProblem($applySuccess['errors'], $applySuccess['context']);
+                    $error = $applySuccess['errors'];
+                    if (!empty($applySuccess['context'])) {
+                        $error .= " (Message = " . $applySuccess['context']['message'] . ")";
+                    }
+                    throw new SignatureNotAppliedProblem($error);
                 }
             }
         } else {
