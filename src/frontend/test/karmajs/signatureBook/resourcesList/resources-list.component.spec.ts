@@ -133,7 +133,7 @@ describe('ResourcesListComponent', () => {
 
             setTimeout(() => {
                 // Check if navigation is called with the correct route
-                const path: string = `/signatureBook/users/${component.userId}/groups/${component.groupId}/baskets/${component.basketId}/resources/${component.resId}`
+                const path: string = `/signatureBookNew/users/${component.userId}/groups/${component.groupId}/baskets/${component.basketId}/resources/${component.resId}`
                 expect(navigateSpy).toHaveBeenCalledWith([path]);
             }, 100);
             flush();
