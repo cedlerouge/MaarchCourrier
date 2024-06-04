@@ -183,7 +183,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
                     this.afterGoToResource.emit(true);
 
                     // Construct the path to navigate to
-                    const path: string = `/signatureBook/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${resId}`;
+                    const path: string = `/signatureBookNew/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${resId}`;
 
                     // Navigate to the resource
                     this.router.navigate([path]);
