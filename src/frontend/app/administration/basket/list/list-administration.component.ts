@@ -7,6 +7,7 @@ import { startWith, map, tap, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { DndDropEvent } from 'ngx-drag-drop';
+import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
 declare let $: any;
 
@@ -16,7 +17,7 @@ declare let $: any;
     styleUrls: ['list-administration.component.scss'],
 })
 export class ListAdministrationComponent implements OnInit {
-    @Input() private currentBasketGroup: any;
+    @Input() currentBasketGroup: any;
     @Output() refreshBasketGroup = new EventEmitter<any>();
 
     loading: boolean = false;
@@ -272,7 +273,18 @@ export class ListAdministrationComponent implements OnInit {
     };
     selectedProcessToolClone: string = null;
 
-    constructor(public translate: TranslateService, public http: HttpClient, private notify: NotificationService, private functions: FunctionsService) { }
+    actionChosen: any[]= [];
+    availableValidationsActions: any[] = [];
+    availableRefusalActions: any[] = [];
+    refusalACtionsId: string [] = ['interrupt_visa', 'rejection_visa_redactor', 'rejection_visa_previous', 'redirect_visa_entity']
+
+
+    constructor(
+        public translate: TranslateService,
+        public http: HttpClient,
+        private notify: NotificationService,
+        private functions: FunctionsService
+    ) { }
 
     async ngOnInit(): Promise<void> {
         await this.initCustomFields();
@@ -310,6 +322,18 @@ export class ListAdministrationComponent implements OnInit {
 
         this.selectedProcessToolClone = JSON.parse(JSON.stringify(this.selectedProcessTool));
         this.displayedSecondaryDataClone = JSON.parse(JSON.stringify(this.displayedSecondaryData));
+
+        this.actionChosen = (this.currentBasketGroup.groupActions as any[]).filter((action: any) => action.checked);
+
+        this.actionChosen.forEach((action: any) => {
+            if (this.refusalACtionsId.indexOf(action.action_page) > -1) {
+                action = { ...action, type: 'reject' };
+                this.availableRefusalActions.push(action);
+            } else {
+                action = { ...action, type: 'valid' };
+                this.availableValidationsActions.push(action);
+            }
+        })
     }
 
     initCustomFields() {
@@ -474,6 +498,28 @@ export class ListAdministrationComponent implements OnInit {
     toggleCanUpdate(state: boolean) {
         if (!state) {
             this.selectedProcessTool.canUpdateModel = state;
+        }
+    }
+
+    switchAllData(source: string, target: string, type: string, ) {
+        this[source].forEach((action: any) => {
+            action['type'] = type;
+            this[target].push(action);
+        })
+        this[source] = [];
+    }
+
+    drop(event: CdkDragDrop<string[]>, type: string = 'reject' || 'valid') {
+        if (event.previousContainer === event.container) {
+            moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+        } else {
+            transferArrayItem(
+                event.previousContainer.data,
+                event.container.data,
+                event.previousIndex,
+                event.currentIndex
+            );
+            event.container.data[event.currentIndex]['type'] = type;
         }
     }
 

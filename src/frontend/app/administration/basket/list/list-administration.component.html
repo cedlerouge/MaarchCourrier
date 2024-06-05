@@ -46,6 +46,60 @@
             {{'lang.goToNextDocument' | translate}}
         </mat-slide-toggle>
     </div>
+    <ng-container *ngIf="actionChosen.length > 0">
+        <mat-divider></mat-divider>
+        <div style="padding: 10px; display: flex; justify-content: flex-start; align-items: center; letter-spacing: 2px; margin-top: 5px">
+            <span>Actions du parapheur électronique</span>
+        </div>
+        <div class="row actions-list">
+            <div class="col-md-6 available-data">
+                <div class="icons-list">
+                    <mat-icon class="fa fa-thumbs-up valid" aria-hidden="true"></mat-icon>
+                    <mat-icon
+                        class="fas fa-arrow-right toggle-all-data"
+                        color="primary"
+                        aria-hidden="true"
+                        [title]="'lang.addAllData' | translate"
+                        (click)="switchAllData('availableValidationsActions', 'availableRefusalActions', 'reject')">
+                    </mat-icon>
+                </div>
+                <div id="availableElements" cdkDropList #validationActions="cdkDropList"
+                    [cdkDropListData]="availableValidationsActions" [cdkDropListConnectedTo]="[refusalActions]"
+                    class="cdk-list" (cdkDropListDropped)="drop($event, 'valid')">
+                    <div class="columns"
+                        *ngFor="let item of availableValidationsActions"
+                        cdkDrag id="{{item.label_action}}">{{item.label_action}} <i class="fa fa-plus" color="primary"
+                            style="cursor:pointer;"></i></div>
+                    <div *ngIf="availableValidationsActions.length === 0" class="empty-data">{{'lang.noDataAvailable' | translate}}</div>
+                </div>
+            </div>
+            <div style="display: flex;align-items: center; flex-direction: column; align-items: center; justify-content: center;">
+                <i class="fas fa-arrow-right"></i>
+                <i class="fas fa-arrow-left"></i>
+            </div>
+
+            <div class="col-md-6 active-data">
+                <div class="icons-list">
+                    <mat-icon class="fa fa-thumbs-down reject" aria-hidden="true"></mat-icon>
+                    <mat-icon
+                        class="fas fa-arrow-left toggle-all-data"
+                        color="primary"
+                        aria-hidden="true"
+                        [title]="'lang.addAllData' | translate"
+                        (click)="switchAllData('availableRefusalActions', 'availableValidationsActions', 'valid')">
+                    </mat-icon>
+                </div>
+                <div id="selectedElements" cdkDropList #refusalActions="cdkDropList"
+                    [cdkDropListData]="availableRefusalActions" [cdkDropListConnectedTo]="[validationActions]"
+                    class="cdk-list" (cdkDropListDropped)="drop($event, 'reject')">
+                    <div class="columns" *ngFor="let item of availableRefusalActions;let i = index" cdkDrag
+                        id="{{item.label_action}}">{{item.label_action}} <i class="fa fa-minus" color="warn"
+                            style="cursor:pointer;"></i></div>
+                    <div *ngIf="availableRefusalActions.length === 0" class="empty-data">{{'lang.noDataAvailable' | translate}}</div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
 </div>
 <hr />
 <mat-toolbar class="editorTool">
