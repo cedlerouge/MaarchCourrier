@@ -32,6 +32,9 @@ export class SignatureBookActionsComponent implements OnInit {
     leftActions: Action[] = [];
     rightActions: Action[] = [];
 
+    selectedRightAction: Action;
+    selectedLeftAction: Action;
+
     constructor(
         public http: HttpClient,
         public functions: FunctionsService,
@@ -71,6 +74,10 @@ export class SignatureBookActionsComponent implements OnInit {
                     tap((actions: Action[]) => {
                         this.leftActions = [actions[1]];
                         this.rightActions = actions.filter((action: Action, key: number) => key !== 1);
+
+                        this.selectedRightAction = this.rightActions[0];
+                        this.selectedLeftAction = this.leftActions[0];
+
                         resolve(true);
                     }),
                     catchError((err: any) => {
@@ -123,5 +130,9 @@ export class SignatureBookActionsComponent implements OnInit {
             id: 'selectedStamp',
             data: userStamp,
         });
+    }
+
+    getActions(actionTarget: Action, actions: 'leftActions' | 'rightActions'): Action[] {
+        return this[actions].filter((action: Action) => action.id !== actionTarget.id);
     }
 }
