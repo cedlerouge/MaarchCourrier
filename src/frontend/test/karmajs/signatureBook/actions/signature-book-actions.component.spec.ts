@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
 import { Observable, of } from 'rxjs';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
@@ -100,9 +100,146 @@ describe('SignatureBookActionsComponent', () => {
                     },
                 ],
             });
+
+            spyOn(component, 'loadActions').and.returnValue(Promise.resolve({
+                actions: [
+                    {
+                        id: 100,
+                        label: 'test',
+                        categories: [],
+                        component: 'testComponent',
+                    },
+                    {
+                        id: 101,
+                        label: 'test2',
+                        categories: [],
+                        component: 'test2Component',
+                    },
+                ], }));
+
             fixture.detectChanges();
+            tick(300);
+
+            expect(component.loading).toBe(false);
             expect(fixture.debugElement.nativeElement.querySelector('.no-stamp')).toBeTruthy();
             expect(fixture.debugElement.nativeElement.querySelector('.sign-button')).toBeFalsy();
+        }));
+    });
+
+    describe('More actions selection', () => {
+        it ('the action must appear in the initial button when I choose it from the menu', fakeAsync(() => {
+            const req = httpTestingController.expectOne(
+                '../rest/resourcesList/users/1/groups/1/baskets/1/actions?resId=100'
+            );
+            component.userStamp = null;
+            req.flush({
+                actions: [
+                    {
+                        id: 100,
+                        label: 'test',
+                        categories: [],
+                        component: 'testComponent',
+                    },
+                    {
+                        id: 101,
+                        label: 'test2',
+                        categories: [],
+                        component: 'test2Component',
+                    },
+                    {
+                        id: 102,
+                        label: 'test3',
+                        categories: [],
+                        component: 'test3Component',
+                    },
+                    {
+                        id: 103,
+                        label: 'test4',
+                        categories: [],
+                        component: 'test4Component',
+                    },
+                    {
+                        id: 104,
+                        label: 'test5',
+                        categories: [],
+                        component: 'test5Component',
+                    },
+                ],
+            });
+
+            spyOn(component, 'loadActions').and.returnValue(Promise.resolve({
+                actions: [
+                    {
+                        id: 100,
+                        label: 'test',
+                        categories: [],
+                        component: 'testComponent',
+                    },
+                    {
+                        id: 101,
+                        label: 'test2',
+                        categories: [],
+                        component: 'test2Component',
+                    },
+                    {
+                        id: 102,
+                        label: 'test3',
+                        categories: [],
+                        component: 'test3Component',
+                    },
+                    {
+                        id: 103,
+                        label: 'test4',
+                        categories: [],
+                        component: 'test4Component',
+                    },
+                    {
+                        id: 104,
+                        label: 'test5',
+                        categories: [],
+                        component: 'test5Component',
+                    },
+                ],
+            }));
+
+            fixture.detectChanges();
+            tick(300);
+
+            expect(component.loading).toBe(false);
+
+            fixture.detectChanges();
+            tick(300);
+
+            // Should return 2 actions buttons
+            const actionButtons = fixture.nativeElement.querySelectorAll('.action-button');
+            expect(actionButtons.length).toEqual(2);
+
+            // Should return 1 button for validation and one more for reject
+            expect(fixture.nativeElement.querySelectorAll('.action-button-valid').length).toEqual(1);
+            expect(fixture.nativeElement.querySelectorAll('.action-button-valid')[0].title).toBe('test')
+            expect(fixture.nativeElement.querySelectorAll('.action-button-reject').length).toEqual(1);
+
+            expect(fixture.nativeElement.querySelectorAll('.more-actions-valid').length).toEqual(1);
+
+            fixture.nativeElement.querySelector('.more-actions-valid').click();
+
+            fixture.detectChanges();
+            tick(300);
+
+            // Should return 3 more action buttons for validation
+            expect(document.querySelectorAll('.more-actions-valid-item').length).toEqual(3);
+
+            const firstItem = document.querySelectorAll('.more-actions-valid-item')[0] as HTMLElement;
+            expect(firstItem.title).toBe('test3');
+
+            firstItem.click();
+
+
+            fixture.detectChanges();
+            tick(500);
+
+            // After click, the main button should be 'test3'
+            expect(fixture.nativeElement.querySelector('.action-button-valid').title).toBe('test3');
         }));
     });
 });
