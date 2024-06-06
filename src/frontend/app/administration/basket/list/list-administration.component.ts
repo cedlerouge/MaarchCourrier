@@ -8,6 +8,8 @@ import { Observable, of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { DndDropEvent } from 'ngx-drag-drop';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { ActionsService } from '@appRoot/actions/actions.service';
+import { MessageActionInterface } from '@models/actions.model';
 
 declare let $: any;
 
@@ -288,8 +290,16 @@ export class ListAdministrationComponent implements OnInit {
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
-        private functions: FunctionsService
-    ) { }
+        private functions: FunctionsService,
+        private actionsService: ActionsService
+    ) {
+        this.actionsService.catchActionWithData().subscribe((event: MessageActionInterface) => {
+            if (event.id === 'actionUnlinked' && this.selectedListEvent === 'signatureBookAction') {
+                this.setActionsChosen(event.data);
+                this.saveTemplate();
+            }
+        })
+    }
 
     async ngOnInit(): Promise<void> {
         await this.initCustomFields();
@@ -328,36 +338,7 @@ export class ListAdministrationComponent implements OnInit {
         this.selectedProcessToolClone = JSON.parse(JSON.stringify(this.selectedProcessTool));
         this.displayedSecondaryDataClone = JSON.parse(JSON.stringify(this.displayedSecondaryData));
 
-        this.actionsChosen = (this.currentBasketGroup.groupActions as ActionAdminInterface[]).filter((action: any) => action.checked);
-        this.actionsChosen = this.formatActions(this.actionsChosen);
-
-        // Check if the 'actions' list in 'list_event_data' is empty, and if so, initialize it as an empty array
-        if (this.functions.empty(this.currentBasketGroup.list_event_data?.actions)) {
-            this.currentBasketGroup.list_event_data.actions = [];
-        }
-
-        // For each action in 'actionsChosen', set the 'type' to 'reject' if the actionPage is found in 'refusalActionsId', otherwise set it to 'valid'
-        this.actionsChosen.forEach((action) => {
-            action['type'] = this.refusalActionsId.indexOf(action.actionPage) > -1 ? 'reject' : 'valid';
-        });
-
-        // Concatenate 'actionsChosen' with the existing actions in 'currentBasketGroup.list_event_data.actions'
-        this.actionsChosen = this.currentBasketGroup.list_event_data.actions.concat(this.actionsChosen);
-
-        // Filter 'actionsChosen' to remove duplicates based on the 'id' property
-        this.actionsChosen = this.actionsChosen.filter((action: ActionAdminInterface, index: number, self: ActionAdminInterface[]) =>
-            index === self.findIndex((t) => t.id === action.id)
-        );
-
-        // Filter 'actionsChosen' to get all actions of type 'valid' and assign them to 'availableValidationsActions'
-        this.availableValidationsActions = this.actionsChosen.filter((action: ActionAdminInterface) => action.type === 'valid');
-
-        // Filter 'actionsChosen' to get all actions of type 'reject' and assign them to 'availableRefusalActions'
-        this.availableRefusalActions = this.actionsChosen.filter((action: ActionAdminInterface) => action.type === 'reject');
-
-        // Create deep clones of 'availableValidationsActions' and 'availableRefusalActions'
-        this.availableValidationsActionsClone = JSON.parse(JSON.stringify(this.availableValidationsActions));
-        this.availableRefusalActionsClone = JSON.parse(JSON.stringify(this.availableRefusalActions));
+        this.setActionsChosen();
     }
 
     initCustomFields() {
@@ -581,6 +562,43 @@ export class ListAdministrationComponent implements OnInit {
             type: action.type ?? '',
             defaultAction: action.default_action_list
         }));
+    }
+
+    setActionsChosen(action: ActionAdminInterface = null): void {
+        this.actionsChosen = this.currentBasketGroup?.groupActions.filter((action: any) => action.checked);
+        this.actionsChosen = this.formatActions(this.actionsChosen);
+
+        // Check if the 'actions' list in 'list_event_data' is empty, and if so, initialize it as an empty array
+        if (this.functions.empty(this.currentBasketGroup.list_event_data?.actions)) {
+            this.currentBasketGroup.list_event_data.actions = [];
+        }
+
+        // For each action in 'actionsChosen', set the 'type' to 'reject' if the actionPage is found in 'refusalActionsId', otherwise set it to 'valid'
+        this.actionsChosen.forEach((action) => {
+            action['type'] = this.refusalActionsId.indexOf(action.actionPage) > -1 ? 'reject' : 'valid';
+        });
+
+        // Concatenate 'actionsChosen' with the existing actions in 'currentBasketGroup.list_event_data.actions'
+        this.actionsChosen = this.currentBasketGroup.list_event_data.actions.concat(this.actionsChosen);
+
+        // Filter 'actionsChosen' to remove duplicates based on the 'id' property
+        this.actionsChosen = this.actionsChosen.filter((action: ActionAdminInterface, index: number, self: ActionAdminInterface[]) =>
+            index === self.findIndex((t) => t.id === action.id)
+        );
+
+        if (action !== null) {
+            this.actionsChosen = this.actionsChosen.filter((item: ActionAdminInterface) => action.id !== item.id);
+        }
+
+        // Filter 'actionsChosen' to get all actions of type 'valid' and assign them to 'availableValidationsActions'
+        this.availableValidationsActions = this.actionsChosen.filter((action: ActionAdminInterface) => action.type === 'valid');
+
+        // Filter 'actionsChosen' to get all actions of type 'reject' and assign them to 'availableRefusalActions'
+        this.availableRefusalActions = this.actionsChosen.filter((action: ActionAdminInterface) => action.type === 'reject');
+
+        // Create deep clones of 'availableValidationsActions' and 'availableRefusalActions'
+        this.availableValidationsActionsClone = JSON.parse(JSON.stringify(this.availableValidationsActions));
+        this.availableRefusalActionsClone = JSON.parse(JSON.stringify(this.availableRefusalActions));
     }
 
     private _filterData(value: any): string[] {

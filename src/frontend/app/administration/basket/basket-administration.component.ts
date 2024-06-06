@@ -13,6 +13,7 @@ import { AppService } from '@service/app.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { catchError, exhaustMap, filter, map, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { ActionsService } from '@appRoot/actions/actions.service';
 
 declare let $: any;
 
@@ -64,7 +65,8 @@ export class BasketAdministrationComponent implements OnInit {
         public dialog: MatDialog,
         private headerService: HeaderService,
         public appService: AppService,
-        private viewContainerRef: ViewContainerRef
+        private viewContainerRef: ViewContainerRef,
+        private actionsService: ActionsService
     ) { }
 
     applyFilter(filterValue: string) {
@@ -327,6 +329,7 @@ export class BasketAdministrationComponent implements OnInit {
             tap(() => {
                 this.notify.success(this.translate.instant('lang.actionsGroupBasketUpdated'));
                 this.loadingList = false;
+                this.actionsService.emitActionWithData({ id: 'actionUnlinked', data: action });
             }),
             catchError((err: any) => {
                 this.notify.handleSoftErrors(err);
