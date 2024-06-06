@@ -156,7 +156,7 @@ class GroupController
                 'description' => $data['group_desc'],
                 'clause'      => $data['security']['where_clause'],
                 'comment'     => $data['security']['maarch_comment'] ?? null,
-                'external_id' => $externalId['external_id '] ?? null
+                'external_id' => $externalId['external_id '] ?? '{}'
             ]
         );
 

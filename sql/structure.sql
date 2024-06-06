@@ -199,6 +199,7 @@ CREATE TABLE usergroups
   group_desc character varying(255),
   can_index boolean NOT NULL DEFAULT FALSE,
   indexation_parameters jsonb NOT NULL DEFAULT '{"actions" : [], "entities" : [], "keywords" : []}',
+  external_id jsonb DEFAULT '{}',
   CONSTRAINT usergroups_pkey PRIMARY KEY (group_id),
   CONSTRAINT usergroups_id_key UNIQUE (id)
 )
