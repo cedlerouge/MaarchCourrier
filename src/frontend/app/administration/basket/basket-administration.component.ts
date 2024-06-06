@@ -289,6 +289,7 @@ export class BasketAdministrationComponent implements OnInit {
             .subscribe(() => {
                 this.notify.success(this.translate.instant('lang.actionsGroupBasketUpdated'));
                 this.loadingList = false;
+                this.actionsService.emitActionWithData({ id: 'actionAdded', data: null });
             }, (err) => {
                 this.loadingList = false;
                 this.notify.error(err.error.errors);
