@@ -135,7 +135,6 @@ class GroupController
         }
 
         $env = new Environment();
-        $group = null;
         $externalId = null;
 
         if ($env->isNewInternalParapheurEnabled()) {
@@ -154,10 +153,10 @@ class GroupController
         GroupModel::create(
             [
                 'groupId'     => $data['group_id'],
-                'description' => $group->getLabel(),
+                'description' => $data['group_desc'],
                 'clause'      => $data['security']['where_clause'],
                 'comment'     => $data['security']['maarch_comment'] ?? null,
-                'external_id' => $externalId['external_id ']
+                'external_id' => $externalId['external_id '] ?? null
             ]
         );
 

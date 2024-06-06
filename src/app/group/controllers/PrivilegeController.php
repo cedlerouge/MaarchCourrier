@@ -81,7 +81,6 @@ class PrivilegeController
         if (empty($group)) {
             return $response->withStatus(400)->withJson(['errors' => 'Group not found']);
         }
-        $updatedGroupPrivilege = null;
         $env = new Environment();
 
         if ($env->isNewInternalParapheurEnabled()) {
@@ -93,7 +92,7 @@ class PrivilegeController
 
             $updateGroupPrivilegeFactory = new AddPrivilegeGroupInSignatoryGroupFactory();
             $updateGroupPrivilege = $updateGroupPrivilegeFactory->create();
-            $updatedGroupPrivilege = $updateGroupPrivilege->addPrivilege($newGroup);
+            $updateGroupPrivilege->addPrivilege($newGroup);
         }
 
         if (
@@ -103,8 +102,8 @@ class PrivilegeController
         }
 
         PrivilegeModel::addPrivilegeToGroup(['privilegeId' => $args['privilegeId'], 'groupId' => $group['group_id']]);
-        $privilegeId = $updatedGroupPrivilege->getPrivileges();
-        if ($privilegeId[0] == 'admin_users') {
+
+        if ($args['privilegeId'] == 'admin_users') {
             $groups = GroupModel::get(['select' => ['id']]);
             $groups = array_column($groups, 'id');
 
@@ -112,7 +111,7 @@ class PrivilegeController
 
             PrivilegeModel::updateParameters([
                 'groupId' => $group['group_id'],
-                'privilegeId' => $privilegeId[0],
+                'privilegeId' => $args['privilegeId'],
                 'parameters' => $parameters
             ]);
         }
@@ -147,7 +146,6 @@ class PrivilegeController
             return $response->withStatus(400)->withJson(['errors' => 'Group not found']);
         }
 
-        $updatedGroupPrivilege = null;
         $env = new Environment();
 
         if ($env->isNewInternalParapheurEnabled()) {
@@ -160,7 +158,7 @@ class PrivilegeController
 
             $updateGroupPrivilegeFactory = new RemovePrivilegeGroupInSignatoryBookFactory();
             $updateGroupPrivilege = $updateGroupPrivilegeFactory->create();
-            $updatedGroupPrivilege = $updateGroupPrivilege->removePrivilege($newGroup);
+            $updateGroupPrivilege->removePrivilege($newGroup);
         }
 
         if (
@@ -168,10 +166,9 @@ class PrivilegeController
         ) {
             return $response->withStatus(204);
         }
-        $privilegeId = $updatedGroupPrivilege->getPrivileges();
 
         PrivilegeModel::removePrivilegeToGroup([
-            'privilegeId' => $privilegeId[0],
+            'privilegeId' => $args['privilegeId'],
             'groupId' => $group['group_id']
         ]);
 
