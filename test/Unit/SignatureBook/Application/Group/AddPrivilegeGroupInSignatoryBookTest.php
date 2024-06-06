@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief Signature Book User Service Interface
+ * @brief Add Privilege Group In Signatory Book Test
  * @author dev@maarch.org
  */
 

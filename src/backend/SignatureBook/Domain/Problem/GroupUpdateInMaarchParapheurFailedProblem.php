@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief Signature Book User Service Interface
+ * @brief Group Update In Maarch Parapheur Failed Problem
  * @author dev@maarch.org
  */
 

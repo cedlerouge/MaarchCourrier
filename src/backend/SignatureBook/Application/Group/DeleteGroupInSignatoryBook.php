@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief Signature Book User Service Interface
+ * @brief Delete privilege group in signatory book
  * @author dev@maarch.org
  */
 

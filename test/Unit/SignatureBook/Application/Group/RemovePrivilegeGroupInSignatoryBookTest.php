@@ -1,5 +1,17 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief Remove Privilege Group In Signatory Book Test
+ * @author dev@maarch.org
+ */
+
 namespace Unit\SignatureBook\Application\Group;
 
 use MaarchCourrier\Group\Domain\Group;
@@ -14,7 +26,6 @@ use PHPUnit\Framework\TestCase;
 
 class RemovePrivilegeGroupInSignatoryBookTest extends TestCase
 {
-
     private MaarchParapheurGroupServiceMock $maarchParapheurGroupServiceMock;
     private RemovePrivilegeGroupInSignatoryBook $removePrivilegeGroupInSignatoryBook;
     private SignatureServiceJsonConfigLoaderMock $signatureServiceJsonConfigLoaderMock;

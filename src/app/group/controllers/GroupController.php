@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief Signature Book User Service Interface
+ * @brief Group Controller
  * @author dev@maarch.org
  */
 

@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief User Repository Interface
+ * @brief Group Interface
  * @author dev@maarch.org
  */
 

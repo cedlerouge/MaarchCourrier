@@ -8,9 +8,10 @@
  */
 
 /**
- * @brief Signature Book User Service Interface
+ * @brief Create And Update Group In Signatory Group Factory
  * @author dev@maarch.org
  */
+
 
 namespace MaarchCourrier\SignatureBook\Infrastructure\Factory;
 

@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief CreateAndUpdateUserInSignatoryBookTest
+ * @brief Create And Update Group In Signatory Book Test
  * @author dev@maarch.org
  */
 

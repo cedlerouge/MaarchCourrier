@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief Signature Book User Service Interface
+ * @brief Privilege Checker
  * @author dev@maarch.org
  */
 
