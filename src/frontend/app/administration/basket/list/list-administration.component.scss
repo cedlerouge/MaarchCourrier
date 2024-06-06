@@ -307,7 +307,7 @@
   background: white;
   border-radius: 4px;
   max-height: 310px;
-  min-height: 310px;
+  height: 250px !important;
   overflow: auto;
 }
 
@@ -365,7 +365,7 @@
 
   .valid , .reject {
     position: absolute;
-    top: 130px;
+    top: 85px;
     left: 285px;
     font-size: 100px;
     opacity: 0.2;

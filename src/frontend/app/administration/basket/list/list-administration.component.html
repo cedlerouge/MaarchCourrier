@@ -46,9 +46,9 @@
             {{'lang.goToNextDocument' | translate}}
         </mat-slide-toggle>
     </div>
-    <ng-container *ngIf="actionChosen.length > 0">
+    <ng-container *ngIf="actionsChosen.length > 0">
         <mat-divider></mat-divider>
-        <div class="title">
+        <div class="title" [title]="'lang.internalParaphActions' | translate">
             <span>{{'lang.internalParaphActions' | translate}}</span>
         </div>
         <div class="row actions-list">
@@ -66,15 +66,18 @@
                         </mat-icon>
                     </button>
                 </div>
-                <div id="validationActionsDiv" cdkDropList #validationActions="cdkDropList"
-                    [cdkDropListData]="availableValidationsActions" [cdkDropListConnectedTo]="[refusalActions]"
-                    class="cdk-list" (cdkDropListDropped)="drop($event, 'valid')">
+                <div id="validationActionsDiv" class="cdk-list"
+                    #validationActions="cdkDropList"
+                    cdkDropList
+                    [cdkDropListData]="availableValidationsActions"
+                    [cdkDropListConnectedTo]="[refusalActions]"
+                    (cdkDropListDropped)="drop($event, 'valid')">
                     <div *ngFor="let action of availableValidationsActions"
                         class="columns"
                         cdkDrag
-                        [title]="action.label_action"
-                        [attr.aria-label]="action.label_action">
-                            {{action.label_action}}
+                        [title]="action.actionLabel"
+                        [attr.aria-label]="action.actionLabel">
+                            {{action.actionLabel}}
                             <button mat-icon-button
                                 [title]="'lang.moveAction' | translate"
                                 (click)="moveAction(action, 'availableValidationsActions', 'availableRefusalActions', 'reject')">
@@ -88,8 +91,7 @@
                 <i class="fas fa-arrow-right"></i>
                 <i class="fas fa-arrow-left"></i>
             </div>
-
-            <div class="col-md-6 active-data">
+            <div class="col-md-6">
                 <div class="icons-list">
                     <mat-icon class="fa fa-thumbs-down reject" aria-hidden="true"></mat-icon>
                     <button mat-icon-button
@@ -109,9 +111,9 @@
                     <div *ngFor="let action of availableRefusalActions"
                         cdkDrag
                         class="columns"
-                        [title]="action.label_action"
-                        [attr.aria-label]="action.label_action">
-                        {{action.label_action}}
+                        [title]="action.actionLabel"
+                        [attr.aria-label]="action.actionLabel">
+                        {{action.actionLabel}}
                         <button mat-icon-button
                             [title]="'lang.moveAction' | translate"
                             (click)="moveAction(action, 'availableRefusalActions', 'availableValidationsActions', 'valid')">

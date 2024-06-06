@@ -225,7 +225,7 @@
                                     </div>
                                 </mat-tab>
                                 <mat-tab label="{{'lang.resultPage' | translate}}">
-                                    <app-list-administration
+                                    <app-list-administration *ngIf="!loadingList"
                                         [currentBasketGroup]="group"
                                         (refreshBasketGroup)="updateGroupInfo(group, $event)">
                                     </app-list-administration>

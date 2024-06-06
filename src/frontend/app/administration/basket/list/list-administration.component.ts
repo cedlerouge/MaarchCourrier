@@ -273,7 +273,7 @@ export class ListAdministrationComponent implements OnInit {
     };
     selectedProcessToolClone: string = null;
 
-    actionChosen: any[]= [];
+    actionsChosen: any[]= [];
 
     availableValidationsActions: any[] = [];
     availableValidationsActionsClone: any[] = [];
@@ -328,25 +328,36 @@ export class ListAdministrationComponent implements OnInit {
         this.selectedProcessToolClone = JSON.parse(JSON.stringify(this.selectedProcessTool));
         this.displayedSecondaryDataClone = JSON.parse(JSON.stringify(this.displayedSecondaryData));
 
-        if (this.functions.empty(this.currentBasketGroup.list_event_data?.actions)) {
-            this.actionChosen = (this.currentBasketGroup.groupActions as any[]).filter((action: any) => action.checked);
-            this.actionChosen.forEach((action: any) => {
-                if (this.refusalActionsId.indexOf(action.action_page) > -1) {
-                    action = { ...action, type: 'reject' };
-                    this.availableRefusalActions.push(action);
-                } else {
-                    action = { ...action, type: 'valid' };
-                    this.availableValidationsActions.push(action);
-                }
-            });
+        this.actionsChosen = (this.currentBasketGroup.groupActions as ActionAdminInterface[]).filter((action: any) => action.checked);
+        this.actionsChosen = this.formatActions(this.actionsChosen);
 
-        } else {
-            this.availableValidationsActions = this.currentBasketGroup.list_event_data?.actions.filter((action: any) => action.type === 'valid') ?? [];
-            this.availableRefusalActions = this.currentBasketGroup.list_event_data?.actions.filter((action: any) => action.type === 'reject') ?? [];
+        // Check if the 'actions' list in 'list_event_data' is empty, and if so, initialize it as an empty array
+        if (this.functions.empty(this.currentBasketGroup.list_event_data?.actions)) {
+            this.currentBasketGroup.list_event_data.actions = [];
         }
+
+        // For each action in 'actionsChosen', set the 'type' to 'reject' if the actionPage is found in 'refusalActionsId', otherwise set it to 'valid'
+        this.actionsChosen.forEach((action) => {
+            action['type'] = this.refusalActionsId.indexOf(action.actionPage) > -1 ? 'reject' : 'valid';
+        });
+
+        // Concatenate 'actionsChosen' with the existing actions in 'currentBasketGroup.list_event_data.actions'
+        this.actionsChosen = this.currentBasketGroup.list_event_data.actions.concat(this.actionsChosen);
+
+        // Filter 'actionsChosen' to remove duplicates based on the 'id' property
+        this.actionsChosen = this.actionsChosen.filter((action: ActionAdminInterface, index: number, self: ActionAdminInterface[]) =>
+            index === self.findIndex((t) => t.id === action.id)
+        );
+
+        // Filter 'actionsChosen' to get all actions of type 'valid' and assign them to 'availableValidationsActions'
+        this.availableValidationsActions = this.actionsChosen.filter((action: ActionAdminInterface) => action.type === 'valid');
+
+        // Filter 'actionsChosen' to get all actions of type 'reject' and assign them to 'availableRefusalActions'
+        this.availableRefusalActions = this.actionsChosen.filter((action: ActionAdminInterface) => action.type === 'reject');
+
+        // Create deep clones of 'availableValidationsActions' and 'availableRefusalActions'
         this.availableValidationsActionsClone = JSON.parse(JSON.stringify(this.availableValidationsActions));
         this.availableRefusalActionsClone = JSON.parse(JSON.stringify(this.availableRefusalActions));
-
     }
 
     initCustomFields() {
@@ -453,9 +464,10 @@ export class ListAdministrationComponent implements OnInit {
             subInfos: this.displayedSecondaryData
         };
         if (this.selectedListEvent === 'signatureBookAction') {
+            const allSelectedActions: ActionAdminInterface[] = this.availableValidationsActions.concat(this.availableRefusalActions);
             this.selectedProcessTool = {
                 ... this.selectedProcessTool,
-                actions: this.availableValidationsActions.concat(this.availableRefusalActions)
+                actions: allSelectedActions
             }
         } else {
             delete this.selectedProcessTool.actions;
@@ -560,6 +572,17 @@ export class ListAdministrationComponent implements OnInit {
         this[arraySource].splice(index, 1);
     }
 
+    formatActions(actions: any[]): ActionAdminInterface[] {
+        return actions.map((action) => ({
+            id: action.id,
+            actionPage: action.action_page,
+            actionLabel: action.label_action,
+            component: action.component,
+            type: action.type ?? '',
+            defaultAction: action.default_action_list
+        }));
+    }
+
     private _filterData(value: any): string[] {
         let filterValue = '';
 
@@ -570,4 +593,13 @@ export class ListAdministrationComponent implements OnInit {
         }
         return this.availableData.filter((option: any) => option.label.toLowerCase().includes(filterValue));
     }
+}
+
+export interface ActionAdminInterface {
+    id: number;
+    actionPage: string;
+    actionLabel: string;
+    type: string;
+    component: string;
+    defaultAction: boolean;
 }
