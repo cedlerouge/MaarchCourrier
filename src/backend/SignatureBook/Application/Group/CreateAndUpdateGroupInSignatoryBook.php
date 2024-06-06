@@ -35,12 +35,12 @@ class CreateAndUpdateGroupInSignatoryBook
 
     /**
      * @param GroupInterface $group
-     * @return GroupInterface|bool
+     * @return GroupInterface
      * @throws GroupCreateInMaarchParapheurFailedProblem
      * @throws GroupUpdateInMaarchParapheurFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
      */
-    public function createAndUpdateGroup(GroupInterface $group): GroupInterface|bool
+    public function createAndUpdateGroup(GroupInterface $group): GroupInterface
     {
         $signatureBook = $this->signatureServiceJsonConfigLoader->getSignatureServiceConfig();
         if ($signatureBook === null) {
@@ -55,7 +55,6 @@ class CreateAndUpdateGroupInSignatoryBook
             if (!empty($groupIsUpdated['errors'])) {
                 throw new GroupUpdateInMaarchParapheurFailedProblem($groupIsUpdated);
             }
-            return true;
         } else {
             $maarchParapheurGroupId = $this->signatureBookGroupService->createGroup($group);
             if (!empty($maarchParapheurGroupId['errors'])) {

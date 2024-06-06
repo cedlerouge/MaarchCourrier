@@ -140,7 +140,7 @@ class GroupController
 
         if ($env->isNewInternalParapheurEnabled()) {
             $group = (new Group())
-                ->setLibelle($data['group_desc'])
+                ->setLabel($data['group_desc'])
                 ->setExternalId(null);
 
             $createGroupFactory = new CreateAndUpdateGroupInSignatoryBookFactory();
@@ -154,7 +154,7 @@ class GroupController
         GroupModel::create(
             [
                 'groupId'     => $data['group_id'],
-                'description' => $group->getLibelle(),
+                'description' => $group->getLabel(),
                 'clause'      => $data['security']['where_clause'],
                 'comment'     => $data['security']['maarch_comment'] ?? null,
                 'external_id' => $externalId['external_id ']
@@ -209,7 +209,7 @@ class GroupController
 
         if ($env->isNewInternalParapheurEnabled()) {
             $groupToUpdate = (new Group())
-                ->setLibelle($data['description'])
+                ->setLabel($data['description'])
                 ->setExternalId($externalId);
 
             $createGroupFactory = new CreateAndUpdateGroupInSignatoryBookFactory();

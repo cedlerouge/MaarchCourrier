@@ -14,18 +14,18 @@
 
 namespace MaarchCourrier\SignatureBook\Infrastructure\Factory;
 
-use MaarchCourrier\SignatureBook\Application\Group\UpdatePrivilegeGroupInSignatoryBook;
+use MaarchCourrier\SignatureBook\Application\Group\AddPrivilegeGroupInSignatoryBook;
 use MaarchCourrier\SignatureBook\Infrastructure\MaarchParapheurGroupService;
 use MaarchCourrier\SignatureBook\Infrastructure\SignatureServiceJsonConfigLoader;
 
-class UpdatePrivilegeGroupInSignatoryGroupFactory
+class AddPrivilegeGroupInSignatoryGroupFactory
 {
-    public function create(): UpdatePrivilegeGroupInSignatoryBook
+    public function create(): AddPrivilegeGroupInSignatoryBook
     {
         $signatureBookGroup = new MaarchParapheurGroupService();
         $signatureBookConfigLoader = new SignatureServiceJsonConfigLoader();
 
-        return new UpdatePrivilegeGroupInSignatoryBook(
+        return new AddPrivilegeGroupInSignatoryBook(
             $signatureBookGroup,
             $signatureBookConfigLoader,
         );

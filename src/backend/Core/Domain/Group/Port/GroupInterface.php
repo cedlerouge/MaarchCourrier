@@ -14,6 +14,8 @@
 
 namespace MaarchCourrier\Core\Domain\Group\Port;
 
+use MaarchCourrier\Core\Domain\Authorization\Port\PrivilegeInterface;
+
 interface GroupInterface
 {
     /**
@@ -30,13 +32,13 @@ interface GroupInterface
     /**
      * @return string
      */
-    public function getLibelle(): string;
+    public function getLabel(): string;
 
     /**
-     * @param string $libelle
+     * @param string $label
      * @return GroupInterface
      */
-    public function setLibelle(string $libelle): GroupInterface;
+    public function setLabel(string $label): GroupInterface;
 
     /**
      * @return array|null
@@ -50,13 +52,13 @@ interface GroupInterface
     public function setExternalId(?array $externalId): GroupInterface;
 
     /**
-     * @return string
+     * @return PrivilegeInterface[]
      */
-    public function getPrivilege(): string;
+    public function getPrivileges(): array;
 
     /**
-     * @param string $privilege
+     * @param array $privileges
      * @return GroupInterface
      */
-    public function setPrivilege(string $privilege): GroupInterface;
+    public function setPrivileges(array $privileges): GroupInterface;
 }

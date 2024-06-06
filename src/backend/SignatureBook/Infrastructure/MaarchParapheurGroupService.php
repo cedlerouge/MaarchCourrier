@@ -15,7 +15,6 @@
 namespace MaarchCourrier\SignatureBook\Infrastructure;
 
 use Exception;
-use Group\models\PrivilegeModel;
 use MaarchCourrier\Core\Domain\Group\Port\GroupInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookGroupServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookServiceConfig;
@@ -44,7 +43,7 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
     public function createGroup(GroupInterface $group): array|int
     {
         $userInfos = [
-            'label' => $group->getLibelle()
+            'label' => $group->getLabel()
         ];
 
         $response = CurlModel::exec([
@@ -69,13 +68,14 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
         }
     }
 
+
     /**
-     * @inheritDoc
+     * @throws Exception
      */
     public function updateGroup(GroupInterface $group): array|bool
     {
         $userInfos = [
-            'label' => $group->getLibelle()
+            'label' => $group->getLabel()
         ];
         $externalId = $group->getExternalId();
         $response = CurlModel::exec([
@@ -96,12 +96,14 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
             return true;
         } else {
             return $response['errors'] ??
-                ['errors' => 'Error occurred during the creation of the Maarch Parapheur group.'];
+                ['errors' => 'Error occurred during the update of the Maarch Parapheur group.'];
         }
     }
 
     /**
-     * @inheritDoc
+     * @param GroupInterface $group
+     * @return array|bool
+     * @throws Exception
      */
     public function deleteGroup(GroupInterface $group): array|bool
     {
@@ -128,7 +130,9 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
     }
 
     /**
-     * @inheritDoc
+     * @param GroupInterface $group
+     * @return string[]
+     * @throws Exception
      */
     public function getGroupPrivileges(GroupInterface $group): array
     {
@@ -156,8 +160,9 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
 
     /**
      * @param GroupInterface $group
-     * @param $privilege
-     * @inheritDoc
+     * @param string $privilege
+     * @param bool $checked
+     * @return array|bool
      * @throws Exception
      */
     public function updatePrivilege(GroupInterface $group, string $privilege, bool $checked): array|bool
@@ -185,30 +190,7 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
             return true;
         } else {
             return $response['errors'] ??
-                ['errors' => 'Error occurred during the creation of the Maarch Parapheur group.'];
+                ['errors' => 'Error occurred during the update of the group privilege in Maarch Parapheur.'];
         }
-    }
-
-    /**
-     * @param GroupInterface $group
-     * @return bool
-     * @throws Exception
-     */
-    public function isPrivilegeIsChecked(GroupInterface $group): bool
-    {
-        if ($group->getPrivilege() == 'sign_document') {
-            $privilegeToCheck = 'visa_documents';
-        } else {
-            $privilegeToCheck = 'sign_document';
-        }
-
-        $hasPrivilege =  PrivilegeModel::groupHasPrivilege(
-            ['privilegeId' => $privilegeToCheck, 'groupId' => $group->getGroupId()]
-        );
-
-        if ($hasPrivilege) {
-            return false;
-        }
-        return true;
     }
 }

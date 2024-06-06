@@ -14,23 +14,28 @@
 
 namespace MaarchCourrier\Group\Domain;
 
+use MaarchCourrier\Authorization\Infrastructure\PrivilegeChecker;
 use MaarchCourrier\Core\Domain\Group\Port\GroupInterface;
 
 class Group implements GroupInterface
 {
-    private ?array $externalId;
-    private string $libelle;
-    private string $privilege;
     private string $id;
+    private ?array $externalId;
+    private string $label;
 
-    public function getLibelle(): string
+    /**
+     * @return PrivilegeChecker
+     */
+    private array $privileges;
+
+    public function getLabel(): string
     {
-        return $this->libelle;
+        return $this->label;
     }
 
-    public function setLibelle(string $libelle): GroupInterface
+    public function setLabel(string $label): GroupInterface
     {
-        $this->libelle = $libelle;
+        $this->label = $label;
         return $this;
     }
 
@@ -45,17 +50,6 @@ class Group implements GroupInterface
         return $this;
     }
 
-    public function getPrivilege(): string
-    {
-        return $this->privilege;
-    }
-
-    public function setPrivilege(string $privilege): GroupInterface
-    {
-        $this->privilege = $privilege;
-        return $this;
-    }
-
     public function getGroupId(): string
     {
         return $this->id;
@@ -64,6 +58,24 @@ class Group implements GroupInterface
     public function setGroupId(string $id): GroupInterface
     {
         $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPrivileges(): array
+    {
+        return $this->privileges;
+    }
+
+    /**
+     * @param array $privileges
+     * @return GroupInterface
+     */
+    public function setPrivileges(array $privileges): GroupInterface
+    {
+        $this->privileges = $privileges;
         return $this;
     }
 }
