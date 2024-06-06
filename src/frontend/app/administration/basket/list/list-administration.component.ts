@@ -274,9 +274,14 @@ export class ListAdministrationComponent implements OnInit {
     selectedProcessToolClone: string = null;
 
     actionChosen: any[]= [];
+
     availableValidationsActions: any[] = [];
+    availableValidationsActionsClone: any[] = [];
+
     availableRefusalActions: any[] = [];
-    refusalACtionsId: string [] = ['interrupt_visa', 'rejection_visa_redactor', 'rejection_visa_previous', 'redirect_visa_entity']
+    availableRefusalActionsClone: any[] = [];
+
+    refusalActionsId: string [] = ['interrupt_visa', 'rejection_visa_redactor', 'rejection_visa_previous', 'redirect_visa_entity'];
 
 
     constructor(
@@ -323,17 +328,25 @@ export class ListAdministrationComponent implements OnInit {
         this.selectedProcessToolClone = JSON.parse(JSON.stringify(this.selectedProcessTool));
         this.displayedSecondaryDataClone = JSON.parse(JSON.stringify(this.displayedSecondaryData));
 
-        this.actionChosen = (this.currentBasketGroup.groupActions as any[]).filter((action: any) => action.checked);
+        if (this.functions.empty(this.currentBasketGroup.list_event_data?.actions)) {
+            this.actionChosen = (this.currentBasketGroup.groupActions as any[]).filter((action: any) => action.checked);
+            this.actionChosen.forEach((action: any) => {
+                if (this.refusalActionsId.indexOf(action.action_page) > -1) {
+                    action = { ...action, type: 'reject' };
+                    this.availableRefusalActions.push(action);
+                } else {
+                    action = { ...action, type: 'valid' };
+                    this.availableValidationsActions.push(action);
+                }
+            });
 
-        this.actionChosen.forEach((action: any) => {
-            if (this.refusalACtionsId.indexOf(action.action_page) > -1) {
-                action = { ...action, type: 'reject' };
-                this.availableRefusalActions.push(action);
-            } else {
-                action = { ...action, type: 'valid' };
-                this.availableValidationsActions.push(action);
-            }
-        })
+        } else {
+            this.availableValidationsActions = this.currentBasketGroup.list_event_data?.actions.filter((action: any) => action.type === 'valid') ?? [];
+            this.availableRefusalActions = this.currentBasketGroup.list_event_data?.actions.filter((action: any) => action.type === 'reject') ?? [];
+        }
+        this.availableValidationsActionsClone = JSON.parse(JSON.stringify(this.availableValidationsActions));
+        this.availableRefusalActionsClone = JSON.parse(JSON.stringify(this.availableRefusalActions));
+
     }
 
     initCustomFields() {
@@ -439,6 +452,14 @@ export class ListAdministrationComponent implements OnInit {
             templateColumns: this.selectedTemplateDisplayedSecondaryData,
             subInfos: this.displayedSecondaryData
         };
+        if (this.selectedListEvent === 'signatureBookAction') {
+            this.selectedProcessTool = {
+                ... this.selectedProcessTool,
+                actions: this.availableValidationsActions.concat(this.availableRefusalActions)
+            }
+        } else {
+            delete this.selectedProcessTool.actions;
+        }
 
         this.http.put('../rest/baskets/' + this.currentBasketGroup.basket_id + '/groups/' + this.currentBasketGroup.group_id, { 'list_display': objToSend, 'list_event': this.selectedListEvent, 'list_event_data': this.selectedProcessTool }).pipe(
             tap(() => {
@@ -449,6 +470,8 @@ export class ListAdministrationComponent implements OnInit {
                 this.selectedListEventClone = this.selectedListEvent;
                 this.selectedProcessToolClone = JSON.parse(JSON.stringify(this.selectedProcessTool));
                 this.selectedTemplateDisplayedSecondaryDataClone = JSON.parse(JSON.stringify(this.selectedTemplateDisplayedSecondaryData));
+                this.availableValidationsActionsClone = JSON.parse(JSON.stringify(this.availableValidationsActions));
+                this.availableRefusalActionsClone = JSON.parse(JSON.stringify(this.availableRefusalActions));
 
                 this.notify.success(this.translate.instant('lang.modificationsProcessed'));
                 this.refreshBasketGroup.emit(this.currentBasketGroup);
@@ -461,7 +484,14 @@ export class ListAdministrationComponent implements OnInit {
     }
 
     checkModif() {
-        if (JSON.stringify(this.displayedSecondaryData) === JSON.stringify(this.displayedSecondaryDataClone) && this.selectedListEvent === this.selectedListEventClone && JSON.stringify(this.selectedProcessTool) === JSON.stringify(this.selectedProcessToolClone) && JSON.stringify(this.selectedTemplateDisplayedSecondaryData) === JSON.stringify(this.selectedTemplateDisplayedSecondaryDataClone)) {
+        if (
+            JSON.stringify(this.displayedSecondaryData) === JSON.stringify(this.displayedSecondaryDataClone) &&
+            this.selectedListEvent === this.selectedListEventClone &&
+            JSON.stringify(this.selectedProcessTool) === JSON.stringify(this.selectedProcessToolClone) &&
+            JSON.stringify(this.selectedTemplateDisplayedSecondaryData) === JSON.stringify(this.selectedTemplateDisplayedSecondaryDataClone) &&
+            JSON.stringify(this.availableValidationsActions) === JSON.stringify(this.availableValidationsActionsClone) &&
+            JSON.stringify(this.availableRefusalActions) === JSON.stringify(this.availableRefusalActionsClone)
+        ) {
             return true;
         } else {
             return false;
@@ -501,7 +531,7 @@ export class ListAdministrationComponent implements OnInit {
         }
     }
 
-    switchAllData(source: string, target: string, type: string, ) {
+    moveAllActions(source: string, target: string, type: string, ): void {
         this[source].forEach((action: any) => {
             action['type'] = type;
             this[target].push(action);
@@ -509,7 +539,7 @@ export class ListAdministrationComponent implements OnInit {
         this[source] = [];
     }
 
-    drop(event: CdkDragDrop<string[]>, type: string = 'reject' || 'valid') {
+    drop(event: CdkDragDrop<string[]>, type: string = 'reject' || 'valid'): void {
         if (event.previousContainer === event.container) {
             moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
         } else {
@@ -521,6 +551,13 @@ export class ListAdministrationComponent implements OnInit {
             );
             event.container.data[event.currentIndex]['type'] = type;
         }
+    }
+
+    moveAction(action: any, arraySource: string, arrayTarget: string, type: string): void {
+        action.type = type;
+        this[arrayTarget].push(action);
+        const index: number = this[arraySource].indexOf(action);
+        this[arraySource].splice(index, 1);
     }
 
     private _filterData(value: any): string[] {
