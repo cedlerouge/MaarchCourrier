@@ -498,6 +498,8 @@ export class ListAdministrationComponent implements OnInit {
         this.availableData = JSON.parse(JSON.stringify(this.availableDataClone));
         this.selectedTemplateDisplayedSecondaryData = JSON.parse(JSON.stringify(this.selectedTemplateDisplayedSecondaryDataClone));
         this.dataControl.setValue('');
+        this.availableRefusalActions = JSON.parse(JSON.stringify(this.availableRefusalActionsClone));
+        this.availableValidationsActions = JSON.parse(JSON.stringify(this.availableValidationsActionsClone))
     }
 
     hasFolder() {
