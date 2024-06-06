@@ -22,6 +22,22 @@ class PrivilegeControllerTest extends CourrierTestCase
     private static $id = null;
     private static $resId = null;
 
+    protected function setUp(): void
+    {
+        $config = file_get_contents('config/config.json');
+        $config = json_decode($config, true);
+        $config['config']['newInternalParaph'] = false;
+        file_put_contents('config/config.json', json_encode($config, JSON_PRETTY_PRINT));
+    }
+
+    protected function tearDown(): void
+    {
+        $config = file_get_contents('config/config.json');
+        $config = json_decode($config, true);
+        $config['config']['newInternalParaph'] = true;
+        file_put_contents('config/config.json', json_encode($config, JSON_PRETTY_PRINT));
+    }
+
     public function testCreate()
     {
         $groupController = new GroupController();
