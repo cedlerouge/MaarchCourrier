@@ -291,7 +291,7 @@ export class BasketAdministrationComponent implements OnInit {
             .subscribe(() => {
                 this.notify.success(this.translate.instant('lang.actionsGroupBasketUpdated'));
                 this.loadingList = false;
-                if (this.signatureBookService.config.isNewInternalParaph) {
+                if (this.signatureBookService.config.isNewInternalParaph && group.list_event === 'signatureBookAction') {
                     setTimeout(() => {
                         this.listAdmin.refreshData('actionAdded', null);
                     }, 10);
@@ -336,7 +336,7 @@ export class BasketAdministrationComponent implements OnInit {
             tap(() => {
                 this.notify.success(this.translate.instant('lang.actionsGroupBasketUpdated'));
                 this.loadingList = false;
-                if (this.signatureBookService.config.isNewInternalParaph) {
+                if (this.signatureBookService.config.isNewInternalParaph && group.list_event === 'signatureBookAction') {
                     setTimeout(() => {
                         this.listAdmin.refreshData('actionUnlinked', action);
                     }, 0);
