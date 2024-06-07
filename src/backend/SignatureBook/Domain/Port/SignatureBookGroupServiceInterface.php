@@ -27,7 +27,7 @@ interface SignatureBookGroupServiceInterface
 
     public function setConfig(SignatureBookServiceConfig $config): SignatureBookGroupServiceInterface;
 
-    public function getGroupPrivileges(GroupInterface $group): array;
+    public function getGroupPrivileges(GroupInterface $group): bool|array;
 
     public function updatePrivilege(GroupInterface $group, string $privilege, bool $checked): array|bool;
 }

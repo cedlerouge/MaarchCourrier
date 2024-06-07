@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief Group Create In Maarch Parapheur Failed Problem
+ * @brief Group Update Privilege In Maarch Parapheur Failed Problem
  * @author dev@maarch.org
  */
 
@@ -16,13 +16,13 @@ namespace MaarchCourrier\SignatureBook\Domain\Problem;
 
 use MaarchCourrier\Core\Domain\Problem\Problem;
 
-class GroupCreateInMaarchParapheurFailedProblem extends Problem
+class GroupUpdatePrivilegeInSignatureBookFailedProblem extends Problem
 {
     public function __construct(array $content)
     {
         parent::__construct(
-            "Group creation in maarch parapheur failed :  " . $content["errors"],
-            403,
+            "Group update privilege in maarch parapheur failed :  " . $content["errors"],
+            500,
             [
                 'errors' => $content["errors"]
             ]

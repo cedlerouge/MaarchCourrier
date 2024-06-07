@@ -16,7 +16,7 @@ namespace Unit\SignatureBook\Application\Group;
 
 use MaarchCourrier\Group\Domain\Group;
 use MaarchCourrier\SignatureBook\Application\Group\DeleteGroupInSignatoryBook;
-use MaarchCourrier\SignatureBook\Domain\Problem\GroupDeletionInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupDeletionInSignatureBookFailedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\SignatureServiceJsonConfigLoaderMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Group\MaarchParapheurGroupServiceMock;
@@ -40,27 +40,43 @@ class DeleteGroupInSignatoryBookTest extends TestCase
 
     /**
      * @return void
-     * @throws GroupDeletionInMaarchParapheurFailedProblem
+     * @throws GroupDeletionInSignatureBookFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
      */
-    public function testTheGroupIsDeletedInMaarchParapheurThenTrueIsReturned(): void
+    public function testDeletesGroupSuccessfullyInSignatoryBook(): void
     {
         $externalId['internalParapheur'] = 5;
-        $group = (new Group())
-            ->setExternalId($externalId);
+        $group = (new Group())->setExternalId($externalId);
+
+        $this->maarchParapheurGroupServiceMock->groupIsDeleted = true;
         $deletedGroup = $this->deleteGroupInSignatoryBook->deleteGroup($group);
+
         $this->assertTrue($deletedGroup);
         $this->assertTrue($this->maarchParapheurGroupServiceMock->groupIsDeletedCalled);
     }
 
-    public function testTheDeletionOfTheGroupInMaarchParapheurFailedThenAnErrorIsReturned(): void
+    public function testThrowsErrorWhenGroupDeletionFailsInSignatoryBook(): void
     {
         $externalId['internalParapheur'] = 5;
-        $group = (new Group())
-            ->setExternalId($externalId);
+        $group = (new Group())->setExternalId($externalId);
+
         $this->maarchParapheurGroupServiceMock->groupIsDeleted =
             ['errors' => 'Error occurred during the deletion of the Maarch Parapheur group.'];
-        $this->expectException(GroupDeletionInMaarchParapheurFailedProblem::class);
+        $this->expectException(GroupDeletionInSignatureBookFailedProblem::class);
+
+        $this->deleteGroupInSignatoryBook->deleteGroup($group);
+    }
+
+    public function testThrowsProblemWhenSignatureBookConfigNotFound(): void
+    {
+        $this->signatureServiceJsonConfigLoaderMock->signatureServiceConfigLoader = null;
+        $externalId['internalParapheur'] = 5;
+
+        $group = (new Group())
+            ->setLabel('test')
+            ->setExternalId($externalId);
+
+        $this->expectException(SignatureBookNoConfigFoundProblem::class);
         $this->deleteGroupInSignatoryBook->deleteGroup($group);
     }
 }

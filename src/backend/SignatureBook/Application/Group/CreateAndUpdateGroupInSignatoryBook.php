@@ -17,8 +17,8 @@ namespace MaarchCourrier\SignatureBook\Application\Group;
 use MaarchCourrier\Core\Domain\Group\Port\GroupInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookGroupServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
-use MaarchCourrier\SignatureBook\Domain\Problem\GroupCreateInMaarchParapheurFailedProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdateInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupCreateInSignatureBookFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdateInSignatureBookFailedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 
 class CreateAndUpdateGroupInSignatoryBook
@@ -36,8 +36,8 @@ class CreateAndUpdateGroupInSignatoryBook
     /**
      * @param GroupInterface $group
      * @return GroupInterface
-     * @throws GroupCreateInMaarchParapheurFailedProblem
-     * @throws GroupUpdateInMaarchParapheurFailedProblem
+     * @throws GroupCreateInSignatureBookFailedProblem
+     * @throws GroupUpdateInSignatureBookFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
      */
     public function createAndUpdateGroup(GroupInterface $group): GroupInterface
@@ -53,12 +53,12 @@ class CreateAndUpdateGroupInSignatoryBook
         if (!empty($externalId)) {
             $groupIsUpdated = $this->signatureBookGroupService->updateGroup($group);
             if (!empty($groupIsUpdated['errors'])) {
-                throw new GroupUpdateInMaarchParapheurFailedProblem($groupIsUpdated);
+                throw new GroupUpdateInSignatureBookFailedProblem($groupIsUpdated);
             }
         } else {
             $maarchParapheurGroupId = $this->signatureBookGroupService->createGroup($group);
             if (!empty($maarchParapheurGroupId['errors'])) {
-                throw new GroupCreateInMaarchParapheurFailedProblem($maarchParapheurGroupId);
+                throw new GroupCreateInSignatureBookFailedProblem($maarchParapheurGroupId);
             } else {
                 $external['internalParapheur'] = $maarchParapheurGroupId;
                 $group->setExternalId($external);

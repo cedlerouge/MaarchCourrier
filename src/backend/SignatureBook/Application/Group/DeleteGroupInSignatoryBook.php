@@ -17,7 +17,7 @@ namespace MaarchCourrier\SignatureBook\Application\Group;
 use MaarchCourrier\Core\Domain\Group\Port\GroupInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookGroupServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
-use MaarchCourrier\SignatureBook\Domain\Problem\GroupDeletionInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupDeletionInSignatureBookFailedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 
 class DeleteGroupInSignatoryBook
@@ -35,7 +35,7 @@ class DeleteGroupInSignatoryBook
     /**
      * @param GroupInterface $group
      * @return bool
-     * @throws GroupDeletionInMaarchParapheurFailedProblem
+     * @throws GroupDeletionInSignatureBookFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
      */
     public function deleteGroup(GroupInterface $group): bool
@@ -49,7 +49,7 @@ class DeleteGroupInSignatoryBook
         if (!empty($externalId['internalParapheur'])) {
             $groupIsDeleted = $this->signatureBookGroupService->deleteGroup($group);
             if (!empty($groupIsDeleted['errors'])) {
-                throw new GroupDeletionInMaarchParapheurFailedProblem($groupIsDeleted);
+                throw new GroupDeletionInSignatureBookFailedProblem($groupIsDeleted);
             }
         }
         return true;

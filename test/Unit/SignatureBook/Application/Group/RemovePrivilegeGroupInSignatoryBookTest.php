@@ -18,7 +18,9 @@ use MaarchCourrier\Group\Domain\Group;
 use MaarchCourrier\SignatureBook\Application\Group\RemovePrivilegeGroupInSignatoryBook;
 use MaarchCourrier\SignatureBook\Domain\Privilege\SignDocumentPrivilege;
 use MaarchCourrier\SignatureBook\Domain\Privilege\VisaDocumentPrivilege;
-use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdatePrivilegeInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GetSignatureBookGroupPrivilegesFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdatePrivilegeInSignatureBookFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 use MaarchCourrier\Tests\Unit\Authorization\Mock\PrivilegeCheckerMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\SignatureServiceJsonConfigLoaderMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Group\MaarchParapheurGroupServiceMock;
@@ -42,68 +44,85 @@ class RemovePrivilegeGroupInSignatoryBookTest extends TestCase
             $this->privilegeCheckerMock,
         );
     }
-    public function testThePrivilegesAreActivatedAndWhenOneIsDeactivatedButTheSecondIsStillActivateItIsNotUpdatedInMaarchParapheur(): void
+    public function testDoesNotUpdatePrivilegesWhenOneIsDeactivatedButAnotherIsStillActive(): void
     {
         $externalId['internalParapheur'] = 5;
         $group = (new Group())
             ->setLabel('test')
-            ->setExternalId($externalId)
-            ->setPrivileges(['sign_document']);
+            ->setExternalId($externalId);
 
-        $this->maarchParapheurGroupServiceMock->isGroupPrivilegesRecovery = true;
+        $this->maarchParapheurGroupServiceMock->isPrivilegeRetrieveFailed = false;
         $this->maarchParapheurGroupServiceMock->privilegeIsChecked = false;
         $this->maarchParapheurGroupServiceMock->checked = true;
         $this->privilegeCheckerMock->hasGroupPrivilege = true;
-        $this->removePrivilegeGroupInSignatoryBook->removePrivilege($group);
+        $this->maarchParapheurGroupServiceMock->privilege = false;
+        $this->removePrivilegeGroupInSignatoryBook->removePrivilege($group, new SignDocumentPrivilege());
         $this->assertFalse($this->maarchParapheurGroupServiceMock->groupUpdatePrivilegeCalled);
         $this->assertTrue($this->privilegeCheckerMock->hasGroupPrivilegeCalled);
     }
 
-    /**
-     * @dataProvider privilegeProvider
-     */
-    public function testOnlyOnePrivilegeIsActivatedAndWhenIDeactivateItThePrivilegesAreUpdatedInMaarchParapheur($privilege): void
+
+    public function testUpdatesPrivilegesWhenSinglePrivilegeIsDeactivated(): void
     {
         $externalId['internalParapheur'] = 5;
         $group = (new Group())
             ->setLabel('test')
-            ->setExternalId($externalId)
-            ->setPrivileges([$privilege]);
+            ->setExternalId($externalId);
 
-        $this->maarchParapheurGroupServiceMock->isGroupPrivilegesRecovery = true;
+        $this->maarchParapheurGroupServiceMock->isPrivilegeRetrieveFailed = false;
         $this->maarchParapheurGroupServiceMock->privilegeIsChecked = false;
+        $this->maarchParapheurGroupServiceMock->privilege = false;
         $this->maarchParapheurGroupServiceMock->checked = true;
         $this->privilegeCheckerMock->hasGroupPrivilege = false;
 
-        $this->removePrivilegeGroupInSignatoryBook->removePrivilege($group);
+        $this->removePrivilegeGroupInSignatoryBook->removePrivilege($group, new VisaDocumentPrivilege());
 
         $this->assertTrue($this->maarchParapheurGroupServiceMock->groupUpdatePrivilegeCalled);
     }
 
-    public function privilegeProvider(): array
-    {
-        return [
-            ['sign_document', VisaDocumentPrivilege::class],
-            ['visa_documents', SignDocumentPrivilege::class],
-        ];
-    }
-
-    public function testOnlyOnePrivilegeIsActivatedAndWhenIDeactivateItAndErrorIsReturned(): void
+    public function testThrowsProblemWhenDeactivatingOnlyPrivilegeAndUpdateFails(): void
     {
         $externalId['internalParapheur'] = 5;
         $group = (new Group())
             ->setLabel('test')
-            ->setExternalId($externalId)
-            ->setPrivileges(['sign_document']);
+            ->setExternalId($externalId);
 
-        $this->maarchParapheurGroupServiceMock->isGroupPrivilegesRecovery = true;
+        $this->maarchParapheurGroupServiceMock->isPrivilegeRetrieveFailed = false;
         $this->maarchParapheurGroupServiceMock->privilegeIsChecked = false;
+        $this->maarchParapheurGroupServiceMock->privilege = false;
         $this->maarchParapheurGroupServiceMock->checked = true;
         $this->privilegeCheckerMock->hasGroupPrivilege = false;
         $this->maarchParapheurGroupServiceMock->privilegesGroupUpdated = [
             'errors' => 'Error occurred during the update of the group privilege in Maarch Parapheur.'
         ];
-        $this->expectException(GroupUpdatePrivilegeInMaarchParapheurFailedProblem::class);
-        $this->removePrivilegeGroupInSignatoryBook->removePrivilege($group);
+        $this->expectException(GroupUpdatePrivilegeInSignatureBookFailedProblem::class);
+        $this->removePrivilegeGroupInSignatoryBook->removePrivilege($group, new SignDocumentPrivilege());
+    }
+
+    public function testThrowsProblemWhenTheRetrieveOfTheGroupPrivilegeFailed(): void
+    {
+        $externalId['internalParapheur'] = 5;
+        $group = (new Group())
+            ->setLabel('test')
+            ->setExternalId($externalId);
+
+        $this->maarchParapheurGroupServiceMock->isPrivilegeRetrieveFailed = true;
+        $this->maarchParapheurGroupServiceMock->privilege = false;
+
+        $this->expectException(GetSignatureBookGroupPrivilegesFailedProblem::class);
+        $this->removePrivilegeGroupInSignatoryBook->removePrivilege($group, new SignDocumentPrivilege());
+    }
+
+    public function testThrowsProblemWhenSignatureBookConfigNotFound(): void
+    {
+        $this->signatureServiceJsonConfigLoaderMock->signatureServiceConfigLoader = null;
+        $externalId['internalParapheur'] = 5;
+
+        $group = (new Group())
+            ->setLabel('test')
+            ->setExternalId($externalId);
+
+        $this->expectException(SignatureBookNoConfigFoundProblem::class);
+        $this->removePrivilegeGroupInSignatoryBook->removePrivilege($group, new SignDocumentPrivilege());
     }
 }

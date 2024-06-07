@@ -22,8 +22,8 @@ use Group\models\PrivilegeModel;
 use Group\models\GroupModel;
 use MaarchCourrier\Core\Infrastructure\Environment;
 use MaarchCourrier\Group\Domain\Group;
-use MaarchCourrier\SignatureBook\Domain\Problem\GroupCreateInMaarchParapheurFailedProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdateInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupCreateInSignatureBookFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdateInSignatureBookFailedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 use MaarchCourrier\SignatureBook\Infrastructure\Factory\CreateAndUpdateGroupInSignatoryBookFactory;
 use MaarchCourrier\SignatureBook\Infrastructure\Factory\DeleteGroupInSignatoryBookFactory;
@@ -101,8 +101,8 @@ class GroupController
      * @param Request $request
      * @param Response $response
      * @return Response
-     * @throws GroupCreateInMaarchParapheurFailedProblem
-     * @throws GroupUpdateInMaarchParapheurFailedProblem
+     * @throws GroupCreateInSignatureBookFailedProblem
+     * @throws GroupUpdateInSignatureBookFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
      */
     public function create(Request $request, Response $response): Response
@@ -173,8 +173,8 @@ class GroupController
      * @param Response $response
      * @param array $aArgs
      * @return Response
-     * @throws GroupCreateInMaarchParapheurFailedProblem
-     * @throws GroupUpdateInMaarchParapheurFailedProblem
+     * @throws GroupCreateInSignatureBookFailedProblem
+     * @throws GroupUpdateInSignatureBookFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
      */
     public function update(Request $request, Response $response, array $aArgs): Response

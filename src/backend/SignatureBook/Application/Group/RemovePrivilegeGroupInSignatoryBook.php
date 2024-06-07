@@ -16,13 +16,14 @@ namespace MaarchCourrier\SignatureBook\Application\Group;
 
 use Exception;
 use MaarchCourrier\Core\Domain\Authorization\Port\PrivilegeCheckerInterface;
+use MaarchCourrier\Core\Domain\Authorization\Port\PrivilegeInterface;
 use MaarchCourrier\Core\Domain\Group\Port\GroupInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookGroupServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
 use MaarchCourrier\SignatureBook\Domain\Privilege\SignDocumentPrivilege;
 use MaarchCourrier\SignatureBook\Domain\Privilege\VisaDocumentPrivilege;
-use MaarchCourrier\SignatureBook\Domain\Problem\GetMaarchParapheurGroupPrivilegesFailedProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdatePrivilegeInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GetSignatureBookGroupPrivilegesFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdatePrivilegeInSignatureBookFailedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 
 class RemovePrivilegeGroupInSignatoryBook
@@ -38,11 +39,11 @@ class RemovePrivilegeGroupInSignatoryBook
      * @param GroupInterface $group
      * @return GroupInterface
      * @throws SignatureBookNoConfigFoundProblem
-     * @throws GroupUpdatePrivilegeInMaarchParapheurFailedProblem
-     * @throws GetMaarchParapheurGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
      * @throws Exception
      */
-    public function removePrivilege(GroupInterface $group): GroupInterface
+    public function removePrivilege(GroupInterface $group, PrivilegeInterface $privilege): GroupInterface
     {
         $signatureBook = $this->signatureServiceJsonConfigLoader->getSignatureServiceConfig();
         if ($signatureBook === null) {
@@ -54,27 +55,19 @@ class RemovePrivilegeGroupInSignatoryBook
         if (!empty($externalId)) {
             $groupPrivileges = $this->signatureBookGroupService->getGroupPrivileges($group);
             if (!empty($groupPrivileges['errors'])) {
-                throw new GetMaarchParapheurGroupPrivilegesFailedProblem($groupPrivileges);
+                throw new GetSignatureBookGroupPrivilegesFailedProblem($groupPrivileges);
             }
-            $result = array_filter($groupPrivileges, function ($groupPrivilege) {
-                return in_array($groupPrivilege['id'], ['indexation', 'manage_documents']);
-            });
-            $result = array_combine(array_column($result, 'id'), $result);
-            if (
-                (isset($result['indexation']) && $result['indexation']['checked'] === true) ||
-                (isset($result['manage_documents']) && $result['manage_documents']['checked'] === true)
-            ) {
-                $groupPrivileges = $group->getPrivileges();
+            if (!$groupPrivileges) {
                 $hasPrivilege = false;
                 $privileges = [];
-                if ($groupPrivileges[0] == 'sign_document') {
+                if ($privilege->getName() == 'sign_document') {
                     $privileges = [
                         'indexation',
                         'manage_documents',
                     ];
                     $hasPrivilege =
                         $this->privilegeChecker->hasGroupPrivilege($group, new VisaDocumentPrivilege());
-                } elseif ($groupPrivileges[0] == 'visa_documents') {
+                } elseif ($privilege->getName() == 'visa_documents') {
                     $privileges = [
                         'indexation',
                         'manage_documents',
@@ -87,7 +80,7 @@ class RemovePrivilegeGroupInSignatoryBook
                         $isPrivilegeUpdated =
                             $this->signatureBookGroupService->updatePrivilege($group, $privilege, false);
                         if (!empty($isPrivilegeUpdated['errors'])) {
-                            throw new GroupUpdatePrivilegeInMaarchParapheurFailedProblem($isPrivilegeUpdated);
+                            throw new GroupUpdatePrivilegeInSignatureBookFailedProblem($isPrivilegeUpdated);
                         }
                     }
                 }

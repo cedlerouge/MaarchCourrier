@@ -16,8 +16,8 @@ namespace Unit\SignatureBook\Application\Group;
 
 use MaarchCourrier\Group\Domain\Group;
 use MaarchCourrier\SignatureBook\Application\Group\CreateAndUpdateGroupInSignatoryBook;
-use MaarchCourrier\SignatureBook\Domain\Problem\GroupCreateInMaarchParapheurFailedProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdateInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupCreateInSignatureBookFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdateInSignatureBookFailedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\SignatureServiceJsonConfigLoaderMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Group\MaarchParapheurGroupServiceMock;
@@ -40,11 +40,18 @@ class CreateAndUpdateGroupInSignatoryBookTest extends TestCase
 
     /**
      * @return void
-     * @throws GroupCreateInMaarchParapheurFailedProblem
-     * @throws GroupUpdateInMaarchParapheurFailedProblem
+     * @throws GroupCreateInSignatureBookFailedProblem
+     * @throws GroupUpdateInSignatureBookFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
      */
-    public function testTheGroupHasNoExternalIdSoAnAccountIsCreatedInMaarchParapheur(): void
+
+    /**
+     * @return void
+     * @throws GroupCreateInSignatureBookFailedProblem
+     * @throws GroupUpdateInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
+    public function testTheGroupHasNoExternalIdSoAnAccountIsCreatedInSignatoryBook(): void
     {
         $dataExpected['internalParapheur'] = 5;
         $expectedGroup = (new Group())
@@ -62,26 +69,26 @@ class CreateAndUpdateGroupInSignatoryBookTest extends TestCase
 
     /**
      * @throws SignatureBookNoConfigFoundProblem
-     * @throws GroupUpdateInMaarchParapheurFailedProblem
+     * @throws GroupUpdateInSignatureBookFailedProblem
      */
-    public function testTheGroupHasNoExternalIdSoAnAccountIsCreatedInMaarchParapheurButAnErrorOccurred(): void
+    public function testThrowsProblemWhenGroupHasNoExternalIdAndCreationInSignatoryBookFails(): void
     {
         $group = (new Group())
             ->setLabel('test')
             ->setExternalId(null);
         $this->maarchParapheurGroupServiceMock->groupCreated =
             ['errors' => 'Error occurred during the creation of the Maarch Parapheur group.'];
-        $this->expectException(GroupCreateInMaarchParapheurFailedProblem::class);
+        $this->expectException(GroupCreateInSignatureBookFailedProblem::class);
         $this->createAndUpdateGroupInSignatoryBook->createAndUpdateGroup($group);
     }
 
     /**
      * @return void
-     * @throws GroupCreateInMaarchParapheurFailedProblem
-     * @throws GroupUpdateInMaarchParapheurFailedProblem
+     * @throws GroupCreateInSignatureBookFailedProblem
+     * @throws GroupUpdateInSignatureBookFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
      */
-    public function testTheGroupAlreadyHasAnExternalIdThenTrueIsReturnedAndUserIsUpdate(): void
+    public function testTheGroupAlreadyHasAnExternalIdThenTheUserIsUpdate(): void
     {
         $dataExpected['internalParapheur'] = 5;
         $expectedGroup = (new Group())
@@ -94,11 +101,17 @@ class CreateAndUpdateGroupInSignatoryBookTest extends TestCase
             ->setExternalId($externalId);
 
         $this->maarchParapheurGroupServiceMock->groupUpdated = true;
-        $this->createAndUpdateGroupInSignatoryBook->createAndUpdateGroup($group);
+        $returnedGroup = $this->createAndUpdateGroupInSignatoryBook->createAndUpdateGroup($group);
+
+        $this->assertEquals($expectedGroup->getExternalId(), $returnedGroup->getExternalId());
         $this->assertTrue($this->maarchParapheurGroupServiceMock->groupUpdateCalled);
     }
 
-    public function testTheGroupAlreadyHasAnExternalIdButAnErrorOccurredDuringTheCreationInMaarchParapheur(): void
+    /**
+     * @throws SignatureBookNoConfigFoundProblem
+     * @throws GroupCreateInSignatureBookFailedProblem
+     */
+    public function testThrowsProblemWhenGroupHasExternalIdAndSignatoryBookCreationFails(): void
     {
         $externalId['internalParapheur'] = 5;
         $group = (new Group())
@@ -106,7 +119,42 @@ class CreateAndUpdateGroupInSignatoryBookTest extends TestCase
             ->setExternalId($externalId);
         $this->maarchParapheurGroupServiceMock->groupUpdated =
             ['errors' => 'Error occurred during the update of the Maarch Parapheur group.'];
-        $this->expectException(GroupUpdateInMaarchParapheurFailedProblem::class);
+        $this->expectException(GroupUpdateInSignatureBookFailedProblem::class);
         $this->createAndUpdateGroupInSignatoryBook->createAndUpdateGroup($group);
+    }
+
+    /**
+     * @return void
+     * @throws GroupCreateInSignatureBookFailedProblem
+     * @throws GroupUpdateInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
+    public function testThrowsProblemWhenSignatureBookConfigNotFound(): void
+    {
+        $this->signatureServiceJsonConfigLoaderMock->signatureServiceConfigLoader = null;
+
+        $group = (new Group())
+            ->setLabel('test')
+            ->setExternalId(null);
+
+        $this->expectException(SignatureBookNoConfigFoundProblem::class);
+        $this->createAndUpdateGroupInSignatoryBook->createAndUpdateGroup($group);
+    }
+
+    /**
+     * @throws GroupCreateInSignatureBookFailedProblem
+     * @throws GroupUpdateInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
+    public function testSuccessfullyCreatesGroupWhenNoExternalId(): void
+    {
+        $group = (new Group())
+            ->setLabel('test')
+            ->setExternalId(null);
+
+        $newGroup = $this->createAndUpdateGroupInSignatoryBook->createAndUpdateGroup($group);
+
+        $this->assertNotNull($newGroup->getExternalId());
+        $this->assertTrue($this->maarchParapheurGroupServiceMock->groupCreateCalled);
     }
 }

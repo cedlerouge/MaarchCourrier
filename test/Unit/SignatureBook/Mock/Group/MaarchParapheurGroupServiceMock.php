@@ -25,14 +25,13 @@ class MaarchParapheurGroupServiceMock implements SignatureBookGroupServiceInterf
     public bool $groupUpdateCalled = false;
     public array|bool $groupUpdated = false;
 
-    public array $privilege;
+    public array|bool $privilege;
     public bool $groupUpdatePrivilegeCalled = false;
     public bool $privilegeIsChecked = false;
     public bool $groupIsDeletedCalled = false;
     public bool|array $groupIsDeleted = false;
     public bool|array $privilegesGroupUpdated = false;
-    public bool $isGroupPrivilegesRecovery = false;
-    public bool $isPrivilegeIsCheckedCalled = false;
+    public bool $isPrivilegeRetrieveFailed = false;
     public bool $checked = false;
 
     /**
@@ -66,25 +65,12 @@ class MaarchParapheurGroupServiceMock implements SignatureBookGroupServiceInterf
         return $this;
     }
 
-    public function getGroupPrivileges(GroupInterface $group): array
+    public function getGroupPrivileges(GroupInterface $group): bool|array
     {
-        if ($this->isGroupPrivilegesRecovery === true) {
-            $this->privilege = [
-                [
-                    'id' => 'manage_documents',
-                    'checked' => $this->checked,
-                ],
-                [
-                    'id' => 'indexation',
-                    'checked' => $this->checked,
-                ]
-            ];
-        } else {
+        if ($this->isPrivilegeRetrieveFailed) {
             $this->privilege = ['errors' => 'Error occurred while retrieving group information.'];
         }
-
-
-        return $this->privilege;
+            return $this->privilege;
     }
 
     public function updatePrivilege(GroupInterface $group, string $privilege, bool $checked): array|bool
@@ -92,5 +78,4 @@ class MaarchParapheurGroupServiceMock implements SignatureBookGroupServiceInterf
         $this->groupUpdatePrivilegeCalled = true;
         return $this->privilegesGroupUpdated;
     }
-
 }

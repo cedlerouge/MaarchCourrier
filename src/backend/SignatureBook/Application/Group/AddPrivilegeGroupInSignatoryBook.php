@@ -14,11 +14,12 @@
 
 namespace MaarchCourrier\SignatureBook\Application\Group;
 
+use MaarchCourrier\Core\Domain\Authorization\Port\PrivilegeInterface;
 use MaarchCourrier\Core\Domain\Group\Port\GroupInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookGroupServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
-use MaarchCourrier\SignatureBook\Domain\Problem\GetMaarchParapheurGroupPrivilegesFailedProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdatePrivilegeInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GetSignatureBookGroupPrivilegesFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdatePrivilegeInSignatureBookFailedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 
 class AddPrivilegeGroupInSignatoryBook
@@ -31,12 +32,13 @@ class AddPrivilegeGroupInSignatoryBook
 
     /**
      * @param GroupInterface $group
+     * @param PrivilegeInterface $privilege
      * @return GroupInterface
-     * @throws GetMaarchParapheurGroupPrivilegesFailedProblem
-     * @throws GroupUpdatePrivilegeInMaarchParapheurFailedProblem
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
      */
-    public function addPrivilege(GroupInterface $group): GroupInterface
+    public function addPrivilege(GroupInterface $group, PrivilegeInterface $privilege): GroupInterface
     {
         $signatureBook = $this->signatureServiceJsonConfigLoader->getSignatureServiceConfig();
         if ($signatureBook === null) {
@@ -49,19 +51,11 @@ class AddPrivilegeGroupInSignatoryBook
         if (!empty($externalId)) {
             $groupPrivileges = $this->signatureBookGroupService->getGroupPrivileges($group);
             if (!empty($groupPrivileges['errors'])) {
-                throw new GetMaarchParapheurGroupPrivilegesFailedProblem($groupPrivileges);
+                throw new GetSignatureBookGroupPrivilegesFailedProblem($groupPrivileges);
             }
-            $result = array_filter($groupPrivileges, function ($groupPrivilege) {
-                return in_array($groupPrivilege['id'], ['indexation', 'manage_documents']);
-            });
-            $result = array_combine(array_column($result, 'id'), $result);
-            if (
-                    (isset($result['indexation']) && $result['indexation']['checked'] === false) ||
-                    (isset($result['manage_documents']) && $result['manage_documents']['checked'] === false)
-            ) {
-                   $hasPrivileges = $group->getPrivileges();
-                   $privileges = [];
-                if ($hasPrivileges[0] == 'sign_document' || $hasPrivileges[0] == 'visa_documents') {
+            if ($groupPrivileges) {
+                $privileges = [];
+                if ($privilege->getName() == 'sign_document' || $privilege->getName() == 'visa_documents') {
                     $privileges = [
                       'indexation',
                       'manage_documents',
@@ -72,7 +66,7 @@ class AddPrivilegeGroupInSignatoryBook
                     $isPrivilegeUpdated =
                        $this->signatureBookGroupService->updatePrivilege($group, $privilege, true);
                     if (!empty($isPrivilegeUpdated['errors'])) {
-                           throw new GroupUpdatePrivilegeInMaarchParapheurFailedProblem($isPrivilegeUpdated);
+                           throw new GroupUpdatePrivilegeInSignatureBookFailedProblem($isPrivilegeUpdated);
                     }
                 }
             }

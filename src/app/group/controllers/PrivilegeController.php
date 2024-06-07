@@ -21,8 +21,10 @@ use Group\models\GroupModel;
 use Group\models\PrivilegeModel;
 use MaarchCourrier\Core\Infrastructure\Environment;
 use MaarchCourrier\Group\Domain\Group;
-use MaarchCourrier\SignatureBook\Domain\Problem\GetMaarchParapheurGroupPrivilegesFailedProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdatePrivilegeInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Privilege\SignDocumentPrivilege;
+use MaarchCourrier\SignatureBook\Domain\Privilege\VisaDocumentPrivilege;
+use MaarchCourrier\SignatureBook\Domain\Problem\GetSignatureBookGroupPrivilegesFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdatePrivilegeInSignatureBookFailedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 use MaarchCourrier\SignatureBook\Infrastructure\Factory\AddPrivilegeGroupInSignatoryGroupFactory;
 use MaarchCourrier\SignatureBook\Infrastructure\Factory\RemovePrivilegeGroupInSignatoryBookFactory;
@@ -47,8 +49,8 @@ class PrivilegeController
      * @param Response $response
      * @param array $args
      * @return Response
-     * @throws GetMaarchParapheurGroupPrivilegesFailedProblem
-     * @throws GroupUpdatePrivilegeInMaarchParapheurFailedProblem
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
      */
     public static function addPrivilege(Request $request, Response $response, array $args): Response
@@ -84,15 +86,19 @@ class PrivilegeController
         $env = new Environment();
 
         if ($env->isNewInternalParapheurEnabled()) {
+            if ($args['privilegeId'] == 'visa_documents') {
+                $privilege = new VisaDocumentPrivilege();
+            } else {
+                $privilege = new SignDocumentPrivilege();
+            }
             $externalId = json_decode($group['external_id'], true);
             $newGroup = (new Group())
                 ->setLabel($group['group_desc'])
-                ->setExternalId($externalId)
-                ->setPrivileges([$args['privilegeId']]);
+                ->setExternalId($externalId);
 
             $updateGroupPrivilegeFactory = new AddPrivilegeGroupInSignatoryGroupFactory();
             $updateGroupPrivilege = $updateGroupPrivilegeFactory->create();
-            $updateGroupPrivilege->addPrivilege($newGroup);
+            $updateGroupPrivilege->addPrivilege($newGroup, $privilege);
         }
 
         if (
@@ -124,8 +130,8 @@ class PrivilegeController
      * @param Response $response
      * @param array $args
      * @return Response
-     * @throws GetMaarchParapheurGroupPrivilegesFailedProblem
-     * @throws GroupUpdatePrivilegeInMaarchParapheurFailedProblem
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
      */
     public static function removePrivilege(Request $request, Response $response, array $args): Response
@@ -149,16 +155,20 @@ class PrivilegeController
         $env = new Environment();
 
         if ($env->isNewInternalParapheurEnabled()) {
+            if ($args['privilegeId'] == 'visa_documents') {
+                $privilege = new VisaDocumentPrivilege();
+            } else {
+                $privilege = new SignDocumentPrivilege();
+            }
             $externalId = json_decode($group['external_id'], true);
             $newGroup = (new Group())
                 ->setLabel($group['group_desc'])
                 ->setExternalId($externalId)
-                ->setPrivileges([$args['privilegeId']])
                 ->setGroupId($group['group_id']);
 
-            $updateGroupPrivilegeFactory = new RemovePrivilegeGroupInSignatoryBookFactory();
-            $updateGroupPrivilege = $updateGroupPrivilegeFactory->create();
-            $updateGroupPrivilege->removePrivilege($newGroup);
+            $updateGroupPrivilege = (new RemovePrivilegeGroupInSignatoryBookFactory())
+                ->create();
+            $updateGroupPrivilege->removePrivilege($newGroup, $privilege);
         }
 
         if (

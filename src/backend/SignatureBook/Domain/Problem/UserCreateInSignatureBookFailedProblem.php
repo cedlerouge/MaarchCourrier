@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief User Update In Maarch Parapheur Failed Problem
+ * @brief User Create In Maarch Parapheur Failed Problem
  * @author dev@maarch.org
  */
 
@@ -16,7 +16,7 @@ namespace MaarchCourrier\SignatureBook\Domain\Problem;
 
 use MaarchCourrier\Core\Domain\Problem\Problem;
 
-class UserUpdateInMaarchParapheurFailedProblem extends Problem
+class UserCreateInSignatureBookFailedProblem extends Problem
 {
     /**
      * @param array $content
@@ -24,8 +24,8 @@ class UserUpdateInMaarchParapheurFailedProblem extends Problem
     public function __construct(array $content)
     {
         parent::__construct(
-            "user update in maarch parapheur failed : " . $content['errors'],
-            403,
+            "user creation in maarch parapheur failed : " . $content['errors'],
+            500,
             [
                 'errors' => $content['errors']
             ]

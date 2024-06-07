@@ -131,10 +131,10 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
 
     /**
      * @param GroupInterface $group
-     * @return string[]
+     * @return bool|array
      * @throws Exception
      */
-    public function getGroupPrivileges(GroupInterface $group): array
+    public function getGroupPrivileges(GroupInterface $group): bool|array
     {
         $externalId = $group->getExternalId();
         $response = CurlModel::exec([
@@ -151,10 +151,22 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
             ],
         ]);
 
-        if ($response['code'] === 200) {
-            return $response['response']['group']['privileges'];
-        } else {
+        if ($response['code'] !== 200) {
             return $response['errors'] ?? ['errors' => 'Error occurred while retrieving group information.'];
+        } else {
+            $result = $response['response']['group']['privileges'];
+            $result = array_filter($result, function ($result) {
+                return in_array($result['id'], ['indexation', 'manage_documents']);
+            });
+            $result = array_combine(array_column($result, 'id'), $result);
+            if (
+                ($result['indexation']['checked'] === false) ||
+                ($result['manage_documents']['checked'] === false)
+            ) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 

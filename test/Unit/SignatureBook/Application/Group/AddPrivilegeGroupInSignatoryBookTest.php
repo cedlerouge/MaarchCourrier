@@ -17,8 +17,9 @@ namespace Unit\SignatureBook\Application\Group;
 use MaarchCourrier\Core\Domain\Group\Port\GroupInterface;
 use MaarchCourrier\Group\Domain\Group;
 use MaarchCourrier\SignatureBook\Application\Group\AddPrivilegeGroupInSignatoryBook;
-use MaarchCourrier\SignatureBook\Domain\Problem\GetMaarchParapheurGroupPrivilegesFailedProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdatePrivilegeInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Privilege\SignDocumentPrivilege;
+use MaarchCourrier\SignatureBook\Domain\Problem\GetSignatureBookGroupPrivilegesFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdatePrivilegeInSignatureBookFailedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\SignatureServiceJsonConfigLoaderMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Group\MaarchParapheurGroupServiceMock;
@@ -42,59 +43,74 @@ class AddPrivilegeGroupInSignatoryBookTest extends TestCase
 
     /**
      * @return void
-     * @throws GroupUpdatePrivilegeInMaarchParapheurFailedProblem
-     * @throws GetMaarchParapheurGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
      */
-    public function testThePrivilegeIsNotActivatedInMaarchParapheurSoWeActivateItAndTrueIsReturned(): void
+    public function testActivatesPrivilegeWhenNotActivatedInSignatoryBook(): void
     {
         $externalId['internalParapheur'] = 5;
         $group = (new Group())
             ->setLabel('test')
-            ->setExternalId($externalId)
-            ->setPrivileges(['sign_document']);
+            ->setExternalId($externalId);
 
-        $this->maarchParapheurGroupServiceMock->isGroupPrivilegesRecovery = true;
-        $updatePrivilege = $this->addPrivilegeGroupInSignatoryBook->addPrivilege($group);
+        $this->maarchParapheurGroupServiceMock->isPrivilegeRetrieveFailed = false;
+        $this->maarchParapheurGroupServiceMock->privilege = true;
+        $updatePrivilege = $this->addPrivilegeGroupInSignatoryBook->addPrivilege($group, new SignDocumentPrivilege());
         $this->assertInstanceOf(GroupInterface::class, $updatePrivilege);
         $this->assertTrue($this->maarchParapheurGroupServiceMock->groupUpdatePrivilegeCalled);
     }
 
     /**
      * @return void
-     * @throws GetMaarchParapheurGroupPrivilegesFailedProblem
-     * @throws GroupUpdatePrivilegeInMaarchParapheurFailedProblem
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
      */
-    public function testThePrivilegesIsNotActivatedInMaarchParapheurSoWeActivateItButAnErrorIsReturned(): void
-    {
-        $externalId['internalParapheur'] = 5;
-        $group = (new Group())
-            ->setLabel('test')
-            ->setExternalId($externalId)
-            ->setPrivileges(['sign_document']);
-
-        $this->maarchParapheurGroupServiceMock->isGroupPrivilegesRecovery = true;
-        $this->maarchParapheurGroupServiceMock->privilegesGroupUpdated =
-            ['errors' => 'Error occurred during the creation of the Maarch Parapheur group.'];
-        $this->expectException(GroupUpdatePrivilegeInMaarchParapheurFailedProblem::class);
-        $this->addPrivilegeGroupInSignatoryBook->addPrivilege($group);
-    }
-
-    /**
-     * @return void
-     * @throws GetMaarchParapheurGroupPrivilegesFailedProblem
-     * @throws GroupUpdatePrivilegeInMaarchParapheurFailedProblem
-     * @throws SignatureBookNoConfigFoundProblem
-     */
-    public function testTheRecoveryOfThePrivilegesGroupInMaarchParapheurFailedThenAnErrorIsReturned(): void
+    public function testThrowsProblemWhenActivatingPrivilegeFailsInSignatoryBook(): void
     {
         $externalId['internalParapheur'] = 5;
         $group = (new Group())
             ->setLabel('test')
             ->setExternalId($externalId);
-        $this->maarchParapheurGroupServiceMock->isGroupPrivilegesRecovery = false;
-        $this->expectException(GetMaarchParapheurGroupPrivilegesFailedProblem::class);
-        $this->addPrivilegeGroupInSignatoryBook->addPrivilege($group);
+
+        $this->maarchParapheurGroupServiceMock->isPrivilegeRetrieveFailed = false;
+        $this->maarchParapheurGroupServiceMock->privilege = true;
+        $this->maarchParapheurGroupServiceMock->privilegesGroupUpdated = [
+            'errors' => 'Error occurred during the update of the group privilege in Maarch Parapheur.'
+        ];
+        $this->expectException(GroupUpdatePrivilegeInSignatureBookFailedProblem::class);
+        $this->addPrivilegeGroupInSignatoryBook->addPrivilege($group, new SignDocumentPrivilege());
+    }
+
+    /**
+     * @return void
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
+    public function testThrowsProblemWhenRetrievingPrivilegesGroupFailsInSignatoryBook(): void
+    {
+        $externalId['internalParapheur'] = 5;
+        $group = (new Group())
+            ->setLabel('test')
+            ->setExternalId($externalId);
+
+        $this->maarchParapheurGroupServiceMock->isPrivilegeRetrieveFailed = true;
+        $this->expectException(GetSignatureBookGroupPrivilegesFailedProblem::class);
+        $this->addPrivilegeGroupInSignatoryBook->addPrivilege($group, new SignDocumentPrivilege());
+    }
+
+    public function testThrowsProblemWhenSignatureBookConfigNotFound(): void
+    {
+        $this->signatureServiceJsonConfigLoaderMock->signatureServiceConfigLoader = null;
+        $externalId['internalParapheur'] = 5;
+
+        $group = (new Group())
+            ->setLabel('test')
+            ->setExternalId($externalId);
+
+        $this->expectException(SignatureBookNoConfigFoundProblem::class);
+        $this->addPrivilegeGroupInSignatoryBook->addPrivilege($group, new SignDocumentPrivilege());
     }
 }
