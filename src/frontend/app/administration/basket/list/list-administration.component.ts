@@ -599,8 +599,10 @@ export class ListAdministrationComponent implements OnInit {
     }
 
     refreshData(event: string, data: any): void {
-        this.setActionsChosen(event === 'actionAdded' ? null : data);
-        this.saveTemplate();
+        if (this.selectedListEvent === 'signatureBookAction') {
+            this.setActionsChosen(event === 'actionAdded' ? null : data);
+            this.saveTemplate();
+        }
     }
 
     private _filterData(value: any): string[] {
