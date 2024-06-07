@@ -14,6 +14,7 @@ import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { catchError, exhaustMap, filter, map, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { ListAdministrationComponent } from './list/list-administration.component';
+import { SignatureBookService } from '@appRoot/signatureBook/signature-book.service';
 
 declare let $: any;
 
@@ -60,12 +61,13 @@ export class BasketAdministrationComponent implements OnInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
+        public appService: AppService,
+        public dialog: MatDialog,
+        public signatureBookService: SignatureBookService,
         private route: ActivatedRoute,
         private router: Router,
         private notify: NotificationService,
-        public dialog: MatDialog,
         private headerService: HeaderService,
-        public appService: AppService,
         private viewContainerRef: ViewContainerRef
     ) { }
 
@@ -289,9 +291,11 @@ export class BasketAdministrationComponent implements OnInit {
             .subscribe(() => {
                 this.notify.success(this.translate.instant('lang.actionsGroupBasketUpdated'));
                 this.loadingList = false;
-                setTimeout(() => {
-                    this.listAdmin.refreshData('actionAdded', null);
-                }, 0);
+                if (this.signatureBookService.config.isNewInternalParaph) {
+                    setTimeout(() => {
+                        this.listAdmin.refreshData('actionAdded', null);
+                    }, 10);
+                }
             }, (err) => {
                 this.loadingList = false;
                 this.notify.error(err.error.errors);
@@ -332,9 +336,11 @@ export class BasketAdministrationComponent implements OnInit {
             tap(() => {
                 this.notify.success(this.translate.instant('lang.actionsGroupBasketUpdated'));
                 this.loadingList = false;
-                setTimeout(() => {
-                    this.listAdmin.refreshData('actionUnlinked', action);
-                }, 0);
+                if (this.signatureBookService.config.isNewInternalParaph) {
+                    setTimeout(() => {
+                        this.listAdmin.refreshData('actionUnlinked', action);
+                    }, 0);
+                }
             }),
             catchError((err: any) => {
                 this.notify.handleSoftErrors(err);

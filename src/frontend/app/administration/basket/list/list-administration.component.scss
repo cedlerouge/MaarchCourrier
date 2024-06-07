@@ -66,21 +66,6 @@
   margin-left: 5px;
 }
 
-.columns {
-  width: 100%;
-  height: 90px;
-  padding: 20px 10px;
-  border-bottom: solid 1px #ccc;
-  color: rgba(0, 0, 0, 0.87);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  box-sizing: border-box;
-  background: white;
-  font-size: 14px;
-}
-
 .mat-badge-content {
   background: #F99830;
 }
@@ -263,7 +248,31 @@
       padding: 0px;
       margin: 0px;
       color: #135f7f;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+
   }
+
+  .valid {
+    color: var(--maarch-color-success);
+  }
+
+  .reject {
+    color: var(--maarch-color-danger);
+  }
+
+  .valid , .reject {
+    font-size: 16px;
+    margin-right: 8px;
+    span {
+      font-size: 13px;
+      letter-spacing: 2px;
+    }
+  }
+
 }
 
 .empty-data {
@@ -302,10 +311,8 @@
 .cdk-list {
   width: 100%;
   max-width: 100%;
-  border: solid 1px #ccc;
   display: block;
   background: white;
-  border-radius: 4px;
   max-height: 310px;
   height: 250px !important;
   overflow: auto;
@@ -315,7 +322,8 @@
   width: 100%;
   height: 50px;
   padding: 20px 10px;
-  border-bottom: solid 1px #ccc;
+  border-bottom: solid 1px #ccc !important;
+  border-top: solid 1px #ccc !important;
   color: rgba(0, 0, 0, 0.87);
   display: flex;
   flex-direction: row;
@@ -362,22 +370,6 @@
   align-items: center;
   font-size: 25px;
   margin-right: 12px;
-
-  .valid , .reject {
-    position: absolute;
-    top: 85px;
-    left: 285px;
-    font-size: 100px;
-    opacity: 0.2;
-  }
-
-  .valid {
-    color: var(--maarch-color-success);
-  }
-
-  .reject {
-    color : var(--maarch-color-danger);
-  }
 }
 
 #validationActionsDiv, #refusalActionsDiv {
@@ -397,5 +389,9 @@
 
 .mat-icon-button:disabled {
   cursor: not-allowed;
+}
+
+.available-data {
+  width: 100% !important;
 }
 

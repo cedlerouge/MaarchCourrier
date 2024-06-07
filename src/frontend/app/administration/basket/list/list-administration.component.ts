@@ -8,6 +8,7 @@ import { Observable, of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { DndDropEvent } from 'ngx-drag-drop';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { SignatureBookService } from '@appRoot/signatureBook/signature-book.service';
 
 declare let $: any;
 
@@ -287,6 +288,7 @@ export class ListAdministrationComponent implements OnInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
+        public signatureBookService: SignatureBookService,
         private notify: NotificationService,
         private functions: FunctionsService
     ) { }
@@ -328,7 +330,9 @@ export class ListAdministrationComponent implements OnInit {
         this.selectedProcessToolClone = JSON.parse(JSON.stringify(this.selectedProcessTool));
         this.displayedSecondaryDataClone = JSON.parse(JSON.stringify(this.displayedSecondaryData));
 
-        this.setActionsChosen();
+        if (this.signatureBookService.config.isNewInternalParaph) {
+            this.setActionsChosen();
+        }
     }
 
     initCustomFields() {
