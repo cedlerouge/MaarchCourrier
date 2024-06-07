@@ -24,7 +24,7 @@ class UserUpdateInSignatureBookFailedProblem extends Problem
     public function __construct(array $content)
     {
         parent::__construct(
-            "user update in maarch parapheur failed : " . $content['errors'],
+            "user update in signature book failed : " . $content['errors'],
             500,
             [
                 'errors' => $content['errors']

@@ -14,7 +14,6 @@
 
 namespace MaarchCourrier\SignatureBook\Application\Group;
 
-use Exception;
 use MaarchCourrier\Core\Domain\Authorization\Port\PrivilegeCheckerInterface;
 use MaarchCourrier\Core\Domain\Authorization\Port\PrivilegeInterface;
 use MaarchCourrier\Core\Domain\Group\Port\GroupInterface;
@@ -37,11 +36,11 @@ class RemovePrivilegeGroupInSignatoryBook
 
     /**
      * @param GroupInterface $group
+     * @param PrivilegeInterface $privilege
      * @return GroupInterface
-     * @throws SignatureBookNoConfigFoundProblem
-     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
      * @throws GetSignatureBookGroupPrivilegesFailedProblem
-     * @throws Exception
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
      */
     public function removePrivilege(GroupInterface $group, PrivilegeInterface $privilege): GroupInterface
     {
@@ -60,14 +59,14 @@ class RemovePrivilegeGroupInSignatoryBook
             if (!$groupPrivileges) {
                 $hasPrivilege = false;
                 $privileges = [];
-                if ($privilege->getName() == 'sign_document') {
+                if ($privilege instanceof (SignDocumentPrivilege::class)) {
                     $privileges = [
                         'indexation',
                         'manage_documents',
                     ];
                     $hasPrivilege =
                         $this->privilegeChecker->hasGroupPrivilege($group, new VisaDocumentPrivilege());
-                } elseif ($privilege->getName() == 'visa_documents') {
+                } elseif ($privilege instanceof (VisaDocumentPrivilege::class)) {
                     $privileges = [
                         'indexation',
                         'manage_documents',

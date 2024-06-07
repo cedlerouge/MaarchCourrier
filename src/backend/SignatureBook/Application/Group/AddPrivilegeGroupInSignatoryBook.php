@@ -18,6 +18,8 @@ use MaarchCourrier\Core\Domain\Authorization\Port\PrivilegeInterface;
 use MaarchCourrier\Core\Domain\Group\Port\GroupInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookGroupServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
+use MaarchCourrier\SignatureBook\Domain\Privilege\SignDocumentPrivilege;
+use MaarchCourrier\SignatureBook\Domain\Privilege\VisaDocumentPrivilege;
 use MaarchCourrier\SignatureBook\Domain\Problem\GetSignatureBookGroupPrivilegesFailedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdatePrivilegeInSignatureBookFailedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
@@ -55,7 +57,10 @@ class AddPrivilegeGroupInSignatoryBook
             }
             if ($groupPrivileges) {
                 $privileges = [];
-                if ($privilege->getName() == 'sign_document' || $privilege->getName() == 'visa_documents') {
+                if (
+                    $privilege instanceof (SignDocumentPrivilege::class) ||
+                    $privilege instanceof (VisaDocumentPrivilege::class)
+                ) {
                     $privileges = [
                       'indexation',
                       'manage_documents',

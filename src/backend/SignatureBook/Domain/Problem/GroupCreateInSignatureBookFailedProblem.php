@@ -21,7 +21,7 @@ class GroupCreateInSignatureBookFailedProblem extends Problem
     public function __construct(array $content)
     {
         parent::__construct(
-            "Group creation in maarch parapheur failed :  " . $content["errors"],
+            "Group creation in signature book failed :  " . $content["errors"],
             500,
             [
                 'errors' => $content["errors"]

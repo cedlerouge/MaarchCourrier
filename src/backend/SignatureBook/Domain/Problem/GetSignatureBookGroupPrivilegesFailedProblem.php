@@ -21,7 +21,7 @@ class GetSignatureBookGroupPrivilegesFailedProblem extends Problem
     public function __construct(array $content)
     {
         parent::__construct(
-            "Get group privileges in maarch parapheur failed :  " . $content["errors"],
+            "Get group privileges in signature book failed :  " . $content["errors"],
             500,
             [
                 'errors' => $content["errors"]

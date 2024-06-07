@@ -8,6 +8,6 @@ class GetGroupPrivilegeFailedProblem extends Problem
 {
     public function __construct()
     {
-        parent::__construct("Get group privileges in maarch parapheur failed :  ", 403);
+        parent::__construct("Get group privileges in signature book failed :  ", 403);
     }
 }

@@ -88,17 +88,19 @@ class PrivilegeController
         if ($env->isNewInternalParapheurEnabled()) {
             if ($args['privilegeId'] == 'visa_documents') {
                 $privilege = new VisaDocumentPrivilege();
-            } else {
+            } elseif ($args['privilegeId'] == 'sign_document') {
                 $privilege = new SignDocumentPrivilege();
             }
-            $externalId = json_decode($group['external_id'], true);
-            $newGroup = (new Group())
-                ->setLabel($group['group_desc'])
-                ->setExternalId($externalId);
+            if (!empty($privilege)) {
+                $externalId = json_decode($group['external_id'], true);
+                $newGroup = (new Group())
+                    ->setLabel($group['group_desc'])
+                    ->setExternalId($externalId);
 
-            $updateGroupPrivilege = (new AddPrivilegeGroupInSignatoryGroupFactory())
-                ->create();
-            $updateGroupPrivilege->addPrivilege($newGroup, $privilege);
+                $updateGroupPrivilege = (new AddPrivilegeGroupInSignatoryGroupFactory())
+                    ->create();
+                $updateGroupPrivilege->addPrivilege($newGroup, $privilege);
+            }
         }
 
         if (
@@ -157,18 +159,20 @@ class PrivilegeController
         if ($env->isNewInternalParapheurEnabled()) {
             if ($args['privilegeId'] == 'visa_documents') {
                 $privilege = new VisaDocumentPrivilege();
-            } else {
+            } elseif ($args['privilegeId'] == 'sign_document') {
                 $privilege = new SignDocumentPrivilege();
             }
-            $externalId = json_decode($group['external_id'], true);
-            $newGroup = (new Group())
-                ->setLabel($group['group_desc'])
-                ->setExternalId($externalId)
-                ->setGroupId($group['group_id']);
+            if (!empty($privilege)) {
+                $externalId = json_decode($group['external_id'], true);
+                $newGroup = (new Group())
+                    ->setLabel($group['group_desc'])
+                    ->setExternalId($externalId)
+                    ->setGroupId($group['group_id']);
 
-            $updateGroupPrivilege = (new RemovePrivilegeGroupInSignatoryBookFactory())
-                ->create();
-            $updateGroupPrivilege->removePrivilege($newGroup, $privilege);
+                $updateGroupPrivilege = (new RemovePrivilegeGroupInSignatoryBookFactory())
+                    ->create();
+                $updateGroupPrivilege->removePrivilege($newGroup, $privilege);
+            }
         }
 
         if (

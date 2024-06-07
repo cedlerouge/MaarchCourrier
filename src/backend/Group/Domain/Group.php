@@ -23,11 +23,6 @@ class Group implements GroupInterface
     private ?array $externalId;
     private string $label;
 
-    /**
-     * @return PrivilegeInterface
-     */
-    private PrivilegeInterface $privileges;
-
     public function getLabel(): string
     {
         return $this->label;
@@ -58,22 +53,6 @@ class Group implements GroupInterface
     public function setGroupId(string $groupId): GroupInterface
     {
         $this->groupId = $groupId;
-        return $this;
-    }
-
-
-    public function getPrivileges(): PrivilegeInterface
-    {
-        return $this->privileges;
-    }
-
-    /**
-     * @param PrivilegeInterface $privileges
-     * @return GroupInterface
-     */
-    public function setPrivileges(PrivilegeInterface $privileges): GroupInterface
-    {
-        $this->privileges = $privileges;
         return $this;
     }
 }

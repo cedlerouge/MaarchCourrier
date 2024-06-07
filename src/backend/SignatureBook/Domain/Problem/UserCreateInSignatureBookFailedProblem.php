@@ -24,7 +24,7 @@ class UserCreateInSignatureBookFailedProblem extends Problem
     public function __construct(array $content)
     {
         parent::__construct(
-            "user creation in maarch parapheur failed : " . $content['errors'],
+            "user creation in signature book failed : " . $content['errors'],
             500,
             [
                 'errors' => $content['errors']

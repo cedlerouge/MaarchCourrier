@@ -21,7 +21,7 @@ class GroupUpdatePrivilegeInSignatureBookFailedProblem extends Problem
     public function __construct(array $content)
     {
         parent::__construct(
-            "Group update privilege in maarch parapheur failed :  " . $content["errors"],
+            "Group update privilege in signature book failed :  " . $content["errors"],
             500,
             [
                 'errors' => $content["errors"]

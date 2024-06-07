@@ -14,7 +14,6 @@
 
 namespace MaarchCourrier\Core\Domain\Group\Port;
 
-use MaarchCourrier\Core\Domain\Authorization\Port\PrivilegeInterface;
 
 interface GroupInterface
 {
@@ -29,8 +28,4 @@ interface GroupInterface
     public function getExternalId(): ?array;
 
     public function setExternalId(?array $externalId): GroupInterface;
-
-    public function getPrivileges(): PrivilegeInterface;
-
-    public function setPrivileges(PrivilegeInterface $privileges): GroupInterface;
 }
