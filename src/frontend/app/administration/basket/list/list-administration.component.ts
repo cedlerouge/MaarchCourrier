@@ -573,8 +573,13 @@ export class ListAdministrationComponent implements OnInit {
         this.actionsChosen = this.formatActions(this.actionsChosen);
 
         // Check if the 'actions' list in 'list_event_data' is empty, and if so, initialize it as an empty array
-        if (this.functions.empty(this.currentBasketGroup.list_event_data?.actions)) {
-            this.currentBasketGroup.list_event_data.actions = [];
+        if (this.functions.empty(this.currentBasketGroup?.list_event_data?.actions)) {
+            this.currentBasketGroup = {
+                ... this.currentBasketGroup,
+                list_event_data: {
+                    actions: []
+                }
+            }
         }
 
         // For each action in 'actionsChosen', set the 'type' to 'reject' if the actionPage is found in 'refusalActionsId', otherwise set it to 'valid'
