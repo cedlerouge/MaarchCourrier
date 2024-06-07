@@ -58,6 +58,7 @@
                     <button mat-icon-button
                         class="toggle-all-data"
                         [title]="'lang.moveAllActions' | translate"
+                        [disabled]="availableValidationsActions.length === 0"
                         (click)="moveAllActions('availableValidationsActions', 'availableRefusalActions', 'reject')">
                         <mat-icon
                             class="fas fa-arrow-right"
@@ -97,6 +98,7 @@
                     <button mat-icon-button
                         class="toggle-all-data"
                         [title]="'lang.moveAllActions' | translate"
+                        [disabled]="availableRefusalActions.length === 0"
                         (click)="moveAllActions('availableRefusalActions', 'availableValidationsActions', 'valid')">
                         <mat-icon
                             class="fas fa-arrow-left"
