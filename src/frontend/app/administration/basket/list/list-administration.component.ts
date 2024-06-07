@@ -295,10 +295,8 @@ export class ListAdministrationComponent implements OnInit {
     ) {
         this.actionsService.catchActionWithData().subscribe((event: MessageActionInterface) => {
             if (this.selectedListEvent === 'signatureBookAction') {
-                if (event.id === 'actionAdded') {
-                    this.saveTemplate();
-                } if (event.id === 'actionUnlinked') {
-                    this.setActionsChosen(event.data);
+                if (event.id === 'actionAdded' || event.id === 'actionUnlinked') {
+                    this.setActionsChosen(event.id === 'actionAdded' ? null : event.data);
                     this.saveTemplate();
                 }
             }
