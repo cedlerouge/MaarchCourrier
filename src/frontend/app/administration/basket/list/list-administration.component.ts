@@ -511,6 +511,9 @@ export class ListAdministrationComponent implements OnInit {
             };
         } else {
             this.selectedProcessTool = {};
+            if (ev.value === 'signatureBookAction' && this.signatureBookService.config.isNewInternalParaph) {
+                this.setActionsChosen();
+            }
         }
     }
 
