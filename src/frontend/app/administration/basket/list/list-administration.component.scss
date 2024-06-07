@@ -395,3 +395,7 @@
   padding: 10px;
 }
 
+.mat-icon-button:disabled {
+  cursor: not-allowed;
+}
+
