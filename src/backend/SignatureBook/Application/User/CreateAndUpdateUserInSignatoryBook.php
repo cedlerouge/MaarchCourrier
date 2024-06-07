@@ -18,8 +18,8 @@ use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookUserServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\UserCreateInMaarchParapheurFailedProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\UserUpdateInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\UserCreateInSignatureBookFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\UserUpdateInSignatureBookFailedProblem;
 
 class CreateAndUpdateUserInSignatoryBook
 {
@@ -37,8 +37,8 @@ class CreateAndUpdateUserInSignatoryBook
      * @param UserInterface $user
      * @return UserInterface
      * @throws SignatureBookNoConfigFoundProblem
-     * @throws UserCreateInMaarchParapheurFailedProblem
-     * @throws UserUpdateInMaarchParapheurFailedProblem
+     * @throws UserCreateInSignatureBookFailedProblem
+     * @throws UserUpdateInSignatureBookFailedProblem
      */
     public function createAndUpdateUser(UserInterface $user): UserInterface
     {
@@ -54,13 +54,13 @@ class CreateAndUpdateUserInSignatoryBook
             if ($this->signatureBookUserService->doesUserExists($externalId)) {
                 $userIsUpdated = $this->signatureBookUserService->updateUser($user);
                 if (!empty($userIsUpdated['errors'])) {
-                    throw new UserUpdateInMaarchParapheurFailedProblem($userIsUpdated);
+                    throw new UserUpdateInSignatureBookFailedProblem($userIsUpdated);
                 }
             } else {
                 $existingIds = $user->getExternalId();
                 $maarchParapheurUserId = $this->signatureBookUserService->createUser($user);
                 if (!empty($maarchParapheurUserId['errors'])) {
-                    throw new UserCreateInMaarchParapheurFailedProblem($maarchParapheurUserId);
+                    throw new UserCreateInSignatureBookFailedProblem($maarchParapheurUserId);
                 } else {
                     $existingIds['internalParapheur'] = $maarchParapheurUserId;
                     $user->setExternalId($existingIds);
@@ -69,7 +69,7 @@ class CreateAndUpdateUserInSignatoryBook
         } else {
             $maarchParapheurUserId = $this->signatureBookUserService->createUser($user);
             if (!empty($maarchParapheurUserId['errors'])) {
-                throw new UserCreateInMaarchParapheurFailedProblem($maarchParapheurUserId);
+                throw new UserCreateInSignatureBookFailedProblem($maarchParapheurUserId);
             } else {
                 $external['internalParapheur'] = $maarchParapheurUserId;
                 $user->setExternalId($external);
