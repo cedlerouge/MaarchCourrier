@@ -8,8 +8,6 @@ import { Observable, of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { DndDropEvent } from 'ngx-drag-drop';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { ActionsService } from '@appRoot/actions/actions.service';
-import { MessageActionInterface } from '@models/actions.model';
 
 declare let $: any;
 
@@ -290,18 +288,8 @@ export class ListAdministrationComponent implements OnInit {
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
-        private functions: FunctionsService,
-        private actionsService: ActionsService
-    ) {
-        this.actionsService.catchActionWithData().subscribe((event: MessageActionInterface) => {
-            if (this.selectedListEvent === 'signatureBookAction') {
-                if (event.id === 'actionAdded' || event.id === 'actionUnlinked') {
-                    this.setActionsChosen(event.id === 'actionAdded' ? null : event.data);
-                    this.saveTemplate();
-                }
-            }
-        })
-    }
+        private functions: FunctionsService
+    ) { }
 
     async ngOnInit(): Promise<void> {
         await this.initCustomFields();
@@ -608,6 +596,11 @@ export class ListAdministrationComponent implements OnInit {
         // Create deep clones of 'availableValidationsActions' and 'availableRefusalActions'
         this.availableValidationsActionsClone = JSON.parse(JSON.stringify(this.availableValidationsActions));
         this.availableRefusalActionsClone = JSON.parse(JSON.stringify(this.availableRefusalActions));
+    }
+
+    refreshData(event: string, data: any): void {
+        this.setActionsChosen(event === 'actionAdded' ? null : data);
+        this.saveTemplate();
     }
 
     private _filterData(value: any): string[] {

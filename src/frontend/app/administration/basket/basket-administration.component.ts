@@ -13,7 +13,7 @@ import { AppService } from '@service/app.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { catchError, exhaustMap, filter, map, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { ActionsService } from '@appRoot/actions/actions.service';
+import { ListAdministrationComponent } from './list/list-administration.component';
 
 declare let $: any;
 
@@ -27,6 +27,7 @@ export class BasketAdministrationComponent implements OnInit {
     @ViewChild('adminMenuTemplate', { static: true }) adminMenuTemplate: TemplateRef<any>;
     @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
     @ViewChild(MatSort, { static: false }) sort: MatSort;
+    @ViewChild('listAdmin', { static: false }) listAdmin: ListAdministrationComponent;
 
     dialogRef: MatDialogRef<any>;
 
@@ -65,8 +66,7 @@ export class BasketAdministrationComponent implements OnInit {
         public dialog: MatDialog,
         private headerService: HeaderService,
         public appService: AppService,
-        private viewContainerRef: ViewContainerRef,
-        private actionsService: ActionsService
+        private viewContainerRef: ViewContainerRef
     ) { }
 
     applyFilter(filterValue: string) {
@@ -289,7 +289,9 @@ export class BasketAdministrationComponent implements OnInit {
             .subscribe(() => {
                 this.notify.success(this.translate.instant('lang.actionsGroupBasketUpdated'));
                 this.loadingList = false;
-                this.actionsService.emitActionWithData({ id: 'actionAdded', data: null });
+                setTimeout(() => {
+                    this.listAdmin.refreshData('actionAdded', null);
+                }, 0);
             }, (err) => {
                 this.loadingList = false;
                 this.notify.error(err.error.errors);
@@ -330,7 +332,9 @@ export class BasketAdministrationComponent implements OnInit {
             tap(() => {
                 this.notify.success(this.translate.instant('lang.actionsGroupBasketUpdated'));
                 this.loadingList = false;
-                this.actionsService.emitActionWithData({ id: 'actionUnlinked', data: action });
+                setTimeout(() => {
+                    this.listAdmin.refreshData('actionUnlinked', action);
+                }, 0);
             }),
             catchError((err: any) => {
                 this.notify.handleSoftErrors(err);
