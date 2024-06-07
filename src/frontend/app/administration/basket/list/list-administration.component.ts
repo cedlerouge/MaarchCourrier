@@ -330,7 +330,7 @@ export class ListAdministrationComponent implements OnInit {
         this.selectedProcessToolClone = JSON.parse(JSON.stringify(this.selectedProcessTool));
         this.displayedSecondaryDataClone = JSON.parse(JSON.stringify(this.displayedSecondaryData));
 
-        if (this.signatureBookService.config.isNewInternalParaph) {
+        if (this.signatureBookService.config.isNewInternalParaph && this.selectedListEvent === 'signatureBookAction') {
             this.setActionsChosen();
         }
     }
@@ -603,8 +603,10 @@ export class ListAdministrationComponent implements OnInit {
     }
 
     refreshData(event: string, data: any): void {
-        this.setActionsChosen(event === 'actionAdded' ? null : data);
-        this.saveTemplate();
+        if (this.selectedListEvent === 'signatureBookAction') {
+            this.setActionsChosen(event === 'actionAdded' ? null : data);
+            this.saveTemplate();
+        }
     }
 
     private _filterData(value: any): string[] {
