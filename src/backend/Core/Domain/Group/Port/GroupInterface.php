@@ -14,7 +14,6 @@
 
 namespace MaarchCourrier\Core\Domain\Group\Port;
 
-
 interface GroupInterface
 {
     public function getGroupId(): string;

@@ -14,7 +14,6 @@
 
 namespace MaarchCourrier\Group\Domain;
 
-use MaarchCourrier\Core\Domain\Authorization\Port\PrivilegeInterface;
 use MaarchCourrier\Core\Domain\Group\Port\GroupInterface;
 
 class Group implements GroupInterface
