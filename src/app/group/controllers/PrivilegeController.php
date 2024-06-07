@@ -96,8 +96,8 @@ class PrivilegeController
                 ->setLabel($group['group_desc'])
                 ->setExternalId($externalId);
 
-            $updateGroupPrivilegeFactory = new AddPrivilegeGroupInSignatoryGroupFactory();
-            $updateGroupPrivilege = $updateGroupPrivilegeFactory->create();
+            $updateGroupPrivilege = (new AddPrivilegeGroupInSignatoryGroupFactory())
+                ->create();
             $updateGroupPrivilege->addPrivilege($newGroup, $privilege);
         }
 
