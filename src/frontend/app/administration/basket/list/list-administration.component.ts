@@ -611,6 +611,7 @@ export class ListAdministrationComponent implements OnInit {
         return actions.map((action) => ({
             id: action.id,
             type: action.type ?? '',
+            actionPage: action.action_page,
         }));
     }
 
@@ -629,4 +630,5 @@ export class ListAdministrationComponent implements OnInit {
 export interface BasketGroupListActionInterface {
     id: number;
     type: string;
+    actionPage: string;
 }
