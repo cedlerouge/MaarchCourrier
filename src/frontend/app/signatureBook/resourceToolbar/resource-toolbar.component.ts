@@ -1,10 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { TranslateService } from "@ngx-translate/core";
 import { PrivilegeService } from "@service/privileges.service";
 import { catchError, tap } from "rxjs/operators";
 import { of } from "rxjs";
 import { HttpClient } from "@angular/common/http";
 import { NotificationService } from "@service/notification/notification.service";
+import { VisaWorkflowComponent } from '@appRoot/visa/visa-workflow.component';
 
 @Component({
     selector: 'app-resource-toolbar',
@@ -12,6 +13,8 @@ import { NotificationService } from "@service/notification/notification.service"
     styleUrls: ['resource-toolbar.component.scss'],
 })
 export class ResourceToolbarComponent implements OnInit{
+    @ViewChild('appVisaWorkflow', { static: false }) appVisaWorkflow: VisaWorkflowComponent;
+
     @Input() resId: number;
     @Input() groupId: number;
 
@@ -142,4 +145,18 @@ export class ResourceToolbarComponent implements OnInit{
         ).subscribe();
     }
 
+    isToolModified(): boolean {
+        if (this.currentTool === 'visaCircuit' && this.appVisaWorkflow?.isModified()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    async saveTool(): Promise<void> {
+        if (this.currentTool === 'visaCircuit') {
+            await this.appVisaWorkflow?.saveVisaWorkflow();
+            this.loadBadges();
+        }
+    }
 }
