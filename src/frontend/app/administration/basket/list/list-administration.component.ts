@@ -439,10 +439,13 @@ export class ListAdministrationComponent implements OnInit {
             subInfos: this.displayedSecondaryData
         };
         if (this.selectedListEvent === 'signatureBookAction') {
-            const allSelectedActions: ActionAdminInterface[] = this.availableValidationsActions.concat(this.availableRefusalActions);
+            const allSelectedActions: BasketGroupListActionInterface[] = this.availableValidationsActions.concat(this.availableRefusalActions);
             this.selectedProcessTool = {
                 ... this.selectedProcessTool,
-                actions: allSelectedActions
+                actions: allSelectedActions.map((action: BasketGroupListActionInterface) => ({
+                    id: action.id,
+                    type: action.type
+                }))
             }
         } else {
             delete this.selectedProcessTool.actions;
@@ -552,18 +555,7 @@ export class ListAdministrationComponent implements OnInit {
         this[arraySource].splice(index, 1);
     }
 
-    formatActions(actions: any[]): ActionAdminInterface[] {
-        return actions.map((action) => ({
-            id: action.id,
-            actionPage: action.action_page,
-            actionLabel: action.label_action,
-            component: action.component,
-            type: action.type ?? '',
-            defaultAction: action.default_action_list
-        }));
-    }
-
-    setActionsChosen(action: ActionAdminInterface = null): void {
+    setActionsChosen(action: BasketGroupListActionInterface = null): void {
         this.actionsChosen = this.currentBasketGroup?.groupActions.filter((action: any) => action.checked);
         this.actionsChosen = this.formatActions(this.actionsChosen);
 
@@ -585,20 +577,25 @@ export class ListAdministrationComponent implements OnInit {
         // Concatenate 'actionsChosen' with the existing actions in 'currentBasketGroup.list_event_data.actions'
         this.actionsChosen = this.currentBasketGroup.list_event_data.actions.concat(this.actionsChosen);
 
+        this.actionsChosen = this.actionsChosen.map((action: BasketGroupListActionInterface) => ({
+            ...action,
+            actionLabel: this.currentBasketGroup?.groupActions.find((item: BasketGroupListActionInterface) => item.id === action.id).label_action
+        }));
+
         // Filter 'actionsChosen' to remove duplicates based on the 'id' property
-        this.actionsChosen = this.actionsChosen.filter((action: ActionAdminInterface, index: number, self: ActionAdminInterface[]) =>
+        this.actionsChosen = this.actionsChosen.filter((action: BasketGroupListActionInterface, index: number, self: BasketGroupListActionInterface[]) =>
             index === self.findIndex((t) => t.id === action.id)
         );
 
         if (action !== null) {
-            this.actionsChosen = this.actionsChosen.filter((item: ActionAdminInterface) => action.id !== item.id);
+            this.actionsChosen = this.actionsChosen.filter((item: BasketGroupListActionInterface) => action.id !== item.id);
         }
 
         // Filter 'actionsChosen' to get all actions of type 'valid' and assign them to 'availableValidationsActions'
-        this.availableValidationsActions = this.actionsChosen.filter((action: ActionAdminInterface) => action.type === 'valid');
+        this.availableValidationsActions = this.actionsChosen.filter((action: BasketGroupListActionInterface) => action.type === 'valid');
 
         // Filter 'actionsChosen' to get all actions of type 'reject' and assign them to 'availableRefusalActions'
-        this.availableRefusalActions = this.actionsChosen.filter((action: ActionAdminInterface) => action.type === 'reject');
+        this.availableRefusalActions = this.actionsChosen.filter((action: BasketGroupListActionInterface) => action.type === 'reject');
 
         // Create deep clones of 'availableValidationsActions' and 'availableRefusalActions'
         this.availableValidationsActionsClone = JSON.parse(JSON.stringify(this.availableValidationsActions));
@@ -608,6 +605,13 @@ export class ListAdministrationComponent implements OnInit {
     refreshData(event: string, data: any): void {
         this.setActionsChosen(event === 'actionAdded' ? null : data);
         this.saveTemplate();
+    }
+
+    formatActions(actions: any[]): BasketGroupListActionInterface[] {
+        return actions.map((action) => ({
+            id: action.id,
+            type: action.type ?? '',
+        }));
     }
 
     private _filterData(value: any): string[] {
@@ -622,11 +626,7 @@ export class ListAdministrationComponent implements OnInit {
     }
 }
 
-export interface ActionAdminInterface {
+export interface BasketGroupListActionInterface {
     id: number;
-    actionPage: string;
-    actionLabel: string;
     type: string;
-    component: string;
-    defaultAction: boolean;
 }
