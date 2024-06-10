@@ -2,7 +2,7 @@ import { Component, Input, EventEmitter, Output, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
-import { catchError, tap, debounceTime } from 'rxjs/operators';
+import { catchError, tap, debounceTime, finalize } from 'rxjs/operators';
 import { HeaderService } from '@service/header.service';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
@@ -119,17 +119,26 @@ export class NoteEditorComponent implements OnInit {
         ).subscribe();
     }
 
-    addNote() {
+    addNote(): Promise<boolean> {
         this.loading = true;
-        this.http.post('../rest/notes', {
-            value: this.content,
-            resId: this.resIds[0],
-            entities: this.entitiesRestriction
-        })
-            .subscribe((data: any) => {
-                this.refreshNotes.emit(this.resIds[0]);
-                this.loading = false;
-            });
+        return new Promise((resolve) => {
+            this.http.post('../rest/notes', {
+                value: this.content,
+                resId: this.resIds[0],
+                entities: this.entitiesRestriction
+            }).pipe(
+                tap(() => {
+                    this.refreshNotes.emit(this.resIds[0]);
+                    resolve(true);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    resolve(false);
+                    return of(false);
+                }),
+                finalize(() => this.loading = false),
+            ).subscribe();
+        });
     }
 
     updateNote() {
@@ -139,7 +148,7 @@ export class NoteEditorComponent implements OnInit {
             resId: this.resIds[0],
             entities: this.entitiesRestriction
         })
-            .subscribe((data: any) => {
+            .subscribe(() => {
                 this.refreshNotes.emit(this.resIds[0]);
                 this.loading = false;
             });

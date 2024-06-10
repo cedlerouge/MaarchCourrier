@@ -380,7 +380,7 @@ export class VisaWorkflowComponent implements OnInit {
         return this.visaWorkflow.items.filter((item: any) => this.functions.empty(item.externalId)).map((item: any) => item.labelToDisplay);
     }
 
-    saveVisaWorkflow(resIds: number[] = [this.resId]) {
+    saveVisaWorkflow(resIds: number[] = [this.resId]): Promise<boolean> {
         return new Promise((resolve) => {
             if (this.visaWorkflow.items.length === 0) {
                 this.http.delete(`../rest/resources/${resIds[0]}/circuits/visaCircuit`).pipe(

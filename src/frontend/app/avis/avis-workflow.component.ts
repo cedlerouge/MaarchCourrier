@@ -369,7 +369,7 @@ export class AvisWorkflowComponent implements OnInit {
         return !this.functions.empty(arrOnlyProcess[arrOnlyProcess.length - 1]) ? arrOnlyProcess[arrOnlyProcess.length - 1] : '';
     }
 
-    saveAvisWorkflow(resIds: number[] = [this.resId]) {
+    saveAvisWorkflow(resIds: number[] = [this.resId]): Promise<boolean> {
         return new Promise((resolve) => {
             if (this.avisWorkflow.items.length === 0) {
                 this.http.delete(`../rest/resources/${resIds[0]}/circuits/opinionCircuit`).pipe(
@@ -389,13 +389,14 @@ export class AvisWorkflowComponent implements OnInit {
                     listInstances: this.avisWorkflow.items
                 }));
                 this.http.put('../rest/circuits/opinionCircuit', { resources: arrAvis }).pipe(
-                    tap((data: any) => {
+                    tap(() => {
                         this.avisWorkflowClone = JSON.parse(JSON.stringify(this.avisWorkflow.items));
                         this.notify.success(this.translate.instant('lang.avisWorkflowUpdated'));
                         resolve(true);
                     }),
                     catchError((err: any) => {
                         this.notify.handleSoftErrors(err);
+                        resolve(false);
                         return of(false);
                     })
                 ).subscribe();
