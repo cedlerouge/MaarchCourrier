@@ -69,7 +69,7 @@ class ContinueCircuitAction
             foreach ($data[$resId] as $document) {
                 $missingData = [];
 
-                if ($data['digitalCertificate']) {
+                if (!empty($data['digitalCertificate'])) {
                     $requiredData = [
                         'resId',
                         'documentId',
@@ -155,8 +155,13 @@ class ContinueCircuitAction
                             $resourceToSign
                         );
                 }
+
                 if (is_array($applySuccess)) {
-                    throw new SignatureNotAppliedProblem($applySuccess['errors']);
+                    $error = $applySuccess['errors'];
+                    if (!empty($applySuccess['context'])) {
+                        $error .= " (Message = " . $applySuccess['context']['message'] . ")";
+                    }
+                    throw new SignatureNotAppliedProblem($error);
                 }
             }
         } else {
