@@ -14,13 +14,14 @@
 
 namespace Search\controllers;
 
+use Attachment\controllers\AttachmentTypeController;
 use Attachment\models\AttachmentModel;
 use Basket\models\BasketModel;
 use Basket\models\RedirectBasketModel;
 use Configuration\models\ConfigurationModel;
+use Contact\controllers\ContactController;
 use Contact\models\ContactModel;
 use Contact\models\ContactParameterModel;
-use Contact\controllers\ContactController;
 use Convert\controllers\FullTextController;
 use CustomField\models\CustomFieldModel;
 use Docserver\models\DocserverModel;
@@ -43,9 +44,9 @@ use Resource\models\UserFollowedResourceModel;
 use Respect\Validation\Validator;
 use Search\models\SearchModel;
 use Slim\Psr7\Request;
-use SrcCore\http\Response;
 use SrcCore\controllers\AutoCompleteController;
 use SrcCore\controllers\PreparedClauseController;
+use SrcCore\http\Response;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
@@ -53,16 +54,18 @@ use Status\models\StatusModel;
 use Tag\models\ResourceTagModel;
 use User\controllers\UserController;
 use User\models\UserModel;
-use Attachment\controllers\AttachmentTypeController;
 use Zend_Search_Lucene;
+use Zend_Search_Lucene_Analysis_Analyzer;
 use Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive;
 use Zend_Search_Lucene_Exception;
+use Zend_Search_Lucene_Search_QueryParser;
 
 class SearchController
 {
     /**
      * @param Request $request
      * @param Response $response
+     *
      * @return Response
      * @throws Exception
      */
@@ -86,7 +89,10 @@ class SearchController
 
         ini_set('memory_limit', -1);
 
-        $userdataClause = SearchController::getUserDataClause(['userId' => $GLOBALS['id'], 'login' => $GLOBALS['login']]);
+        $userdataClause = SearchController::getUserDataClause([
+            'userId' => $GLOBALS['id'],
+            'login'  => $GLOBALS['login']
+        ]);
         $searchWhere = $userdataClause['searchWhere'];
         $searchData = $userdataClause['searchData'];
 
@@ -308,6 +314,7 @@ class SearchController
     /**
      * @param Request $request
      * @param Response $response
+     *
      * @return Response
      */
     public function getConfiguration(Request $request, Response $response): Response
@@ -320,6 +327,7 @@ class SearchController
 
     /**
      * @param array $args
+     *
      * @return array
      * @throws Exception
      */
@@ -420,6 +428,7 @@ class SearchController
 
     /**
      * @param array $args
+     *
      * @return array
      * @throws Exception
      */
@@ -527,6 +536,7 @@ class SearchController
 
     /**
      * @param array $args
+     *
      * @return array|null
      * @throws Exception
      */
@@ -561,7 +571,8 @@ class SearchController
                 $subjectGlue = implode(' AND ', $requestData['where']);
                 $attachmentField = AutoCompleteController::getInsensitiveFieldsForRequest(['fields' => ['title']]);
                 $subjectGlue = "(($subjectGlue) OR res_id in (select res_id_master from res_attachments 
-                where {$attachmentField} and status in ('TRA', 'A_TRA', 'FRZ') and attachment_type <> 'summary_sheet'))";
+                where {$attachmentField} and status in ('TRA', 'A_TRA', 'FRZ') and 
+                attachment_type <> 'summary_sheet'))";
                 $args['searchWhere'][] = $subjectGlue;
                 $args['searchData'] = array_merge($args['searchData'], $requestData['data']);
 
@@ -594,7 +605,11 @@ class SearchController
             $args['searchWhere'][] = 'type_id in (?)';
             $args['searchData'][] = $body['doctype']['values'];
         }
-        if (!empty($body['category']) && !empty($body['category']['values']) && is_array($body['category']['values'])) {
+        if (
+            !empty($body['category']) &&
+            !empty($body['category']['values']) &&
+            is_array($body['category']['values'])
+        ) {
             $args['searchWhere'][] = 'category_id in (?)';
             $args['searchData'][] = $body['category']['values'];
         }
@@ -607,7 +622,11 @@ class SearchController
             }
             $args['searchData'][] = $body['status']['values'];
         }
-        if (!empty($body['priority']) && !empty($body['priority']['values']) && is_array($body['priority']['values'])) {
+        if (
+            !empty($body['priority']) &&
+            !empty($body['priority']['values']) &&
+            is_array($body['priority']['values'])
+        ) {
             if (in_array(null, $body['priority']['values'])) {
                 $args['searchWhere'][] = '(priority in (?) OR priority is NULL)';
             } else {
@@ -732,7 +751,9 @@ class SearchController
             }
             if (Validator::dateTime()->notEmpty()->validate($body['arrivalDate']['values']['end'])) {
                 $args['searchWhere'][] = 'admission_date <= ?';
-                $args['searchData'][] = TextFormatModel::getEndDayDate(['date' => $body['arrivalDate']['values']['end']]);
+                $args['searchData'][] = TextFormatModel::getEndDayDate([
+                    'date' => $body['arrivalDate']['values']['end']
+                ]);
             }
         }
         if (
@@ -775,7 +796,9 @@ class SearchController
             }
             if (Validator::dateTime()->notEmpty()->validate($body['closingDate']['values']['end'])) {
                 $args['searchWhere'][] = 'closing_date <= ?';
-                $args['searchData'][] = TextFormatModel::getEndDayDate(['date' => $body['closingDate']['values']['end']]);
+                $args['searchData'][] = TextFormatModel::getEndDayDate([
+                    'date' => $body['closingDate']['values']['end']
+                ]);
             }
         }
         if (
@@ -1131,6 +1154,7 @@ class SearchController
 
     /**
      * @param array $args
+     *
      * @return array|null
      * @throws Exception
      */
@@ -1232,6 +1256,7 @@ class SearchController
 
     /**
      * @param array $args
+     *
      * @return array|null
      * @throws Exception
      */
@@ -1371,6 +1396,7 @@ class SearchController
 
     /**
      * @param array $args
+     *
      * @return array|null
      * @throws Exception
      */
@@ -1529,6 +1555,7 @@ class SearchController
 
     /**
      * @param array $args
+     *
      * @return array|null
      * @throws Zend_Search_Lucene_Exception
      * @throws Exception
@@ -1549,7 +1576,8 @@ class SearchController
             // "*~: Zend Lucene Search meta characters
             // \s: blank space
             // {1,2}: 1 or 2 characters of this character class
-            // result: captures words of 1 or 2 characters that are not space, not counting Zend Lucene Search meta characters
+            // result: captures words of 1 or 2 characters that are not space,
+            // not counting Zend Lucene Search meta characters
             $args['body']['fulltext']['values'] = preg_replace(
                 '/\b[^"*~\s]{1,2}\b/u',
                 '',
@@ -1569,16 +1597,10 @@ class SearchController
                 foreach ($query_fulltext as $key => $value) {
                     if (
                         str_contains($value, "*") &&
-                        (strlen(
-                            substr(
-                                $value,
-                                0,
-                                strpos(
-                                    $value,
-                                    "*"
-                                )
-                            )
-                        ) < 4 || preg_match("([,':!+])", $value) === 1)
+                        (
+                            strlen(substr($value, 0, strpos($value, "*"))) < 4 ||
+                            preg_match("([,':!+])", $value) === 1
+                        )
                     ) {
                         return null;
                     }
@@ -1587,13 +1609,13 @@ class SearchController
                 $args['body']['fulltext']['values'] = implode(" ", $query_fulltext);
             }
 
-            \Zend_Search_Lucene_Analysis_Analyzer::setDefault(
+            Zend_Search_Lucene_Analysis_Analyzer::setDefault(
                 new Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive()
             );
-            \Zend_Search_Lucene_Search_QueryParser::setDefaultOperator(
-                \Zend_Search_Lucene_Search_QueryParser::B_AND
+            Zend_Search_Lucene_Search_QueryParser::setDefaultOperator(
+                Zend_Search_Lucene_Search_QueryParser::B_AND
             );
-            \Zend_Search_Lucene_Search_QueryParser::setDefaultEncoding('utf-8');
+            Zend_Search_Lucene_Search_QueryParser::setDefaultEncoding('utf-8');
 
             $whereRequest = [];
             foreach (['letterbox_coll', 'attachments_coll'] as $tmpCollection) {
@@ -1653,6 +1675,7 @@ class SearchController
 
     /**
      * @param array $args
+     *
      * @return array[]
      * @throws Exception
      */
@@ -1762,6 +1785,7 @@ class SearchController
 
     /**
      * @param array $args
+     *
      * @return array[]
      * @throws Exception
      */
@@ -2294,6 +2318,7 @@ class SearchController
 
     /**
      * @param array $args
+     *
      * @return array
      * @throws Exception
      */

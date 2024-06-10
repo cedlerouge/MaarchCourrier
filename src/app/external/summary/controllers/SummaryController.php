@@ -16,6 +16,7 @@ namespace ExternalSummary\controllers;
 
 use AcknowledgementReceipt\models\AcknowledgementReceiptModel;
 use Email\models\EmailModel;
+use Exception;
 use MessageExchange\models\MessageExchangeModel;
 use Resource\controllers\ResController;
 use Respect\Validation\Validator;
@@ -25,9 +26,19 @@ use User\models\UserModel;
 
 class SummaryController
 {
-    public static function getByResId(Request $request, Response $response, array $args)
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
+     * @return Response
+     * @throws Exception
+     */
+    public static function getByResId(Request $request, Response $response, array $args): Response
     {
-        if (!Validator::intVal()->validate($args['resId']) || !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($args['resId']) ||
+            !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 

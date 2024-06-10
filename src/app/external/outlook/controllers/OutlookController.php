@@ -17,18 +17,26 @@ namespace Outlook\controllers;
 use Attachment\models\AttachmentTypeModel;
 use Configuration\models\ConfigurationModel;
 use Doctype\models\DoctypeModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use IndexingModel\models\IndexingModelModel;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
-use SrcCore\http\Response;
 use SrcCore\controllers\LanguageController;
-use SrcCore\models\CoreConfigModel;
 use SrcCore\controllers\PasswordController;
+use SrcCore\http\Response;
+use SrcCore\models\CoreConfigModel;
 use Status\models\StatusModel;
 
 class OutlookController
 {
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws Exception
+     */
     public function generateManifest(Request $request, Response $response)
     {
         $config = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
@@ -36,7 +44,12 @@ class OutlookController
         $maarchUrl = $config['config']['maarchUrl'];
 
         if (strpos($maarchUrl, 'https://') === false) {
-            return $response->withStatus(400)->withJson(['errors' => 'You cannot use the Outlook plugin because maarchUrl is not using https', 'lang' => 'addinOutlookUnavailable']);
+            return $response->withStatus(400)->withJson(
+                [
+                    'errors' => 'You cannot use the Outlook plugin because maarchUrl is not using https',
+                    'lang'   => 'addinOutlookUnavailable'
+                ]
+            );
         }
 
         $maarchUrl = str_replace('//', '/', $maarchUrl);
@@ -78,13 +91,22 @@ class OutlookController
         return $response->withHeader('Content-Type', 'application/xml');
     }
 
-    public function getConfiguration(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function getConfiguration(Request $request, Response $response): Response
     {
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_addin_outlook']);
         $configuration['value'] = json_decode($configuration['value'], true);
 
         if (!empty($configuration['value']['indexingModelId'])) {
-            $model = IndexingModelModel::getById(['id' => $configuration['value']['indexingModelId'], 'select' => ['label']]);
+            $model = IndexingModelModel::getById(
+                ['id' => $configuration['value']['indexingModelId'], 'select' => ['label']]
+            );
             if (!empty($model)) {
                 $configuration['value']['indexingModelLabel'] = $model['label'];
             }
@@ -98,7 +120,9 @@ class OutlookController
         }
 
         if (!empty($configuration['value']['statusId'])) {
-            $status = StatusModel::getByIdentifier(['identifier' => $configuration['value']['statusId'], 'select' => ['label_status', 'id']]);
+            $status = StatusModel::getByIdentifier(
+                ['identifier' => $configuration['value']['statusId'], 'select' => ['label_status', 'id']]
+            );
             if (!empty($status)) {
                 $configuration['value']['statusLabel'] = $status[0]['label_status'];
                 $configuration['value']['status'] = $status[0]['id'];
@@ -106,25 +130,52 @@ class OutlookController
         }
 
         if (!empty($configuration['value']['attachmentTypeId'])) {
-            $attachmentType = AttachmentTypeModel::getById(['id' => $configuration['value']['attachmentTypeId'], 'select' => ['label']]);
+            $attachmentType = AttachmentTypeModel::getById(
+                ['id' => $configuration['value']['attachmentTypeId'], 'select' => ['label']]
+            );
             if (!empty($attachmentType)) {
                 $configuration['value']['attachmentTypeLabel'] = $attachmentType['label'];
             }
         }
 
-        $configuration['value']['tenantId']     = !empty($configuration['value']['tenantId']) ? PasswordController::decrypt(['encryptedData' => $configuration['value']['tenantId']]) : '';
-        $configuration['value']['clientId']     = !empty($configuration['value']['clientId']) ? PasswordController::decrypt(['encryptedData' => $configuration['value']['clientId']]) : '';
-        $configuration['value']['clientSecret'] = !empty($configuration['value']['clientSecret']) ? PasswordController::decrypt(['encryptedData' => $configuration['value']['clientSecret']]) : '';
+        $configuration['value']['tenantId'] = '';
+        $configuration['value']['clientId'] = '';
+        $configuration['value']['clientSecret'] = '';
+        if (!empty($configuration['value']['tenantId'])) {
+            $configuration['value']['tenantId'] = PasswordController::decrypt([
+                'encryptedData' => $configuration['value']['tenantId']
+            ]);
+        }
+        if (!empty($configuration['value']['clientId'])) {
+            $configuration['value']['clientId'] = PasswordController::decrypt([
+                'encryptedData' => $configuration['value']['clientId']
+            ]);
+        }
+        if (!empty($configuration['value']['clientSecret'])) {
+            $configuration['value']['clientSecret'] = PasswordController::decrypt([
+                'encryptedData' => $configuration['value']['clientSecret']
+            ]);
+        }
 
         $configuration['value']['outlookConnectionSaved'] = false;
-        if (!empty($configuration['value']['tenantId']) && !empty($configuration['value']['clientId']) && !empty($configuration['value']['clientSecret'])) {
+        if (
+            !empty($configuration['value']['tenantId']) && !empty($configuration['value']['clientId']) &&
+            !empty($configuration['value']['clientSecret'])
+        ) {
             $configuration['value']['outlookConnectionSaved'] = true;
         }
 
         return $response->withJson(['configuration' => $configuration['value']]);
     }
 
-    public function saveConfiguration(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function saveConfiguration(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -133,13 +184,17 @@ class OutlookController
         $body = $request->getParsedBody();
 
         if (!Validator::notEmpty()->intVal()->validate($body['indexingModelId'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body indexingModelId is empty or not an integer']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body indexingModelId is empty or not an integer'
+            ]);
         } elseif (!Validator::notEmpty()->intVal()->validate($body['typeId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body typeId is empty or not an integer']);
         } elseif (!Validator::notEmpty()->intVal()->validate($body['statusId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body statusId is empty or not an integer']);
         } elseif (!Validator::notEmpty()->intVal()->validate($body['attachmentTypeId'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body attachmentTypeId is empty or not an integer']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body attachmentTypeId is empty or not an integer'
+            ]);
         }
 
         $model = IndexingModelModel::getById(['id' => $body['indexingModelId'], 'select' => ['master']]);
@@ -165,25 +220,41 @@ class OutlookController
         }
 
         $data = json_encode([
-            'indexingModelId'   => $body['indexingModelId'],
-            'typeId'            => $body['typeId'],
-            'statusId'          => $body['statusId'],
-            'attachmentTypeId'  => $body['attachmentTypeId'],
-            'version'           => $body['version'],
-            'tenantId'          => !empty($body['tenantId']) ? PasswordController::encrypt(['dataToEncrypt' => $body['tenantId']]) : '',
-            'clientId'          => !empty($body['clientId']) ? PasswordController::encrypt(['dataToEncrypt' => $body['clientId']]) : '',
-            'clientSecret'      => !empty($body['clientSecret']) ? PasswordController::encrypt(['dataToEncrypt' => $body['clientSecret']]) : ''
+            'indexingModelId'  => $body['indexingModelId'],
+            'typeId'           => $body['typeId'],
+            'statusId'         => $body['statusId'],
+            'attachmentTypeId' => $body['attachmentTypeId'],
+            'version'          => $body['version'],
+            'tenantId'         => !empty($body['tenantId']) ? PasswordController::encrypt(
+                ['dataToEncrypt' => $body['tenantId']]
+            ) : '',
+            'clientId'         => !empty($body['clientId']) ? PasswordController::encrypt(
+                ['dataToEncrypt' => $body['clientId']]
+            ) : '',
+            'clientSecret'     => !empty($body['clientSecret']) ? PasswordController::encrypt(
+                ['dataToEncrypt' => $body['clientSecret']]
+            ) : ''
         ], JSON_UNESCAPED_SLASHES);
         if (empty(ConfigurationModel::getByPrivilege(['privilege' => 'admin_addin_outlook', 'select' => [1]]))) {
             ConfigurationModel::create(['value' => $data, 'privilege' => 'admin_addin_outlook']);
         } else {
-            ConfigurationModel::update(['set' => ['value' => $data], 'where' => ['privilege = ?'], 'data' => ['admin_addin_outlook']]);
+            ConfigurationModel::update(
+                ['set' => ['value' => $data], 'where' => ['privilege = ?'], 'data' => ['admin_addin_outlook']]
+            );
         }
 
         return $response->withStatus(204);
     }
 
-    public function saveEmailAttachments(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function saveEmailAttachments(Request $request, Response $response, array $args): Response
     {
         $body = $request->getParsedBody();
 
@@ -211,7 +282,9 @@ class OutlookController
         } elseif (empty($configuration['value']['attachmentTypeId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Attachment type configuration is missing']);
         }
-        $attachmentType = AttachmentTypeModel::getById(['id' => $configuration['value']['attachmentTypeId'], 'select' => ['type_id']]);
+        $attachmentType = AttachmentTypeModel::getById(
+            ['id' => $configuration['value']['attachmentTypeId'], 'select' => ['type_id']]
+        );
         if (empty($attachmentType)) {
             return $response->withStatus(400)->withJson(['errors' => 'Attachment type does not exist']);
         }
@@ -222,7 +295,9 @@ class OutlookController
             'version'        => $configuration['value']['version'],
             'tenantId'       => PasswordController::decrypt(['encryptedData' => $configuration['value']['tenantId']]),
             'clientId'       => PasswordController::decrypt(['encryptedData' => $configuration['value']['clientId']]),
-            'clientSecret'   => PasswordController::decrypt(['encryptedData' => $configuration['value']['clientSecret']]),
+            'clientSecret'   => PasswordController::decrypt([
+                'encryptedData' => $configuration['value']['clientSecret']
+            ]),
             'attachmentType' => $attachmentType['type_id']
         ];
 
@@ -235,7 +310,9 @@ class OutlookController
 
         if (!empty($errors)) {
             if (!empty($errors['lang'])) {
-                return $response->withStatus(400)->withJson(['errors' => $errors['errors'], 'lang' => $errors['lang']]);
+                return $response->withStatus(400)->withJson([
+                    'errors' => $errors['errors'], 'lang' => $errors['lang']
+                ]);
             } else {
                 return $response->withStatus(400)->withJson(['errors' => $errors]);
             }

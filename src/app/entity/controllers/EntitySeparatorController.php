@@ -1,16 +1,16 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Entity Separator Controller
-* @author dev@maarch.org
-*/
+ * @brief Entity Separator Controller
+ * @author dev@maarch.org
+ */
 
 namespace Entity\controllers;
 
@@ -28,9 +28,19 @@ use SrcCore\models\CoreConfigModel;
 
 class EntitySeparatorController
 {
-    public function create(Request $request, Response $response)
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     *
+     * @return Response
+     * @throws \Com\Tecnick\Barcode\Exception
+     * @throws \Com\Tecnick\Color\Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'entities_print_sep_mlb', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'entities_print_sep_mlb', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -95,7 +105,8 @@ class EntitySeparatorController
                     'C128',                     // barcode type and additional comma-separated parameters
                     $prefix . $entityId,        // data string to encode
                     -4,                         // bar width (use absolute or negative value as multiplication factor)
-                    -100,                         // bar height (use absolute or negative value as multiplication factor)
+                    -100,
+                    // bar height (use absolute or negative value as multiplication factor)
                     'black',                    // foreground color
                     [-2, -2, -2, -2]       // padding (use absolute or negative values as multiplication factors)
                 )->setBackgroundColor('white'); // background color

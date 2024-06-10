@@ -15,15 +15,17 @@
 namespace Notification\models;
 
 use Exception;
-use SrcCore\models\ValidatorModel;
-use SrcCore\models\CoreConfigModel;
 use History\controllers\HistoryController;
+use SrcCore\models\CoreConfigModel;
+use SrcCore\models\ValidatorModel;
 
 abstract class NotificationScheduleModelAbstract
 {
     /**
      * @param array $aArgs
+     *
      * @return bool
+     * @throws Exception
      */
     public static function saveCrontab(array $aArgs = []): bool
     {
@@ -40,7 +42,8 @@ abstract class NotificationScheduleModelAbstract
                 $cmd = $aCrontab[$id]['cmd'] ?? null;
                 $file[$id] = "{$m}\t{$h}\t{$dom}\t{$mon}\t{$dow}\t{$cmd}";
             } elseif ($cronValue['state'] != 'deleted') {
-                $file[$id] = "{$cronValue['m']}\t{$cronValue['h']}\t{$cronValue['dom']}\t{$cronValue['mon']}\t{$cronValue['dow']}\t{$cronValue['cmd']}";
+                $file[$id] = "{$cronValue['m']}\t{$cronValue['h']}\t{$cronValue['dom']}\t{$cronValue['mon']}\t" .
+                    "{$cronValue['dow']}\t{$cronValue['cmd']}";
             }
         }
 
@@ -71,6 +74,7 @@ abstract class NotificationScheduleModelAbstract
 
     /**
      * @param array $aArgs
+     *
      * @return array
      */
     public static function getCrontab(array $aArgs = []): array
@@ -150,6 +154,7 @@ abstract class NotificationScheduleModelAbstract
 
     /**
      * @param array $aArgs
+     *
      * @return bool
      * @throws Exception
      */

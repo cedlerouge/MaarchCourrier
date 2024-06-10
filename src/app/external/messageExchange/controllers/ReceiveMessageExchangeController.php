@@ -332,7 +332,8 @@ class ReceiveMessageExchangeController
                 $customId = CoreConfigModel::getCustomId();
                 $customId = empty($customId) ? 'null' : $customId;
                 exec(
-                    "php src/app/convert/scripts/FullTextScript.php --customId {$customId} --resId {$storeResource['resId']} --collId letterbox_coll --userId {$GLOBALS['id']} > /dev/null &"
+                    "php src/app/convert/scripts/FullTextScript.php --customId {$customId} " .
+                    "--resId {$storeResource['resId']} --collId letterbox_coll --userId {$GLOBALS['id']} > /dev/null &"
                 );
             }
             ResourceContactModel::create(
@@ -503,7 +504,8 @@ class ReceiveMessageExchangeController
                 $countAttachment++;
             }
         }
-        self::$aComments[] = '[' . date("d/m/Y H:i:s") . '] ' . $countAttachment . ' attachement(s) enregistré(s)';
+        self::$aComments[] = '[' . date("d/m/Y H:i:s") . '] ' .
+            $countAttachment . ' attachement(s) enregistré(s)';
         return $resId;
     }
 
@@ -546,7 +548,8 @@ class ReceiveMessageExchangeController
         $acknowledgementObject->Receiver = $dataObject->TransferringAgency;
 
         if ($acknowledgementObject->Receiver->OrganizationDescriptiveMetadata->Communication[0]->Channel == 'url') {
-            $acknowledgementObject->Receiver->OrganizationDescriptiveMetadata->Communication[0]->value .= '/rest/saveMessageExchangeReturn';
+            $acknowledgementObject->Receiver->OrganizationDescriptiveMetadata->Communication[0]->value .=
+                '/rest/saveMessageExchangeReturn';
         }
 
         $acknowledgementObject->MessageIdentifier->value = $dataObject->MessageIdentifier->value . '_Ack';
@@ -574,8 +577,8 @@ class ReceiveMessageExchangeController
         $acknowledgementObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit = array();
         $acknowledgementObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0] = new stdClass();
         $acknowledgementObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content = new stdClass();
-        $acknowledgementObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content->Title[0] = '[CAPTUREM2M_ACK]' .
-            date("Ymd_his");
+        $acknowledgementObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content->Title[0] =
+            '[CAPTUREM2M_ACK]' . date("Ymd_his");
 
         SendMessageController::send($acknowledgementObject, $messageExchangeSaved['messageId'], 'Acknowledgement');
 
@@ -629,7 +632,8 @@ class ReceiveMessageExchangeController
         $replyObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit = array();
         $replyObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0] = new stdClass();
         $replyObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content = new stdClass();
-        $replyObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content->OriginatingSystemId = $aArgs['res_id_master'];
+        $replyObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content->OriginatingSystemId =
+            $aArgs['res_id_master'];
 
         $replyObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content->Title[0] = '[CAPTUREM2M_REPLY]' .
             date("Ymd_his");

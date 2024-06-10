@@ -30,8 +30,8 @@ use User\models\UserModel;
 class ContactGroupController
 {
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      */
     public function get(Request $request, Response $response): Response
@@ -79,9 +79,9 @@ class ContactGroupController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -148,8 +148,8 @@ class ContactGroupController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -196,9 +196,9 @@ class ContactGroupController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -257,16 +257,20 @@ class ContactGroupController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
     public function delete(Request $request, Response $response, array $args): Response
     {
         if (
-            !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id'], 'canUpdate' => true])
+            !ContactGroupController::hasRightById([
+                'id'        => $args['id'],
+                'userId'    => $GLOBALS['id'],
+                'canUpdate' => true
+            ])
         ) {
             return $response->withStatus(403)->withJson(['errors' => 'Contacts group out of perimeter']);
         }
@@ -287,9 +291,9 @@ class ContactGroupController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -351,8 +355,8 @@ class ContactGroupController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -447,9 +451,9 @@ class ContactGroupController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -617,16 +621,20 @@ class ContactGroupController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
     public function addCorrespondents(Request $request, Response $response, array $args): Response
     {
         if (
-            !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id'], 'canUpdate' => true])
+            !ContactGroupController::hasRightById([
+                'id'        => $args['id'],
+                'userId'    => $GLOBALS['id'],
+                'canUpdate' => true
+            ])
         ) {
             if (
                 !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id']]) ||
@@ -696,16 +704,20 @@ class ContactGroupController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
     public function deleteCorrespondents(Request $request, Response $response, array $args): Response
     {
         if (
-            !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id'], 'canUpdate' => true])
+            !ContactGroupController::hasRightById([
+                'id'        => $args['id'],
+                'userId'    => $GLOBALS['id'],
+                'canUpdate' => true
+            ])
         ) {
             if (
                 !ContactGroupController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id']]) ||
@@ -751,8 +763,8 @@ class ContactGroupController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -802,8 +814,8 @@ class ContactGroupController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      */
     public function getCorrespondents(Request $request, Response $response): Response
@@ -872,7 +884,7 @@ class ContactGroupController
     }
 
     /**
-     * @param array $args
+     * @param  array  $args
      * @return bool
      */
     private static function hasRightById(array $args): bool
@@ -903,7 +915,7 @@ class ContactGroupController
     }
 
     /**
-     * @param array $args
+     * @param  array  $args
      * @return bool
      */
     private static function hasHighRights(array $args): bool

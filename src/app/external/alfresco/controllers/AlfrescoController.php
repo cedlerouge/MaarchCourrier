@@ -500,7 +500,8 @@ class AlfrescoController
         );
 
         $curlResponse = CurlModel::exec([
-            'url'         => "{$alfrescoUri}/alfresco/versions/1/nodes/{$entityInformations['alfresco']['nodeId']}/children",
+            'url'         => "{$alfrescoUri}/alfresco/versions/1/nodes/" .
+                "{$entityInformations['alfresco']['nodeId']}/children",
             'basicAuth'   => [
                 'user'     => $entityInformations['alfresco']['login'],
                 'password' => $entityInformations['alfresco']['password']
@@ -1121,7 +1122,9 @@ class AlfrescoController
             }
         }
 
-        $message = empty($args['folderName']) ? " (envoyé au dossier {$args['folderId']})" : " (envoyé au dossier {$args['folderName']})";
+        $message = empty($args['folderName'])
+            ? " (envoyé au dossier {$args['folderId']})"
+            : " (envoyé au dossier {$args['folderName']})";
         return ['history' => $message];
     }
 }

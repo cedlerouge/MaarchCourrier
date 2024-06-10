@@ -666,7 +666,8 @@ class SignatureBookController
         $height = (int)$loadedXml->CONFIG->height_blocsign ?? 100;
         $tmpPath = CoreConfigModel::getTmpPath();
 
-        $command = "java -jar modules/visa/dist/SignPdf.jar {$pathToDocument} {$signaturePath} {$width} {$height} {$tmpPath} 2> /dev/null";
+        $command = "java -jar modules/visa/dist/SignPdf.jar {$pathToDocument} {$signaturePath}" .
+            " {$width} {$height} {$tmpPath} 2> /dev/null";
         exec($command, $output, $return);
 
         $signedDocument = @file_get_contents($tmpPath . $convertedDocument['filename']);
@@ -915,7 +916,8 @@ class SignatureBookController
         $height = (int)$loadedXml->CONFIG->height_blocsign ?? 100;
         $tmpPath = CoreConfigModel::getTmpPath();
 
-        $command = "java -jar modules/visa/dist/SignPdf.jar {$pathToDocument} {$signaturePath} {$width} {$height} {$tmpPath} 2> /dev/null";
+        $command = "java -jar modules/visa/dist/SignPdf.jar {$pathToDocument} {$signaturePath}" .
+            " {$width} {$height} {$tmpPath} 2> /dev/null";
         exec($command, $output, $return);
 
         $signedDocument = @file_get_contents($tmpPath . $convertedDocument['filename']);

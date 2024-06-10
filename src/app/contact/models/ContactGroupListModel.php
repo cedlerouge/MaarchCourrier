@@ -14,30 +14,39 @@
 
 namespace Contact\models;
 
+use Exception;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\DatabaseModel;
 
 class ContactGroupListModel
 {
-    public static function get(array $args = [])
+    /**
+     * @param  array  $args
+     * @return array
+     * @throws Exception
+     */
+    public static function get(array $args = []): array
     {
         ValidatorModel::arrayType($args, ['select', 'where', 'data', 'orderBy']);
         ValidatorModel::intType($args, ['limit']);
 
-        $lists = DatabaseModel::select([
-            'select'    => empty($args['select']) ? ['*'] : $args['select'],
-            'table'     => ['contacts_groups_lists'],
-            'where'     => empty($args['where']) ? [] : $args['where'],
-            'data'      => empty($args['data']) ? [] : $args['data'],
-            'order_by'  => empty($args['orderBy']) ? [] : $args['orderBy'],
-            'limit'     => empty($args['limit']) ? 0 : $args['limit'],
-            'offset'    => empty($args['offset']) ? 0 : $args['offset']
+        return DatabaseModel::select([
+            'select'   => empty($args['select']) ? ['*'] : $args['select'],
+            'table'    => ['contacts_groups_lists'],
+            'where'    => empty($args['where']) ? [] : $args['where'],
+            'data'     => empty($args['data']) ? [] : $args['data'],
+            'order_by' => empty($args['orderBy']) ? [] : $args['orderBy'],
+            'limit'    => empty($args['limit']) ? 0 : $args['limit'],
+            'offset'   => empty($args['offset']) ? 0 : $args['offset']
         ]);
-
-        return $lists;
     }
 
-    public static function create(array $args)
+    /**
+     * @param  array  $args
+     * @return true
+     * @throws Exception
+     */
+    public static function create(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['contacts_groups_id', 'correspondent_id', 'correspondent_type']);
         ValidatorModel::stringType($args, ['correspondent_type']);
@@ -46,40 +55,53 @@ class ContactGroupListModel
         DatabaseModel::insert([
             'table'         => 'contacts_groups_lists',
             'columnsValues' => [
-                'contacts_groups_id'    => $args['contacts_groups_id'],
-                'correspondent_id'      => $args['correspondent_id'],
-                'correspondent_type'    => $args['correspondent_type']
+                'contacts_groups_id' => $args['contacts_groups_id'],
+                'correspondent_id'   => $args['correspondent_id'],
+                'correspondent_type' => $args['correspondent_type']
             ]
         ]);
 
         return true;
     }
 
-    public static function delete(array $args)
+    /**
+     * @param  array  $args
+     * @return true
+     * @throws Exception
+     */
+    public static function delete(array $args): bool
     {
         ValidatorModel::arrayType($args, ['where', 'data']);
 
         DatabaseModel::delete([
             'table' => 'contacts_groups_lists',
-            'where'     => $args['where'],
-            'data'      => $args['data']
+            'where' => $args['where'],
+            'data'  => $args['data']
         ]);
 
         return true;
     }
 
-    public static function getWithCorrespondents(array $args = [])
+    /**
+     * @param  array  $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getWithCorrespondents(array $args = []): array
     {
         ValidatorModel::arrayType($args, ['select', 'where', 'data', 'orderBy']);
         ValidatorModel::intType($args, ['limit']);
 
-        $lists = DatabaseModel::select([
+        return DatabaseModel::select([
             'select'    => empty($args['select']) ? ['*'] : $args['select'],
             'table'     => ['contacts_groups_lists', 'contacts', 'entities', 'users'],
             'left_join' => [
-                "contacts_groups_lists.correspondent_id = contacts.id AND contacts_groups_lists.correspondent_type = 'contact'",
-                "contacts_groups_lists.correspondent_id = entities.id AND contacts_groups_lists.correspondent_type = 'entity'",
-                "contacts_groups_lists.correspondent_id = users.id AND contacts_groups_lists.correspondent_type = 'user'"
+                "contacts_groups_lists.correspondent_id = contacts.id AND" .
+                " contacts_groups_lists.correspondent_type = 'contact'",
+                "contacts_groups_lists.correspondent_id = entities.id AND" .
+                " contacts_groups_lists.correspondent_type = 'entity'",
+                "contacts_groups_lists.correspondent_id = users.id AND" .
+                " contacts_groups_lists.correspondent_type = 'user'"
             ],
             'where'     => empty($args['where']) ? [] : $args['where'],
             'data'      => empty($args['data']) ? [] : $args['data'],
@@ -87,7 +109,5 @@ class ContactGroupListModel
             'limit'     => empty($args['limit']) ? 0 : $args['limit'],
             'offset'    => empty($args['offset']) ? 0 : $args['offset']
         ]);
-
-        return $lists;
     }
 }

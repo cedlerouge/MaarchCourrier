@@ -73,8 +73,8 @@ class UserController
     private const ALTERNATIVES_CONNECTIONS_METHODS = ['sso', 'cas', 'ldap', 'keycloak', 'shibboleth', 'azure_saml'];
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -134,9 +134,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      */
     public function getById(Request $request, Response $response, array $args): Response
@@ -164,9 +164,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -286,8 +286,8 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -462,7 +462,10 @@ class UserController
         }
 
         if ($loggingMethod['id'] == 'standard') {
-            AuthenticationController::sendAccountActivationNotification(['userId' => $id, 'userEmail' => $body['mail']]);
+            AuthenticationController::sendAccountActivationNotification([
+                'userId'    => $id,
+                'userEmail' => $body['mail']
+            ]);
         }
 
         HistoryController::add([
@@ -477,9 +480,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -614,9 +617,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -737,9 +740,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -794,7 +797,10 @@ class UserController
         if (!empty($contactGroupsToDelete)) {
             $contactGroupsToDelete = array_column($contactGroupsToDelete, 'id');
             ContactGroupModel::delete(['where' => ['id in (?)'], 'data' => [$contactGroupsToDelete]]);
-            ContactGroupListModel::delete(['where' => ['contacts_groups_id in (?)'], 'data' => [$contactGroupsToDelete]]);
+            ContactGroupListModel::delete([
+                'where' => ['contacts_groups_id in (?)'],
+                'data'  => [$contactGroupsToDelete]
+            ]);
         }
         ContactGroupListModel::delete(
             ['where' => ['correspondent_id = ?', 'correspondent_type = ?'], 'data' => [$args['id'], 'user']]
@@ -820,9 +826,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -875,7 +881,10 @@ class UserController
         if (!empty($contactGroupsToDelete)) {
             $contactGroupsToDelete = array_column($contactGroupsToDelete, 'id');
             ContactGroupModel::delete(['where' => ['id in (?)'], 'data' => [$contactGroupsToDelete]]);
-            ContactGroupListModel::delete(['where' => ['contacts_groups_id in (?)'], 'data' => [$contactGroupsToDelete]]);
+            ContactGroupListModel::delete([
+                'where' => ['contacts_groups_id in (?)'],
+                'data'  => [$contactGroupsToDelete]
+            ]);
         }
         ContactGroupListModel::delete(
             ['where' => ['correspondent_id = ?', 'correspondent_type = ?'], 'data' => [$args['id'], 'user']]
@@ -928,8 +937,8 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -1013,8 +1022,8 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -1059,8 +1068,8 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -1093,8 +1102,8 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -1137,9 +1146,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -1199,9 +1208,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -1241,9 +1250,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -1318,9 +1327,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      */
     public function getStatusByUserId(Request $request, Response $response, array $aArgs): Response
@@ -1339,9 +1348,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -1385,9 +1394,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response|array
      * @throws Exception
      */
@@ -1425,11 +1434,8 @@ class UserController
             return [];
         }
 
-        $pathToSignature = $docserver['path_template'] . str_replace(
-            '#',
-            '/',
-            $signatures[0]['signature_path']
-        ) .
+        $pathToSignature = $docserver['path_template'] .
+            str_replace('#', '/', $signatures[0]['signature_path']) .
             $signatures[0]['signature_file_name'];
         $image = file_get_contents($pathToSignature);
         if ($image === false) {
@@ -1445,9 +1451,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -1525,9 +1531,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -1565,9 +1571,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -1593,8 +1599,8 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      */
     public function createCurrentUserEmailSignature(Request $request, Response $response): Response
@@ -1617,9 +1623,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      */
     public function updateCurrentUserEmailSignature(Request $request, Response $response, array $aArgs): Response
@@ -1643,9 +1649,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      */
     public function deleteCurrentUserEmailSignature(Request $request, Response $response, array $aArgs): Response
@@ -1661,9 +1667,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -1724,9 +1730,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -1773,9 +1779,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -1823,9 +1829,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      */
     public function getEntities(Request $request, Response $response, array $args): Response
@@ -1853,9 +1859,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -1923,9 +1929,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -1960,9 +1966,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -1998,9 +2004,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -2156,9 +2162,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -2191,9 +2197,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -2271,8 +2277,8 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -2339,9 +2345,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $aArgs
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
      * @return Response
      * @throws Exception
      */
@@ -2369,9 +2375,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -2399,8 +2405,8 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -2465,7 +2471,8 @@ class UserController
                     '\n')
                 FROM redirected_baskets rb, users u_actual, usergroups ug, usergroup_content ugc, baskets b
                 WHERE rb.owner_user_id = users.id AND rb.actual_user_id = u_actual.id
-                    AND rb.group_id = ug.id AND ug.id = ugc.group_id AND ugc.user_id = users.id AND rb.basket_id = b.basket_id
+                    AND rb.group_id = ug.id AND ug.id = ugc.group_id 
+                    AND ugc.user_id = users.id AND rb.basket_id = b.basket_id
                 ) as \"redirectedBaskets\"",
 
             'assignedBaskets' => "(
@@ -2476,7 +2483,8 @@ class UserController
                     '\n')
                 FROM redirected_baskets rb, users u_owner, usergroups ug, usergroup_content ugc, baskets b
                 WHERE rb.actual_user_id = users.id AND rb.owner_user_id = u_owner.id
-                    AND rb.group_id = ug.id AND ug.id = ugc.group_id AND ugc.user_id = u_owner.id AND rb.basket_id = b.basket_id
+                    AND rb.group_id = ug.id AND ug.id = ugc.group_id 
+                    AND ugc.user_id = u_owner.id AND rb.basket_id = b.basket_id
                 ) as \"assignedBaskets\""
         ];
 
@@ -2644,8 +2652,8 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -2711,11 +2719,11 @@ class UserController
                 ];
                 continue;
             } elseif (
-                !empty($user['phone']) && (!preg_match(
-                    "/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/",
-                    $user['phone']
-                ) ||
-                    !Validator::length(1, 32)->validate($user['phone']))
+                !empty($user['phone']) &&
+                (
+                    !preg_match("/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/", $user['phone']) ||
+                    !Validator::length(1, 32)->validate($user['phone'])
+                )
             ) {
                 $errors[] = [
                     'error' => "Argument phone is not correct for user {$key}",
@@ -2879,7 +2887,7 @@ class UserController
     }
 
     /**
-     * @param array $args
+     * @param  array  $args
      * @return array|true
      * @throws Exception
      */
@@ -2929,7 +2937,7 @@ class UserController
     }
 
     /**
-     * @param array $aArgs
+     * @param  array  $aArgs
      * @return bool
      */
     private function checkNeededParameters(array $aArgs): bool
@@ -2944,8 +2952,8 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -2969,7 +2977,10 @@ class UserController
         UserModel::update(['set' => ['reset_token' => $resetToken], 'where' => ['id = ?'], 'data' => [$user['id']]]);
 
         $url = UrlController::getCoreUrl() . 'dist/index.html#/reset-password?token=' . $resetToken;
-        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server', 'select' => ['value']]);
+        $configuration = ConfigurationModel::getByPrivilege([
+            'privilege' => 'admin_email_server',
+            'select'    => ['value']
+        ]);
         $configuration = json_decode($configuration['value'], true);
         if (!empty($configuration['from'])) {
             $sender = $configuration['from'];
@@ -3006,8 +3017,8 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      * @throws Exception
      */
@@ -3063,8 +3074,8 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      */
     public function getCurrentUserEmailSignatures(Request $request, Response $response): Response
@@ -3075,8 +3086,8 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
+     * @param  Request  $request
+     * @param  Response  $response
      * @return Response
      */
     public function getCurrentUserEmailSignaturesList(Request $request, Response $response): Response
@@ -3087,7 +3098,7 @@ class UserController
     }
 
     /**
-     * @param array $args
+     * @param  array  $args
      * @return array[]
      */
     public static function getSignatures(array $args = []): array
@@ -3135,9 +3146,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      */
     public function getGlobalEmailSignatureById(Request $request, Response $response, array $args): Response
@@ -3164,9 +3175,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      */
     public function getCurrentUserEmailSignatureById(Request $request, Response $response, array $args): Response
@@ -3190,7 +3201,7 @@ class UserController
     }
 
     /**
-     * @param array $args
+     * @param  array  $args
      * @return bool
      * @throws Exception
      */
@@ -3207,9 +3218,9 @@ class UserController
     }
 
     /**
-     * @param Request $request
-     * @param Response $response
-     * @param array $args
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
      * @return Response
      * @throws Exception
      */
@@ -3366,7 +3377,7 @@ class UserController
     }
 
     /**
-     * @param array $args
+     * @param  array  $args
      * @return array|true
      * @throws Exception
      */

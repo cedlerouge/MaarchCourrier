@@ -40,7 +40,14 @@ class ListInstanceController
         'opinionCircuit' => 'AVIS_CIRCUIT'
     ];
 
-    public function getByResId(Request $request, Response $response, array $args)
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getByResId(Request $request, Response $response, array $args): Response
     {
         if (
             !Validator::intVal()->validate($args['resId']) ||
@@ -78,7 +85,14 @@ class ListInstanceController
         return $response->withJson(['listInstance' => $listInstances, 'hasHistory' => !empty($hasHistory)]);
     }
 
-    public function getVisaCircuitByResId(Request $request, Response $response, array $aArgs)
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function getVisaCircuitByResId(Request $request, Response $response, array $aArgs): Response
     {
         if (
             !Validator::intVal()->validate($aArgs['resId']) ||
@@ -143,7 +157,14 @@ class ListInstanceController
         return $response->withJson(['circuit' => $listInstances, 'hasHistory' => count($hasHistory) > 1]);
     }
 
-    public function getOpinionCircuitByResId(Request $request, Response $response, array $aArgs)
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function getOpinionCircuitByResId(Request $request, Response $response, array $aArgs): Response
     {
         if (
             !Validator::intVal()->validate($aArgs['resId']) ||
@@ -199,7 +220,14 @@ class ListInstanceController
         return $response->withJson(['circuit' => $listInstances]);
     }
 
-    public function getParallelOpinionByResId(Request $request, Response $response, array $aArgs)
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function getParallelOpinionByResId(Request $request, Response $response, array $aArgs): Response
     {
         if (
             !Validator::intVal()->validate($aArgs['resId']) ||
@@ -257,7 +285,13 @@ class ListInstanceController
         return $response->withJson($listInstances);
     }
 
-    public function update(Request $request, Response $response)
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response): Response
     {
         $fullRight = false;
 
@@ -312,7 +346,8 @@ class ListInstanceController
                     if (empty($allowMultipleAvisAssignment)) {
                         ParameterModel::create([
                             'id'              => 'allowMultipleAvisAssignment',
-                            'description'     => "Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle",
+                            'description'     => "Un utilisateur peut fournir plusieurs avis" .
+                                " tout en conservant le même rôle",
                             'param_value_int' => 0
                         ]);
                         $allowMultipleAvisAssignment = 0;
@@ -594,10 +629,15 @@ class ListInstanceController
         return ['success' => 'success'];
     }
 
+
     /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
+     * @return Response
      * @throws Exception
      */
-    public function updateCircuits(Request $request, Response $response, array $args)
+    public function updateCircuits(Request $request, Response $response, array $args): Response
     {
         $body = $request->getParsedBody();
         if (!Validator::arrayType()->notEmpty()->validate($body)) {
@@ -731,9 +771,10 @@ class ListInstanceController
                     $listInstance['sequence'] < $minSequenceNoProcessDate
                 ) {
                     DatabaseModel::rollbackTransaction();
-                    return $response->withStatus(400)->withJson(
-                        ['errors' => "Body resources[{$resourceKey}] listInstances[{$key}] sequence is before already processed users"]
-                    );
+                    return $response->withStatus(400)->withJson([
+                        'errors' => "Body resources[{$resourceKey}] listInstances[{$key}]" .
+                            " sequence is before already processed users"
+                    ]);
                 }
 
                 if (!is_numeric($listInstance['item_id'])) {
@@ -930,7 +971,14 @@ class ListInstanceController
         return $response->withStatus(204);
     }
 
-    public function deleteCircuit(Request $request, Response $response, array $args)
+    /**
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  array  $args
+     * @return Response
+     * @throws Exception
+     */
+    public function deleteCircuit(Request $request, Response $response, array $args): Response
     {
         if (
             !Validator::intVal()->validate($args['resId']) ||

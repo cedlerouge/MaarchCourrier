@@ -1,10 +1,10 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ */
 
 /**
  * @brief Issuing Site Controller
@@ -13,6 +13,7 @@
 
 namespace RegisteredMail\controllers;
 
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use RegisteredMail\models\IssuingSiteEntitiesModel;
@@ -24,7 +25,13 @@ use SrcCore\http\Response;
 
 class IssuingSiteController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
         $sites = IssuingSiteModel::get();
 
@@ -56,7 +63,14 @@ class IssuingSiteController
         return $response->withJson(['sites' => $sites]);
     }
 
-    public function getById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     *
+     * @return Response
+     */
+    public function getById(Request $request, Response $response, array $args): Response
     {
         $site = IssuingSiteModel::getById(['id' => $args['id']]);
 
@@ -91,9 +105,18 @@ class IssuingSiteController
         return $response->withJson(['site' => $site]);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -103,7 +126,9 @@ class IssuingSiteController
             return $response->withStatus(400)->withJson(['errors' => 'Body label is empty or not a string']);
         }
         if (!Validator::notEmpty()->intVal()->length(1, 10)->validate($body['accountNumber'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body accountNumber is empty or not an integer with less than 11 digits']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body accountNumber is empty or not an integer with less than 11 digits']
+            );
         }
         if (!Validator::stringType()->notEmpty()->validate($body['addressNumber'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body addressNumber is empty or not an integer']);
@@ -125,7 +150,9 @@ class IssuingSiteController
             'limit ' => 1
         ]);
         if (!empty($site)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body accountNumber is already used by another site', 'lang' => 'accountNumberAlreadyUsed']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body accountNumber is already used by another site', 'lang' => 'accountNumberAlreadyUsed']
+            );
         }
 
         if (!empty($body['entities']) && !Validator::arrayType()->validate($body['entities'])) {
@@ -169,9 +196,19 @@ class IssuingSiteController
         return $response->withJson(['id' => $id]);
     }
 
-    public function update(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $args): Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -186,7 +223,9 @@ class IssuingSiteController
             return $response->withStatus(400)->withJson(['errors' => 'Body label is empty or not a string']);
         }
         if (!Validator::notEmpty()->intVal()->length(1, 10)->validate($body['accountNumber'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body accountNumber is empty or not an integer with less than 11 digits']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body accountNumber is empty or not an integer with less than 11 digits']
+            );
         }
         if (!Validator::stringType()->notEmpty()->validate($body['addressNumber'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body addressNumber is empty or not an integer']);
@@ -208,7 +247,9 @@ class IssuingSiteController
             'limit ' => 1
         ]);
         if (!empty($site)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body accountNumber is already used by another site', 'lang' => 'accountNumberAlreadyUsed']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body accountNumber is already used by another site', 'lang' => 'accountNumberAlreadyUsed']
+            );
         }
 
         if (!empty($body['entities']) && !Validator::arrayType()->validate($body['entities'])) {
@@ -261,9 +302,19 @@ class IssuingSiteController
         return $response->withStatus(204);
     }
 
-    public function delete(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $args): Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_registered_mail', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -273,12 +324,17 @@ class IssuingSiteController
         }
 
         $issuingSite = RegisteredMailModel::get([
-            'select'    => [1],
-            'where'     => ['issuing_site = ?'],
-            'data'      => [$args['id']]
+            'select' => [1],
+            'where'  => ['issuing_site = ?'],
+            'data'   => [$args['id']]
         ]);
         if (!empty($issuingSite)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Cannot delete site : site is already used by a registered mail', 'lang' => 'siteIsUsedByRegisteredMail']);
+            return $response->withStatus(400)->withJson(
+                [
+                    'errors' => 'Cannot delete site : site is already used by a registered mail',
+                    'lang'   => 'siteIsUsedByRegisteredMail'
+                ]
+            );
         }
 
         IssuingSiteEntitiesModel::delete([

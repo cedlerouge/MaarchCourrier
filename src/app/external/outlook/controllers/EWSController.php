@@ -2,31 +2,38 @@
 
 namespace Outlook\controllers;
 
+use Convert\controllers\ConvertPdfController;
+use Exception;
 use History\models\BatchHistoryModel;
-use jamesiarmes\PhpEws\Client;
-use jamesiarmes\PhpEws\Request\GetAttachmentType;
-use jamesiarmes\PhpEws\Request\GetItemType;
 use jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfBaseItemIdsType;
 use jamesiarmes\PhpEws\ArrayType\NonEmptyArrayOfRequestAttachmentIdsType;
+use jamesiarmes\PhpEws\Client;
 use jamesiarmes\PhpEws\Enumeration\DefaultShapeNamesType;
 use jamesiarmes\PhpEws\Enumeration\ResponseClassType;
-use jamesiarmes\PhpEws\Type\ItemResponseShapeType;
-use jamesiarmes\PhpEws\Type\ItemIdType;
-use jamesiarmes\PhpEws\Type\RequestAttachmentIdType;
+use jamesiarmes\PhpEws\Request\GetAttachmentType;
+use jamesiarmes\PhpEws\Request\GetItemType;
 use jamesiarmes\PhpEws\Type\ConnectingSIDType;
 use jamesiarmes\PhpEws\Type\ExchangeImpersonationType;
-use Convert\controllers\ConvertPdfController;
+use jamesiarmes\PhpEws\Type\ItemIdType;
+use jamesiarmes\PhpEws\Type\ItemResponseShapeType;
+use jamesiarmes\PhpEws\Type\RequestAttachmentIdType;
 use Resource\controllers\StoreController;
-use SrcCore\models\ValidatorModel;
 use Respect\Validation\Validator;
-use SrcCore\models\CurlModel;
 use SrcCore\controllers\LogsController;
+use SrcCore\models\CurlModel;
+use SrcCore\models\ValidatorModel;
 
 class EWSController
 {
     private const BASE_TOKEN_URL = 'https://login.microsoftonline.com/';
 
-    public static function initOauth2(array $args)
+    /**
+     * @param array $args
+     *
+     * @return array
+     * @throws Exception
+     */
+    public static function initOauth2(array $args): array
     {
         $control = EWSController::control($args);
         if (!empty($control['errors'])) {
@@ -34,8 +41,8 @@ class EWSController
         }
 
         $curlResponse = CurlModel::exec([
-            'url'     => EWSController::BASE_TOKEN_URL . $args['tenantId'] . '/oauth2/v2.0/token',
-            'method'  => 'POST',
+            'url'           => EWSController::BASE_TOKEN_URL . $args['tenantId'] . '/oauth2/v2.0/token',
+            'method'        => 'POST',
             'multipartBody' => [
                 'grant_type'    => 'client_credentials',
                 'client_id'     => $args['clientId'],
@@ -104,7 +111,12 @@ class EWSController
         return ['client' => $client];
     }
 
-    public static function control(array $args)
+    /**
+     * @param array $args
+     *
+     * @return string[]|true
+     */
+    public static function control(array $args): array|bool
     {
         if (!Validator::notEmpty()->stringType()->validate($args['ewsHost'])) {
             return ['errors' => '[EWS] ewsHost is empty or not a string'];
@@ -123,7 +135,13 @@ class EWSController
         return true;
     }
 
-    public static function getAttachments(array $args)
+    /**
+     * @param array $args
+     *
+     * @return array
+     * @throws Exception
+     */
+    public static function getAttachments(array $args): array
     {
         ValidatorModel::notEmpty($args, ['attachmentIds', 'emailId', 'config', 'resId']);
         ValidatorModel::arrayType($args, ['attachmentIds', 'config']);
@@ -131,12 +149,12 @@ class EWSController
         ValidatorModel::intVal($args, ['resId']);
 
         $client = EWSController::initOauth2([
-            'ewsHost'       => $args['config']['ewsHost'] ?? null,
-            'email'         => $args['config']['email'] ?? null,
-            'version'       => $args['config']['version'] ?? null,
-            'tenantId'      => $args['config']['tenantId'] ?? null,
-            'clientId'      => $args['config']['clientId'] ?? null,
-            'clientSecret'  => $args['config']['clientSecret'] ?? null
+            'ewsHost'      => $args['config']['ewsHost'] ?? null,
+            'email'        => $args['config']['email'] ?? null,
+            'version'      => $args['config']['version'] ?? null,
+            'tenantId'     => $args['config']['tenantId'] ?? null,
+            'clientId'     => $args['config']['clientId'] ?? null,
+            'clientSecret' => $args['config']['clientSecret'] ?? null
         ]);
 
         if (!empty($client['errors'])) {
@@ -172,9 +190,14 @@ class EWSController
                     'eventType' => 'Curl',
                     'eventId'   => 'Error while fetching mail data, response: ' . $e->getMessage()
                 ]);
-                return ['errors' => 'Error while fetching mail data: ' . $e->getMessage() , 'lang' => 'outlookGetMailDataImpossible'];
+                return [
+                    'errors' => 'Error while fetching mail data: ' . $e->getMessage(),
+                    'lang'   => 'outlookGetMailDataImpossible'
+                ];
             }
-            BatchHistoryModel::create(['info' => 'Get outlook attachments error :' . $e->getMessage(), 'module_name' => 'outlook']);
+            BatchHistoryModel::create(
+                ['info' => 'Get outlook attachments error :' . $e->getMessage(), 'module_name' => 'outlook']
+            );
             LogsController::add([
                 'isTech'    => true,
                 'moduleId'  => 'EWSController',
@@ -183,7 +206,10 @@ class EWSController
                 'eventType' => 'Curl',
                 'eventId'   => 'Error when getting attachments. Exception: ' . $e->getMessage()
             ]);
-            return ['errors' => 'Error when getting attachments. Exception: ' . $e->getMessage(), 'lang' => 'outlookGetAttachmentsImpossible'];
+            return [
+                'errors' => 'Error when getting attachments. Exception: ' . $e->getMessage(),
+                'lang'   => 'outlookGetAttachmentsImpossible'
+            ];
         }
         // Iterate over the results, printing any error messages or receiving attachments.
         $responseMessages = $response->ResponseMessages->GetItemResponseMessage;
@@ -193,7 +219,8 @@ class EWSController
         foreach ($responseMessages as $responseMessage) {
             // Make sure the request succeeded.
             if ($responseMessage->ResponseClass != ResponseClassType::SUCCESS) {
-                $errors[] = 'Failed to get attachments list : ' . $responseMessage->MessageText . ' (' . $responseMessage->ResponseCode . ')';
+                $errors[] = 'Failed to get attachments list : ' . $responseMessage->MessageText . ' (' .
+                    $responseMessage->ResponseCode . ')';
                 continue;
             }
 
@@ -238,7 +265,8 @@ class EWSController
             foreach ($attachmentResponseMessages as $attachmentResponseMessage) {
                 // Make sure the request succeeded.
                 if ($attachmentResponseMessage->ResponseClass != ResponseClassType::SUCCESS) {
-                    $errors[] = 'Failed to get attachment : ' . $responseMessage->MessageText . ' (' . $responseMessage->ResponseCode . ')';
+                    $errors[] = 'Failed to get attachment : ' . $responseMessage->MessageText . ' (' .
+                        $responseMessage->ResponseCode . ')';
                     continue;
                 }
 
@@ -258,8 +286,8 @@ class EWSController
                         continue;
                     }
                     ConvertPdfController::convert([
-                        'resId'     => $store,
-                        'collId'    => 'attachments_coll'
+                        'resId'  => $store,
+                        'collId' => 'attachments_coll'
                     ]);
                 }
             }
