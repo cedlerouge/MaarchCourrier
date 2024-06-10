@@ -9,7 +9,7 @@
         <span>{{ module.label }}</span>
     </div>
 </div>
-<div style="overflow: auto;padding: 0 20px;background: white;flex: 1;position: relative">
+<div class="toolbar-container" [class.toolbar-container-no-padding]="currentTool === 'history'">
     <app-dashboard-resume
             *ngIf="currentTool === 'dashboard'"
             [resId]="resId"

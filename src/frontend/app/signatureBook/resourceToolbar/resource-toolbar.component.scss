@@ -71,6 +71,18 @@
   color: var(--maarch-color-secondary);
 }
 
+.toolbar-container {
+  overflow: auto;
+  padding: 0 20px;
+  background: white;
+  flex: 1;
+  position: relative;
+}
+
+.toolbar-container-no-padding {
+  padding: 0;
+}
+
 .save-modifications {
   position: sticky;
   bottom: 0;
