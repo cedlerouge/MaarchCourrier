@@ -652,7 +652,7 @@ class InstallerController
                 return $response->withStatus(400)->withJson(
                     [
                         'errors' =>
-                            "Docserver folder creation failed for path : 
+                            "Docserver folder creation failed for path :
                             {$body['path']}/{$body['customId']}/{$docserver}"
                     ]
                 );
@@ -957,7 +957,7 @@ class InstallerController
          * Key file creation and rights modification
          */
 
-        $path = "custom/{$customId}/config/mcPrivateKey.key";
+        $path = "custom/{$customId}/config/mc_secret.key";
         $fpPrivateKey = file_put_contents($path, $random);
         if ($fpPrivateKey === false) {
             return null;
