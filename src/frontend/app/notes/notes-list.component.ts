@@ -127,7 +127,7 @@ export class NotesListComponent implements OnInit {
         return this.noteEditor === undefined ? false : this.noteEditor.isWritingNote();
     }
 
-    addNote() {
-        this.noteEditor.addNote();
+    async addNote(): Promise<boolean> {
+        return this.noteEditor.addNote();
     }
 }

@@ -171,18 +171,18 @@ export class ResourceToolbarComponent implements OnInit {
         }
     }
 
-    async saveTool() {
-        if (this.currentTool === 'diffusionList' && this.appDiffusionsList !== undefined) {
-            await this.appDiffusionsList.saveListinstance();
+    async saveTool(): Promise<void> {
+        if (this.currentTool === 'diffusionList') {
+            await this.appDiffusionsList?.saveListinstance();
             this.loadBadges();
-        } else if (this.currentTool === 'visaCircuit' && this.appVisaWorkflow !== undefined) {
-            await this.appVisaWorkflow.saveVisaWorkflow();
+        } else if (this.currentTool === 'visaCircuit') {
+            await this.appVisaWorkflow?.saveVisaWorkflow();
             this.loadBadges();
-        } else if (this.currentTool === 'opinionCircuit' && this.appAvisWorkflow !== undefined) {
-            await this.appAvisWorkflow.saveAvisWorkflow();
+        } else if (this.currentTool === 'opinionCircuit') {
+            await this.appAvisWorkflow?.saveAvisWorkflow();
             this.loadBadges();
-        } else if (this.currentTool === 'notes' && this.appNotesList !== undefined) {
-            this.appNotesList.addNote();
+        } else if (this.currentTool === 'notes') {
+            await this.appNotesList?.addNote();
             this.loadBadges();
         }
     }
