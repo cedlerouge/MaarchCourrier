@@ -433,7 +433,7 @@ export class ListAdministrationComponent implements OnInit {
         data.splice(index, 1);
     }
 
-    saveTemplate() {
+    saveTemplate(withNotif: boolean = true) {
         const objToSend = {
             templateColumns: this.selectedTemplateDisplayedSecondaryData,
             subInfos: this.displayedSecondaryData
@@ -462,8 +462,9 @@ export class ListAdministrationComponent implements OnInit {
                 this.selectedTemplateDisplayedSecondaryDataClone = JSON.parse(JSON.stringify(this.selectedTemplateDisplayedSecondaryData));
                 this.availableValidationsActionsClone = JSON.parse(JSON.stringify(this.availableValidationsActions));
                 this.availableRefusalActionsClone = JSON.parse(JSON.stringify(this.availableRefusalActions));
-
-                this.notify.success(this.translate.instant('lang.modificationsProcessed'));
+                if (withNotif) {
+                    this.notify.success(this.translate.instant('lang.modificationsProcessed'));
+                }
                 this.refreshBasketGroup.emit(this.currentBasketGroup);
             }),
             catchError((err: any) => {
@@ -604,7 +605,7 @@ export class ListAdministrationComponent implements OnInit {
 
     refreshData(event: string, data: any): void {
         this.setActionsChosen(event === 'actionAdded' ? null : data);
-        this.saveTemplate();
+        this.saveTemplate(false);
     }
 
     formatActions(actions: any[]): BasketGroupListActionInterface[] {
