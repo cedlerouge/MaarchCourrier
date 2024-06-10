@@ -75,6 +75,9 @@ body {
     overflow: hidden;
 
     &-content {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
         overflow-y: auto;
         overflow-x: hidden;
         position: relative;
@@ -103,7 +106,6 @@ body {
     display: flex;
     padding-left: 25px;
     padding-right: 25px;
-    height: 10%;
     align-items: center;
     white-space: pre;
 
@@ -153,7 +155,7 @@ body {
 .fa.mat-icon,
 .far.mat-icon,
 .fas.mat-icon,
-.mat-form-field-appearance-legacy .mat-form-field-prefix .fa.mat-icon, 
+.mat-form-field-appearance-legacy .mat-form-field-prefix .fa.mat-icon,
 .mat-form-field-appearance-legacy .mat-form-field-suffix .fa.mat-icon {
     height: auto;
     width: auto;
@@ -165,14 +167,14 @@ body {
 }
 
 .mat-list-base .mat-list-item .mat-list-icon {
-    border-radius: 0px;
+    border-radius: 0;
     align-items: center;
     display: flex;
     overflow: initial;
 }
 
 .mat-list-base .mat-list-item .mat-list-icon {
-    border-radius: 0px;
+    border-radius: 0;
     align-items: center;
     display: flex;
     overflow: initial;
@@ -230,11 +232,9 @@ body {
  .banner-opened {
     display: flex;
     flex-direction: column;
-    margin: 10px 10px -5px 10px;
+    margin: 10px 10px -5px 20px;
     border-radius: 20px;
-    margin-left: 20px;
-    padding-left: 20px;
-    padding: 0px;
+    padding: 0;
     width: 100%;
     border: solid 1px #ccc;
     position: relative;
@@ -253,8 +253,8 @@ body {
         position: absolute;
         top: -18px;
         left: 20px;
-        padding: 0px;
-        margin: 0px;
+        padding: 0;
+        margin: 0;
         color: white;
 
         &-divider {
@@ -263,7 +263,7 @@ body {
             z-index: -1;
             top: 17px;
             background: var(--maarch-color-primary-light);
-            height: 1px; 
+            height: 1px;
         }
     }
 
@@ -287,11 +287,9 @@ body {
 .banner-closed {
     display: flex;
     flex-direction: column;
-    margin: 10px 10px -5px 10px;
+    margin: 10px 10px -5px 20px;
     border-radius: 20px;
-    margin-left: 20px;
-    padding-left: 20px;
-    padding: 0px;
+    padding: 0;
     width: 100%;
     border: none;
     position: relative;
@@ -310,8 +308,8 @@ body {
         position: absolute;
         top: -18px;
         left: 20px;
-        padding: 0px;
-        margin: 0px;
+        padding: 0;
+        margin: 0;
         color: white;
 
         &-divider {
@@ -320,14 +318,14 @@ body {
             z-index: -1;
             top: 17px;
             background: var(--maarch-color-primary-light);
-            height: 0px; 
+            height: 0;
         }
     }
 
     .content {
         align-items: center;
         transition: height 0.3s;
-        height: 0px;
+        height: 0;
         overflow: hidden;
         display: flex;
         padding-left: 10px;

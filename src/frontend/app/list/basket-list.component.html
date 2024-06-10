@@ -51,7 +51,7 @@
                             </span>
                         </div>
                     </div>
-                    <div style="height:90%;overflow:auto;position:absolute;width:100%;">
+                    <div style="flex:1;overflow:auto;">
                         <table cdkDropList id="document-list" [cdkDropListConnectedTo]="listTodrag()" [cdkDropListData]="data" #tableBasketListSort="matSort" mat-table [dataSource]="data" matSort
                             matSortActive="resId" matSortDisableClear matSortDirection="asc" style="width:100%;" [cdkDropListDisabled]="dragInit || appService.getViewMode()">
 
@@ -208,7 +208,7 @@
             <div *ngIf="innerHtml && !filtersListService.filterMode" [matTooltip]="currentChrono"
                 [innerHTML]="innerHtml" style="height: 100%;overflow: hidden;"></div>
 
-                <div style="display:flex;position: sticky;top: 0px;z-index: 2;">
+                <div style="display:flex;position: sticky;top: 0;z-index: 2;">
                     <button mat-icon-button (click)="snav2.close()" style="font-size: 20px;color:#666;">
                     <mat-icon class="fa fa-arrow-right"></mat-icon>
                 </button>
