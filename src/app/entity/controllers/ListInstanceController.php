@@ -288,10 +288,10 @@ class ListInstanceController
     /**
      * @param  Request  $request
      * @param  Response  $response
-     * @return mixed
+     * @return Response
      * @throws Exception
      */
-    public function update(Request $request, Response $response): mixed
+    public function update(Request $request, Response $response): Response
     {
         $fullRight = false;
 
