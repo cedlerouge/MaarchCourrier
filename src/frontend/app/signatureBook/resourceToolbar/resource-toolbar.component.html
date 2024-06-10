@@ -15,18 +15,29 @@
         [resId]="resId"
     >
     </app-notes-list>
-    <app-visa-workflow *ngIf="currentTool === 'visaCircuit'"
-       [adminMode]="false"
-       [target]="'signatureBook'"
-       [resId]="resId">
+    <app-visa-workflow
+        #appVisaWorkflow
+        *ngIf="currentTool === 'visaCircuit'"
+        [adminMode]="privilegeService.hasCurrentUserPrivilege('config_visa_workflow')"
+        [target]="'signatureBook'"
+        [resId]="resId">
     </app-visa-workflow>
     <app-indexing-form *ngIf="currentTool === 'info'"
-       [resId]="resId"
-       [groupId]="groupId"
-       [indexingFormId]="modelId"
-       [mode]="'process'"
-       [canEdit]="false"
-       [hideDiffusionList]="true">
+        [resId]="resId"
+        [groupId]="groupId"
+        [indexingFormId]="modelId"
+        [mode]="'process'"
+        [canEdit]="false"
+        [hideDiffusionList]="true">
     </app-indexing-form>
+</div>
+
+<div class="save-modifications">
+    <button *ngIf="isToolModified()"
+        mat-fab
+        [title]="'lang.saveModifications' | translate"
+        (click)="saveTool()" color="accent">
+        <mat-icon style="height:auto;font-size:20px;" class="fas fa-check"></mat-icon>
+    </button>
 </div>
 
