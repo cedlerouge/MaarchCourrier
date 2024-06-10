@@ -16,17 +16,17 @@
     >
     </app-notes-list>
     <app-visa-workflow *ngIf="currentTool === 'visaCircuit'"
-       [adminMode]="false"
-       [target]="'signatureBook'"
-       [resId]="resId">
+        [adminMode]="privilegeService.hasCurrentUserPrivilege('config_visa_workflow')"
+        [target]="'signatureBook'"
+        [resId]="resId">
     </app-visa-workflow>
     <app-indexing-form *ngIf="currentTool === 'info'"
-       [resId]="resId"
-       [groupId]="groupId"
-       [indexingFormId]="modelId"
-       [mode]="'process'"
-       [canEdit]="false"
-       [hideDiffusionList]="true">
+        [resId]="resId"
+        [groupId]="groupId"
+        [indexingFormId]="modelId"
+        [mode]="'process'"
+        [canEdit]="false"
+        [hideDiffusionList]="true">
     </app-indexing-form>
 </div>
 
