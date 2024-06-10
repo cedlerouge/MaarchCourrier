@@ -75,7 +75,6 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
 
     /**
      * @param SignatureBookServiceConfig $config
-     *
      * @return SignatureBookUserServiceInterface
      */
     public function setConfig(SignatureBookServiceConfig $config): SignatureBookUserServiceInterface

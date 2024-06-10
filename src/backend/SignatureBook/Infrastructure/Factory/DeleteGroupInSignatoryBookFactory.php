@@ -20,6 +20,9 @@ use MaarchCourrier\SignatureBook\Infrastructure\SignatureServiceJsonConfigLoader
 
 class DeleteGroupInSignatoryBookFactory
 {
+    /**
+     * @return DeleteGroupInSignatoryBook
+     */
     public function create(): DeleteGroupInSignatoryBook
     {
         $signatureBookGroup = new MaarchParapheurGroupService();

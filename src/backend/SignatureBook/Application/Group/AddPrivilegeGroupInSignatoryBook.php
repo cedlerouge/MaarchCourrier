@@ -26,6 +26,10 @@ use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProble
 
 class AddPrivilegeGroupInSignatoryBook
 {
+    /**
+     * @param SignatureBookGroupServiceInterface $signatureBookGroupService
+     * @param SignatureServiceConfigLoaderInterface $signatureServiceJsonConfigLoader
+     */
     public function __construct(
         private readonly SignatureBookGroupServiceInterface $signatureBookGroupService,
         private readonly SignatureServiceConfigLoaderInterface $signatureServiceJsonConfigLoader,
@@ -62,16 +66,16 @@ class AddPrivilegeGroupInSignatoryBook
                     $privilege instanceof (VisaDocumentPrivilege::class)
                 ) {
                     $privileges = [
-                      'indexation',
-                      'manage_documents',
-                       ];
+                        'indexation',
+                        'manage_documents',
+                    ];
                 }
 
                 foreach ($privileges as $privilege) {
                     $isPrivilegeUpdated =
-                       $this->signatureBookGroupService->updatePrivilege($group, $privilege, true);
+                        $this->signatureBookGroupService->updatePrivilege($group, $privilege, true);
                     if (!empty($isPrivilegeUpdated['errors'])) {
-                           throw new GroupUpdatePrivilegeInSignatureBookFailedProblem($isPrivilegeUpdated);
+                        throw new GroupUpdatePrivilegeInSignatureBookFailedProblem($isPrivilegeUpdated);
                     }
                 }
             }

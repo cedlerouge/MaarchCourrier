@@ -33,6 +33,9 @@ class RemovePrivilegeGroupInSignatoryBookTest extends TestCase
     private SignatureServiceJsonConfigLoaderMock $signatureServiceJsonConfigLoaderMock;
     private PrivilegeCheckerMock $privilegeCheckerMock;
 
+    /**
+     * @return void
+     */
     protected function setUp(): void
     {
         $this->maarchParapheurGroupServiceMock = new MaarchParapheurGroupServiceMock();
@@ -44,6 +47,13 @@ class RemovePrivilegeGroupInSignatoryBookTest extends TestCase
             $this->privilegeCheckerMock,
         );
     }
+
+    /**
+     * @return void
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
     public function testDoesNotUpdatePrivilegesWhenOneIsDeactivatedButAnotherIsStillActive(): void
     {
         $externalId['internalParapheur'] = 5;
@@ -61,7 +71,12 @@ class RemovePrivilegeGroupInSignatoryBookTest extends TestCase
         $this->assertTrue($this->privilegeCheckerMock->hasGroupPrivilegeCalled);
     }
 
-
+    /**
+     * @return void
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
     public function testUpdatesPrivilegesWhenSinglePrivilegeIsDeactivated(): void
     {
         $externalId['internalParapheur'] = 5;
@@ -80,6 +95,12 @@ class RemovePrivilegeGroupInSignatoryBookTest extends TestCase
         $this->assertTrue($this->maarchParapheurGroupServiceMock->groupUpdatePrivilegeCalled);
     }
 
+    /**
+     * @return void
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
     public function testThrowsProblemWhenDeactivatingOnlyPrivilegeAndUpdateFails(): void
     {
         $externalId['internalParapheur'] = 5;
@@ -99,6 +120,12 @@ class RemovePrivilegeGroupInSignatoryBookTest extends TestCase
         $this->removePrivilegeGroupInSignatoryBook->removePrivilege($group, new SignDocumentPrivilege());
     }
 
+    /**
+     * @return void
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
     public function testThrowsProblemWhenTheRetrieveOfTheGroupPrivilegeFailed(): void
     {
         $externalId['internalParapheur'] = 5;
@@ -113,6 +140,12 @@ class RemovePrivilegeGroupInSignatoryBookTest extends TestCase
         $this->removePrivilegeGroupInSignatoryBook->removePrivilege($group, new SignDocumentPrivilege());
     }
 
+    /**
+     * @return void
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
     public function testThrowsProblemWhenSignatureBookConfigNotFound(): void
     {
         $this->signatureServiceJsonConfigLoaderMock->signatureServiceConfigLoader = null;

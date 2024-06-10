@@ -1,15 +1,19 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 namespace MaarchCourrier\Tests\app\group;
 
+use Exception;
 use Group\controllers\GroupController;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupCreateInSignatureBookFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdateInSignatureBookFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 use MaarchCourrier\Tests\CourrierTestCase;
 use SrcCore\http\Response;
 use User\models\UserModel;
@@ -34,22 +38,29 @@ class GroupControllerTest extends CourrierTestCase
         file_put_contents('config/config.json', json_encode($config, JSON_PRETTY_PRINT));
     }
 
+    /**
+     * @return void
+     * @throws GroupCreateInSignatureBookFailedProblem
+     * @throws GroupUpdateInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     * @throws Exception
+     */
     public function testCreate()
     {
         $groupController = new GroupController();
 
         //  CREATE
         $body = [
-            'group_id'      => 'TEST-JusticeLeague',
-            'group_desc'    => 'Beyond the darkness',
-            'security'      => [
-                'where_clause'      => '1=2',
-                'maarch_comment'    => 'commentateur du dimanche'
+            'group_id'   => 'TEST-JusticeLeague',
+            'group_desc' => 'Beyond the darkness',
+            'security'   => [
+                'where_clause'   => '1=2',
+                'maarch_comment' => 'commentateur du dimanche'
             ]
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $groupController->create($fullRequest, new Response());
+        $response = $groupController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         self::$id = $responseBody->group;
@@ -58,7 +69,7 @@ class GroupControllerTest extends CourrierTestCase
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('TEST-JusticeLeague', $responseBody->group->group_id);
@@ -74,45 +85,45 @@ class GroupControllerTest extends CourrierTestCase
 
         // Fail
         $body = [
-            'group_id'      => 'TEST-JusticeLeague',
-            'security'      => [
-                'where_clause'      => '1=2',
-                'maarch_comment'    => 'commentateur du dimanche'
+            'group_id' => 'TEST-JusticeLeague',
+            'security' => [
+                'where_clause'   => '1=2',
+                'maarch_comment' => 'commentateur du dimanche'
             ]
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $groupController->create($fullRequest, new Response());
+        $response = $groupController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
 
         $body = [
-            'group_id'      => 'TEST-JusticeLeague',
-            'group_desc'    => 'Beyond the darkness',
-            'security'      => [
-                'where_clause'      => 'wrong clause format',
-                'maarch_comment'    => 'commentateur du dimanche'
+            'group_id'   => 'TEST-JusticeLeague',
+            'group_desc' => 'Beyond the darkness',
+            'security'   => [
+                'where_clause'   => 'wrong clause format',
+                'maarch_comment' => 'commentateur du dimanche'
             ]
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $groupController->create($fullRequest, new Response());
+        $response = $groupController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
-        $this->assertSame(_ID. ' ' . _ALREADY_EXISTS, $responseBody['errors']);
+        $this->assertSame(_ID . ' ' . _ALREADY_EXISTS, $responseBody['errors']);
 
         $body = [
-            'group_id'      => 'TEST-JusticeLeague2',
-            'group_desc'    => 'Beyond the darkness',
-            'security'      => [
-                'where_clause'      => 'wrong clause format',
-                'maarch_comment'    => 'commentateur du dimanche'
+            'group_id'   => 'TEST-JusticeLeague2',
+            'group_desc' => 'Beyond the darkness',
+            'security'   => [
+                'where_clause'   => 'wrong clause format',
+                'maarch_comment' => 'commentateur du dimanche'
             ]
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $groupController->create($fullRequest, new Response());
+        $response = $groupController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(_INVALID_CLAUSE, $responseBody['errors']);
@@ -121,7 +132,7 @@ class GroupControllerTest extends CourrierTestCase
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->create($fullRequest, new Response());
+        $response = $groupController->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -132,6 +143,13 @@ class GroupControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @return void
+     * @throws GroupCreateInSignatureBookFailedProblem
+     * @throws GroupUpdateInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     * @throws Exception
+     */
     public function testUpdate()
     {
         $groupController = new GroupController();
@@ -139,21 +157,21 @@ class GroupControllerTest extends CourrierTestCase
         //  UPDATE
         $args = [
             'description' => 'Beyond the darkness #2',
-            'security'  => [
+            'security'    => [
                 'where_clause'   => '1=3',
                 'maarch_comment' => 'commentateur du dimanche #2'
             ]
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $groupController->update($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $groupController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         //  READ
         $request = $this->createRequest('GET');
-        $response     = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('TEST-JusticeLeague', $responseBody->group->group_id);
@@ -169,41 +187,35 @@ class GroupControllerTest extends CourrierTestCase
 
         // Fail
         $body = [
-            'security'      => [
-                'where_clause'      => '1=2',
-                'maarch_comment'    => 'commentateur du dimanche'
+            'security' => [
+                'where_clause'   => '1=2',
+                'maarch_comment' => 'commentateur du dimanche'
             ]
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $groupController->update($fullRequest, new Response(), ['id' => self::$id * 1000]);
+        $response = $groupController->update($fullRequest, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Group not found', $responseBody['errors']);
 
-        $body = [
-            'security'      => [
-                'where_clause'      => '1=2',
-                'maarch_comment'    => 'commentateur du dimanche'
-            ]
-        ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $groupController->update($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $groupController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
 
         $body = [
-            'description'    => 'Beyond the darkness',
-            'security'      => [
-                'where_clause'      => 'wrong clause format',
-                'maarch_comment'    => 'commentateur du dimanche'
+            'description' => 'Beyond the darkness',
+            'security'    => [
+                'where_clause'   => 'wrong clause format',
+                'maarch_comment' => 'commentateur du dimanche'
             ]
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $groupController->update($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $groupController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(_INVALID_CLAUSE, $responseBody['errors']);
@@ -212,7 +224,7 @@ class GroupControllerTest extends CourrierTestCase
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->update($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $groupController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -223,13 +235,17 @@ class GroupControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testGetById()
     {
         $groupController = new GroupController();
 
         $request = $this->createRequest('GET');
 
-        $response     = $groupController->getById($request, new Response(), ['id' => self::$id]);
+        $response = $groupController->getById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->group);
@@ -239,7 +255,7 @@ class GroupControllerTest extends CourrierTestCase
         $this->assertSame('Beyond the darkness #2', $responseBody->group->group_desc);
 
         // ERROR
-        $response     = $groupController->getById($request, new Response(), ['id' => '123456789']);
+        $response = $groupController->getById($request, new Response(), ['id' => '123456789']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Group not found', $responseBody->errors);
@@ -248,7 +264,7 @@ class GroupControllerTest extends CourrierTestCase
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->getById($request, new Response(), ['id' => self::$id]);
+        $response = $groupController->getById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -259,13 +275,17 @@ class GroupControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testGet()
     {
         $groupController = new GroupController();
 
         $request = $this->createRequest('GET');
 
-        $response     = $groupController->get($request, new Response());
+        $response = $groupController->get($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->groups);
@@ -281,7 +301,7 @@ class GroupControllerTest extends CourrierTestCase
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->get($request, new Response());
+        $response = $groupController->get($request, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -298,13 +318,17 @@ class GroupControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testGetDetailedById()
     {
         $groupController = new GroupController();
 
         $request = $this->createRequest('GET');
 
-        $response     = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('TEST-JusticeLeague', $responseBody['group']['group_id']);
@@ -322,7 +346,7 @@ class GroupControllerTest extends CourrierTestCase
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -344,7 +368,7 @@ class GroupControllerTest extends CourrierTestCase
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $response = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -355,13 +379,17 @@ class GroupControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testGetIndexingInformationById()
     {
         $groupController = new GroupController();
 
         $request = $this->createRequest('GET');
 
-        $response     = $groupController->getIndexingInformationsById($request, new Response(), ['id' => self::$id]);
+        $response = $groupController->getIndexingInformationsById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -375,7 +403,7 @@ class GroupControllerTest extends CourrierTestCase
         $this->assertNotEmpty($responseBody['entities']);
 
         // Fail
-        $response     = $groupController->getIndexingInformationsById($request, new Response(), ['id' => self::$id * 1000]);
+        $response = $groupController->getIndexingInformationsById($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -385,7 +413,7 @@ class GroupControllerTest extends CourrierTestCase
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->getIndexingInformationsById($request, new Response(), ['id' => self::$id]);
+        $response = $groupController->getIndexingInformationsById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -396,17 +424,21 @@ class GroupControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testUpdateIndexingInformationById()
     {
         $groupController = new GroupController();
 
         $body = [
-            'actions' => [1],
+            'actions'  => [1],
             'entities' => [13]
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
         // Fail
@@ -415,7 +447,11 @@ class GroupControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id * 1000]);
+        $response = $groupController->updateIndexingInformations(
+            $fullRequest,
+            new Response(),
+            ['id' => self::$id * 1000]
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -426,25 +462,29 @@ class GroupControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id * 1000]);
+        $response = $groupController->updateIndexingInformations(
+            $fullRequest,
+            new Response(),
+            ['id' => self::$id * 1000]
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Group not found', $responseBody['errors']);
 
-        $response     = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Body actions contains invalid actions', $responseBody['errors']);
 
         $body = [
-            'actions' => [1],
+            'actions'  => [1],
             'entities' => [13, 100000]
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -454,7 +494,7 @@ class GroupControllerTest extends CourrierTestCase
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -465,30 +505,38 @@ class GroupControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testReassignUsers()
     {
         $groupController = new GroupController();
 
         $request = $this->createRequest('GET');
 
-        $response     = $groupController->reassignUsers($request, new Response(), ['id' => 1, 'newGroupId' => self::$id]);
+        $response = $groupController->reassignUsers($request, new Response(), ['id' => 1, 'newGroupId' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('success', $responseBody['success']);
 
-        $response     = $groupController->reassignUsers($request, new Response(), ['id' => self::$id, 'newGroupId' => 1]);
+        $response = $groupController->reassignUsers($request, new Response(), ['id' => self::$id, 'newGroupId' => 1]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('success', $responseBody['success']);
 
         // Fail
-        $response     = $groupController->reassignUsers($request, new Response(), ['id' => self::$id * 1000]);
+        $response = $groupController->reassignUsers($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Group not found', $responseBody['errors']);
 
-        $response     = $groupController->reassignUsers($request, new Response(), ['id' => self::$id, 'newGroupId' => self::$id * 1000]);
+        $response = $groupController->reassignUsers(
+            $request,
+            new Response(),
+            ['id' => self::$id, 'newGroupId' => self::$id * 1000]
+        );
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -498,7 +546,7 @@ class GroupControllerTest extends CourrierTestCase
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->reassignUsers($request, new Response(), ['id' => self::$id]);
+        $response = $groupController->reassignUsers($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -509,29 +557,33 @@ class GroupControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testDelete()
     {
         $groupController = new GroupController();
 
         //  DELETE
         $request = $this->createRequest('DELETE');
-        $response       = $groupController->delete($request, new Response(), ['id' => self::$id]);
-        $responseBody   = json_decode((string)$response->getBody());
+        $response = $groupController->delete($request, new Response(), ['id' => self::$id]);
+        $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->groups);
         $this->assertNotEmpty($responseBody->groups);
 
         //  READ
         $request = $this->createRequest('GET');
-        $response       = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
-        $responseBody   = json_decode((string)$response->getBody());
+        $response = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Group not found', $responseBody->errors);
 
         // Fail
         $request = $this->createRequest('DELETE');
 
-        $response     = $groupController->delete($request, new Response(), ['id' => self::$id * 1000]);
+        $response = $groupController->delete($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -541,7 +593,7 @@ class GroupControllerTest extends CourrierTestCase
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->delete($request, new Response(), ['id' => self::$id]);
+        $response = $groupController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 

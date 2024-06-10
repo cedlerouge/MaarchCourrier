@@ -1,16 +1,22 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 namespace MaarchCourrier\Tests\app\group;
 
+use Exception;
 use Group\controllers\GroupController;
 use Group\controllers\PrivilegeController;
+use MaarchCourrier\SignatureBook\Domain\Problem\GetSignatureBookGroupPrivilegesFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupCreateInSignatureBookFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdateInSignatureBookFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\GroupUpdatePrivilegeInSignatureBookFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 use MaarchCourrier\Tests\CourrierTestCase;
 use Resource\controllers\ResController;
 use Resource\models\ResModel;
@@ -38,22 +44,28 @@ class PrivilegeControllerTest extends CourrierTestCase
         file_put_contents('config/config.json', json_encode($config, JSON_PRETTY_PRINT));
     }
 
+    /**
+     * @return void
+     * @throws GroupCreateInSignatureBookFailedProblem
+     * @throws GroupUpdateInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
     public function testCreate()
     {
         $groupController = new GroupController();
 
         //  CREATE
         $args = [
-            'group_id'      => 'TEST-JusticeLeague',
-            'group_desc'    => 'Beyond the darkness',
-            'security'      => [
-                'where_clause'      => '1=2',
-                'maarch_comment'    => 'commentateur du dimanche'
+            'group_id'   => 'TEST-JusticeLeague',
+            'group_desc' => 'Beyond the darkness',
+            'security'   => [
+                'where_clause'   => '1=2',
+                'maarch_comment' => 'commentateur du dimanche'
             ]
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $groupController->create($fullRequest, new Response());
+        $response = $groupController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         self::$id = $responseBody->group;
@@ -61,6 +73,12 @@ class PrivilegeControllerTest extends CourrierTestCase
         $this->assertIsInt($responseBody->group);
     }
 
+    /**
+     * @return void
+     * @throws SignatureBookNoConfigFoundProblem
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
+     */
     public function testAddPrivilege()
     {
         $privilegeController = new PrivilegeController();
@@ -69,33 +87,33 @@ class PrivilegeControllerTest extends CourrierTestCase
         $request = $this->createRequest('POST');
 
         $args = [
-            'privilegeId'      => 'entities_print_sep_mlb',
-            'id'    => self::$id
+            'privilegeId' => 'entities_print_sep_mlb',
+            'id'          => self::$id
         ];
 
-        $response     = $privilegeController->addPrivilege($request, new Response(), $args);
+        $response = $privilegeController->addPrivilege($request, new Response(), $args);
         $this->assertSame(204, $response->getStatusCode());
 
         // Add privilege again
 
-        $response     = $privilegeController->addPrivilege($request, new Response(), $args);
+        $response = $privilegeController->addPrivilege($request, new Response(), $args);
         $this->assertSame(204, $response->getStatusCode());
 
         $args = [
-            'privilegeId'      => 'admin_users',
-            'id'    => self::$id
+            'privilegeId' => 'admin_users',
+            'id'          => self::$id
         ];
 
-        $response     = $privilegeController->addPrivilege($request, new Response(), $args);
+        $response = $privilegeController->addPrivilege($request, new Response(), $args);
         $this->assertSame(204, $response->getStatusCode());
 
         // Error : group does not exist
         $args = [
-            'privilegeId'      => 'entities_print_sep_mlb',
-            'id'    => self::$id * 100
+            'privilegeId' => 'entities_print_sep_mlb',
+            'id'          => self::$id * 100
         ];
 
-        $response     = $privilegeController->addPrivilege($request, new Response(), $args);
+        $response = $privilegeController->addPrivilege($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -103,11 +121,11 @@ class PrivilegeControllerTest extends CourrierTestCase
         $this->assertSame('Group not found', $responseBody->errors);
 
         $args = [
-            'privilegeId'      => 'entities_print_sep_mlb',
-            'id'    => 'wrong format'
+            'privilegeId' => 'entities_print_sep_mlb',
+            'id'          => 'wrong format'
         ];
 
-        $response     = $privilegeController->addPrivilege($request, new Response(), $args);
+        $response = $privilegeController->addPrivilege($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -115,11 +133,11 @@ class PrivilegeControllerTest extends CourrierTestCase
         $this->assertSame('Route id is empty or not an integer', $responseBody->errors);
 
         $args = [
-            'privilegeId'      => 1000,
-            'id'    => self::$id
+            'privilegeId' => 1000,
+            'id'          => self::$id
         ];
 
-        $response     = $privilegeController->addPrivilege($request, new Response(), $args);
+        $response = $privilegeController->addPrivilege($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -130,7 +148,7 @@ class PrivilegeControllerTest extends CourrierTestCase
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $privilegeController->addPrivilege($request, new Response(), $args);
+        $response = $privilegeController->addPrivilege($request, new Response(), $args);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -141,14 +159,18 @@ class PrivilegeControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testUpdateParameters()
     {
         $privilegeController = new PrivilegeController();
 
         //  Remove privilege
         $args = [
-            'privilegeId'      => 'entities_print_sep_mlb',
-            'id'    => self::$id
+            'privilegeId' => 'entities_print_sep_mlb',
+            'id'          => self::$id
         ];
 
         $body = [
@@ -158,7 +180,7 @@ class PrivilegeControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $privilegeController->updateParameters($fullRequest, new Response(), $args);
+        $response = $privilegeController->updateParameters($fullRequest, new Response(), $args);
         $this->assertSame(204, $response->getStatusCode());
 
         // Fails
@@ -167,17 +189,17 @@ class PrivilegeControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $privilegeController->updateParameters($fullRequest, new Response(), $args);
+        $response = $privilegeController->updateParameters($fullRequest, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body parameters is not an array', $responseBody['errors']);
 
         $args = [
-            'privilegeId'      => 'entities_print_sep_mlb',
-            'id'    => self::$id * 100
+            'privilegeId' => 'entities_print_sep_mlb',
+            'id'          => self::$id * 100
         ];
 
-        $response     = $privilegeController->updateParameters($fullRequest, new Response(), $args);
+        $response = $privilegeController->updateParameters($fullRequest, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -185,11 +207,11 @@ class PrivilegeControllerTest extends CourrierTestCase
         $this->assertSame('Group not found', $responseBody->errors);
 
         $args = [
-            'privilegeId'      => 'entities_print_sep_mlb',
-            'id'    => 'wrong format'
+            'privilegeId' => 'entities_print_sep_mlb',
+            'id'          => 'wrong format'
         ];
 
-        $response     = $privilegeController->updateParameters($fullRequest, new Response(), $args);
+        $response = $privilegeController->updateParameters($fullRequest, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -197,11 +219,11 @@ class PrivilegeControllerTest extends CourrierTestCase
         $this->assertSame('Route id is empty or not an integer', $responseBody->errors);
 
         $args = [
-            'privilegeId'      => 1000,
-            'id'    => self::$id
+            'privilegeId' => 1000,
+            'id'          => self::$id
         ];
 
-        $response     = $privilegeController->updateParameters($fullRequest, new Response(), $args);
+        $response = $privilegeController->updateParameters($fullRequest, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -212,7 +234,7 @@ class PrivilegeControllerTest extends CourrierTestCase
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $privilegeController->updateParameters($fullRequest, new Response(), $args);
+        $response = $privilegeController->updateParameters($fullRequest, new Response(), $args);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -223,6 +245,10 @@ class PrivilegeControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testGetParameters()
     {
         $privilegeController = new PrivilegeController();
@@ -231,11 +257,11 @@ class PrivilegeControllerTest extends CourrierTestCase
         $request = $this->createRequest('POST');
 
         $args = [
-            'privilegeId'      => 'entities_print_sep_mlb',
-            'id'    => self::$id
+            'privilegeId' => 'entities_print_sep_mlb',
+            'id'          => self::$id
         ];
 
-        $response     = $privilegeController->getParameters($request, new Response(), $args);
+        $response = $privilegeController->getParameters($request, new Response(), $args);
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -247,7 +273,7 @@ class PrivilegeControllerTest extends CourrierTestCase
 
         $queryParams = ['parameter' => 'enabled'];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response     = $privilegeController->getParameters($fullRequest, new Response(), $args);
+        $response = $privilegeController->getParameters($fullRequest, new Response(), $args);
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -258,18 +284,18 @@ class PrivilegeControllerTest extends CourrierTestCase
         // Fails
         $queryParams = ['parameter' => 'fake'];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response     = $privilegeController->getParameters($fullRequest, new Response(), $args);
+        $response = $privilegeController->getParameters($fullRequest, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Parameter not found', $responseBody['errors']);
 
         $args = [
-            'privilegeId'      => 'entities_print_sep_mlb',
-            'id'    => self::$id * 100
+            'privilegeId' => 'entities_print_sep_mlb',
+            'id'          => self::$id * 100
         ];
 
-        $response     = $privilegeController->getParameters($request, new Response(), $args);
+        $response = $privilegeController->getParameters($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -277,11 +303,11 @@ class PrivilegeControllerTest extends CourrierTestCase
         $this->assertSame('Group not found', $responseBody->errors);
 
         $args = [
-            'privilegeId'      => 'entities_print_sep_mlb',
-            'id'    => 'wrong format'
+            'privilegeId' => 'entities_print_sep_mlb',
+            'id'          => 'wrong format'
         ];
 
-        $response     = $privilegeController->getParameters($request, new Response(), $args);
+        $response = $privilegeController->getParameters($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -289,11 +315,11 @@ class PrivilegeControllerTest extends CourrierTestCase
         $this->assertSame('Route id is empty or not an integer', $responseBody->errors);
 
         $args = [
-            'privilegeId'      => 1000,
-            'id'    => self::$id
+            'privilegeId' => 1000,
+            'id'          => self::$id
         ];
 
-        $response     = $privilegeController->getParameters($request, new Response(), $args);
+        $response = $privilegeController->getParameters($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -301,6 +327,10 @@ class PrivilegeControllerTest extends CourrierTestCase
         $this->assertSame('Route privilegeId is empty or not an integer', $responseBody->errors);
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testGetPrivilegesByUser()
     {
         $privilegeController = new PrivilegeController();
@@ -325,6 +355,10 @@ class PrivilegeControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testGetAssignableGroups()
     {
         $privilegeController = new PrivilegeController();
@@ -348,6 +382,10 @@ class PrivilegeControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testCanAssignGroup()
     {
         $privilegeController = new PrivilegeController();
@@ -371,6 +409,10 @@ class PrivilegeControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testIsResourceInProcess()
     {
         $GLOBALS['login'] = 'cchaplin';
@@ -408,7 +450,7 @@ class PrivilegeControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('POST', $argsMailNew);
 
-        $response     = $resController->create($fullRequest, new Response());
+        $response = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         self::$resId = $responseBody['resId'];
         $this->assertIsInt(self::$resId);
@@ -439,6 +481,10 @@ class PrivilegeControllerTest extends CourrierTestCase
         $this->assertSame(false, $response);
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testCanUpdateResource()
     {
         $GLOBALS['login'] = 'cchaplin';
@@ -472,7 +518,7 @@ class PrivilegeControllerTest extends CourrierTestCase
 
         ResModel::delete([
             'where' => ['res_id in (?)'],
-            'data' => [[self::$resId]]
+            'data'  => [[self::$resId]]
         ]);
 
         $res = ResModel::getById(['resId' => self::$resId, 'select' => ['*']]);
@@ -480,6 +526,12 @@ class PrivilegeControllerTest extends CourrierTestCase
         $this->assertEmpty($res);
     }
 
+    /**
+     * @return void
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
     public function testRemovePrivilege()
     {
         $privilegeController = new PrivilegeController();
@@ -492,21 +544,21 @@ class PrivilegeControllerTest extends CourrierTestCase
             'id'          => self::$id
         ];
 
-        $response     = $privilegeController->removePrivilege($request, new Response(), $args);
+        $response = $privilegeController->removePrivilege($request, new Response(), $args);
         $this->assertSame(204, $response->getStatusCode());
 
         // Remove privilege again
 
-        $response     = $privilegeController->removePrivilege($request, new Response(), $args);
+        $response = $privilegeController->removePrivilege($request, new Response(), $args);
         $this->assertSame(204, $response->getStatusCode());
 
         // Error : group does not exist
         $args = [
-            'privilegeId'      => 'entities_print_sep_mlb',
-            'id'    => self::$id * 100
+            'privilegeId' => 'entities_print_sep_mlb',
+            'id'          => self::$id * 100
         ];
 
-        $response     = $privilegeController->removePrivilege($request, new Response(), $args);
+        $response = $privilegeController->removePrivilege($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -514,11 +566,11 @@ class PrivilegeControllerTest extends CourrierTestCase
         $this->assertSame('Group not found', $responseBody->errors);
 
         $args = [
-            'privilegeId'      => 'entities_print_sep_mlb',
-            'id'    => 'wrong format'
+            'privilegeId' => 'entities_print_sep_mlb',
+            'id'          => 'wrong format'
         ];
 
-        $response     = $privilegeController->removePrivilege($request, new Response(), $args);
+        $response = $privilegeController->removePrivilege($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -526,11 +578,11 @@ class PrivilegeControllerTest extends CourrierTestCase
         $this->assertSame('Route id is empty or not an integer', $responseBody->errors);
 
         $args = [
-            'privilegeId'      => 1000,
-            'id'    => self::$id
+            'privilegeId' => 1000,
+            'id'          => self::$id
         ];
 
-        $response     = $privilegeController->removePrivilege($request, new Response(), $args);
+        $response = $privilegeController->removePrivilege($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -541,7 +593,7 @@ class PrivilegeControllerTest extends CourrierTestCase
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $privilegeController->removePrivilege($request, new Response(), $args);
+        $response = $privilegeController->removePrivilege($request, new Response(), $args);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -552,22 +604,26 @@ class PrivilegeControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function testDelete()
     {
         $groupController = new GroupController();
 
         //  DELETE
         $request = $this->createRequest('DELETE');
-        $response       = $groupController->delete($request, new Response(), ['id' => self::$id]);
-        $responseBody   = json_decode((string)$response->getBody());
+        $response = $groupController->delete($request, new Response(), ['id' => self::$id]);
+        $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->groups);
         $this->assertNotEmpty($responseBody->groups);
 
         //  READ
         $request = $this->createRequest('GET');
-        $response       = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
-        $responseBody   = json_decode((string)$response->getBody());
+        $response = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
+        $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Group not found', $responseBody->errors);
     }

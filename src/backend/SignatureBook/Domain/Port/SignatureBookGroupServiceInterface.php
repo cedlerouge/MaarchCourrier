@@ -19,15 +19,41 @@ use MaarchCourrier\SignatureBook\Domain\SignatureBookServiceConfig;
 
 interface SignatureBookGroupServiceInterface
 {
+    /**
+     * @param GroupInterface $group
+     * @return array|int
+     */
     public function createGroup(GroupInterface $group): array|int;
 
+    /**
+     * @param GroupInterface $group
+     * @return array|bool
+     */
     public function updateGroup(GroupInterface $group): array|bool;
 
+    /**
+     * @param GroupInterface $group
+     * @return array|bool
+     */
     public function deleteGroup(GroupInterface $group): array|bool;
 
+    /**
+     * @param SignatureBookServiceConfig $config
+     * @return SignatureBookGroupServiceInterface
+     */
     public function setConfig(SignatureBookServiceConfig $config): SignatureBookGroupServiceInterface;
 
+    /**
+     * @param GroupInterface $group
+     * @return bool|array
+     */
     public function getGroupPrivileges(GroupInterface $group): bool|array;
 
+    /**
+     * @param GroupInterface $group
+     * @param string $privilege
+     * @param bool $checked
+     * @return array|bool
+     */
     public function updatePrivilege(GroupInterface $group, string $privilege, bool $checked): array|bool;
 }

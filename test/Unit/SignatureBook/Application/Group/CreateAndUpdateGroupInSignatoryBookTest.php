@@ -28,6 +28,7 @@ class CreateAndUpdateGroupInSignatoryBookTest extends TestCase
     private MaarchParapheurGroupServiceMock $maarchParapheurGroupServiceMock;
     private CreateAndUpdateGroupInSignatoryBook $createAndUpdateGroupInSignatoryBook;
     private SignatureServiceJsonConfigLoaderMock $signatureServiceJsonConfigLoaderMock;
+
     protected function setUp(): void
     {
         $this->maarchParapheurGroupServiceMock = new MaarchParapheurGroupServiceMock();
@@ -37,13 +38,6 @@ class CreateAndUpdateGroupInSignatoryBookTest extends TestCase
             $this->signatureServiceJsonConfigLoaderMock
         );
     }
-
-    /**
-     * @return void
-     * @throws GroupCreateInSignatureBookFailedProblem
-     * @throws GroupUpdateInSignatureBookFailedProblem
-     * @throws SignatureBookNoConfigFoundProblem
-     */
 
     /**
      * @return void

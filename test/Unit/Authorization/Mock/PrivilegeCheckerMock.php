@@ -27,11 +27,21 @@ class PrivilegeCheckerMock implements PrivilegeCheckerInterface
     public bool $hasGroupPrivilege = false;
     public bool $hasGroupPrivilegeCalled = false;
 
+    /**
+     * @param UserInterface $user
+     * @param PrivilegeInterface $privilege
+     * @return bool
+     */
     public function hasPrivilege(UserInterface $user, PrivilegeInterface $privilege): bool
     {
         return $this->hasPrivilege;
     }
 
+    /**
+     * @param GroupInterface $group
+     * @param PrivilegeInterface $privilege
+     * @return bool
+     */
     public function hasGroupPrivilege(GroupInterface $group, PrivilegeInterface $privilege): bool
     {
         $this->hasGroupPrivilegeCalled = true;

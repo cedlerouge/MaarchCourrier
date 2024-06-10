@@ -21,6 +21,9 @@ use MaarchCourrier\SignatureBook\Infrastructure\SignatureServiceJsonConfigLoader
 
 class CreateAndUpdateGroupInSignatoryBookFactory
 {
+    /**
+     * @return CreateAndUpdateGroupInSignatoryBook
+     */
     public function create(): CreateAndUpdateGroupInSignatoryBook
     {
         $signatureBookGroup = new MaarchParapheurGroupService();

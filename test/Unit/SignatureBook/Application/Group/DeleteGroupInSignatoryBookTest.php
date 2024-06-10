@@ -55,6 +55,11 @@ class DeleteGroupInSignatoryBookTest extends TestCase
         $this->assertTrue($this->maarchParapheurGroupServiceMock->groupIsDeletedCalled);
     }
 
+    /**
+     * @return void
+     * @throws GroupDeletionInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
     public function testThrowsErrorWhenGroupDeletionFailsInSignatoryBook(): void
     {
         $externalId['internalParapheur'] = 5;
@@ -67,6 +72,11 @@ class DeleteGroupInSignatoryBookTest extends TestCase
         $this->deleteGroupInSignatoryBook->deleteGroup($group);
     }
 
+    /**
+     * @return void
+     * @throws GroupDeletionInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
     public function testThrowsProblemWhenSignatureBookConfigNotFound(): void
     {
         $this->signatureServiceJsonConfigLoaderMock->signatureServiceConfigLoader = null;

@@ -26,7 +26,6 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
 
     /**
      * @param SignatureBookServiceConfig $config
-     *
      * @return SignatureBookGroupServiceInterface
      */
     public function setConfig(SignatureBookServiceConfig $config): SignatureBookGroupServiceInterface
@@ -47,17 +46,17 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
         ];
 
         $response = CurlModel::exec([
-            'url' => rtrim($this->config->getUrl(), '/') . '/rest/groups',
+            'url'       => rtrim($this->config->getUrl(), '/') . '/rest/groups',
             'basicAuth' => [
                 'user'     => $this->config->getUserWebService()->getLogin(),
                 'password' => $this->config->getUserWebService()->getPassword(),
             ],
-            'method' => 'POST',
-            'headers'    => [
+            'method'    => 'POST',
+            'headers'   => [
                 'content-type: application/json',
                 'Accept: application/json',
             ],
-            'body' => json_encode($userInfos),
+            'body'      => json_encode($userInfos),
         ]);
 
         if ($response['code'] === 200) {
@@ -70,6 +69,8 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
 
 
     /**
+     * @param GroupInterface $group
+     * @return array|bool
      * @throws Exception
      */
     public function updateGroup(GroupInterface $group): array|bool
@@ -79,17 +80,17 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
         ];
         $externalId = $group->getExternalId();
         $response = CurlModel::exec([
-            'url' => rtrim($this->config->getUrl(), '/') . '/rest/groups/' . $externalId['internalParapheur'] ,
+            'url'       => rtrim($this->config->getUrl(), '/') . '/rest/groups/' . $externalId['internalParapheur'],
             'basicAuth' => [
                 'user'     => $this->config->getUserWebService()->getLogin(),
                 'password' => $this->config->getUserWebService()->getPassword(),
             ],
-            'method' => 'PUT',
-            'headers'    => [
+            'method'    => 'PUT',
+            'headers'   => [
                 'content-type: application/json',
                 'Accept: application/json',
             ],
-            'body' => json_encode($userInfos),
+            'body'      => json_encode($userInfos),
         ]);
 
         if ($response['code'] === 204) {
@@ -109,13 +110,13 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
     {
         $externalId = $group->getExternalId();
         $response = CurlModel::exec([
-            'url' => rtrim($this->config->getUrl(), '/') . '/rest/groups/' . $externalId['internalParapheur'] ,
+            'url'       => rtrim($this->config->getUrl(), '/') . '/rest/groups/' . $externalId['internalParapheur'],
             'basicAuth' => [
                 'user'     => $this->config->getUserWebService()->getLogin(),
                 'password' => $this->config->getUserWebService()->getPassword(),
             ],
-            'method' => 'DELETE',
-            'headers'    => [
+            'method'    => 'DELETE',
+            'headers'   => [
                 'content-type: application/json',
                 'Accept: application/json',
             ],
@@ -138,14 +139,14 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
     {
         $externalId = $group->getExternalId();
         $response = CurlModel::exec([
-            'url' => rtrim($this->config->getUrl(), '/') . '/rest/groups/' .
+            'url'       => rtrim($this->config->getUrl(), '/') . '/rest/groups/' .
                 $externalId['internalParapheur'],
             'basicAuth' => [
                 'user'     => $this->config->getUserWebService()->getLogin(),
                 'password' => $this->config->getUserWebService()->getPassword(),
             ],
-            'method' => 'GET',
-            'headers'    => [
+            'method'    => 'GET',
+            'headers'   => [
                 'content-type: application/json',
                 'Accept: application/json',
             ],
@@ -184,18 +185,18 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
             'checked' => $checked,
         ];
         $response = CurlModel::exec([
-            'url' => rtrim($this->config->getUrl(), '/') . '/rest/groups/' .
+            'url'       => rtrim($this->config->getUrl(), '/') . '/rest/groups/' .
                 $externalId['internalParapheur'] . '/privilege/' . $privilege,
             'basicAuth' => [
                 'user'     => $this->config->getUserWebService()->getLogin(),
                 'password' => $this->config->getUserWebService()->getPassword(),
             ],
-            'method' => 'PUT',
-            'headers'    => [
+            'method'    => 'PUT',
+            'headers'   => [
                 'content-type: application/json',
                 'Accept: application/json',
             ],
-            'body' => json_encode($data),
+            'body'      => json_encode($data),
         ]);
 
         if ($response['code'] <= 204) {

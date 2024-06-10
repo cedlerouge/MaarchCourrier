@@ -101,6 +101,12 @@ class AddPrivilegeGroupInSignatoryBookTest extends TestCase
         $this->addPrivilegeGroupInSignatoryBook->addPrivilege($group, new SignDocumentPrivilege());
     }
 
+    /**
+     * @return void
+     * @throws GetSignatureBookGroupPrivilegesFailedProblem
+     * @throws GroupUpdatePrivilegeInSignatureBookFailedProblem
+     * @throws SignatureBookNoConfigFoundProblem
+     */
     public function testThrowsProblemWhenSignatureBookConfigNotFound(): void
     {
         $this->signatureServiceJsonConfigLoaderMock->signatureServiceConfigLoader = null;

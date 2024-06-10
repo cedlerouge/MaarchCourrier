@@ -22,33 +22,54 @@ class Group implements GroupInterface
     private ?array $externalId;
     private string $label;
 
+    /**
+     * @return string
+     */
     public function getLabel(): string
     {
         return $this->label;
     }
 
+    /**
+     * @param string $label
+     * @return GroupInterface
+     */
     public function setLabel(string $label): GroupInterface
     {
         $this->label = $label;
         return $this;
     }
 
+    /**
+     * @return array|null
+     */
     public function getExternalId(): ?array
     {
         return $this->externalId;
     }
 
+    /**
+     * @param array|null $externalId
+     * @return GroupInterface
+     */
     public function setExternalId(?array $externalId): GroupInterface
     {
         $this->externalId = $externalId;
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getGroupId(): string
     {
         return $this->groupId;
     }
 
+    /**
+     * @param string $groupId
+     * @return GroupInterface
+     */
     public function setGroupId(string $groupId): GroupInterface
     {
         $this->groupId = $groupId;

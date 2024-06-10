@@ -82,6 +82,7 @@ class GroupController
      * @param Response $response
      * @param array $aArgs
      * @return Response
+     * @throws Exception
      */
     public function getById(Request $request, Response $response, array $aArgs): Response
     {
@@ -104,6 +105,7 @@ class GroupController
      * @throws GroupCreateInSignatureBookFailedProblem
      * @throws GroupUpdateInSignatureBookFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
+     * @throws Exception
      */
     public function create(Request $request, Response $response): Response
     {
@@ -146,7 +148,7 @@ class GroupController
             $createGroup = $createGroupFactory->create();
             $group = $createGroup->createAndUpdateGroup($group);
             $externalId = [
-                'external_id ' =>  json_encode($group->getExternalId()),
+                'external_id ' => json_encode($group->getExternalId()),
             ];
         }
 
@@ -176,6 +178,7 @@ class GroupController
      * @throws GroupCreateInSignatureBookFailedProblem
      * @throws GroupUpdateInSignatureBookFailedProblem
      * @throws SignatureBookNoConfigFoundProblem
+     * @throws Exception
      */
     public function update(Request $request, Response $response, array $aArgs): Response
     {
@@ -277,6 +280,7 @@ class GroupController
      * @param Response $response
      * @param array $args
      * @return Response
+     * @throws Exception
      */
     public function getDetailledById(Request $request, Response $response, array $args): Response
     {
@@ -340,6 +344,7 @@ class GroupController
      * @param Response $response
      * @param array $aArgs
      * @return Response
+     * @throws Exception
      */
     public function reassignUsers(Request $request, Response $response, array $aArgs): Response
     {

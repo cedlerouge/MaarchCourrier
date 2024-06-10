@@ -24,7 +24,6 @@ class MaarchParapheurGroupServiceMock implements SignatureBookGroupServiceInterf
     public array|int $groupCreated = 5;
     public bool $groupUpdateCalled = false;
     public array|bool $groupUpdated = false;
-
     public array|bool $privilege;
     public bool $groupUpdatePrivilegeCalled = false;
     public bool $privilegeIsChecked = false;
@@ -45,7 +44,10 @@ class MaarchParapheurGroupServiceMock implements SignatureBookGroupServiceInterf
         return $this->groupCreated;
     }
 
-
+    /**
+     * @param GroupInterface $group
+     * @return array|bool
+     */
     public function updateGroup(GroupInterface $group): array|bool
     {
         $this->groupUpdateCalled = true;
@@ -53,26 +55,43 @@ class MaarchParapheurGroupServiceMock implements SignatureBookGroupServiceInterf
         return $this->groupUpdated;
     }
 
-
+    /**
+     * @param GroupInterface $group
+     * @return array|bool
+     */
     public function deleteGroup(GroupInterface $group): array|bool
     {
         $this->groupIsDeletedCalled = true;
         return $this->groupIsDeleted;
     }
 
+    /**
+     * @param SignatureBookServiceConfig $config
+     * @return SignatureBookGroupServiceInterface
+     */
     public function setConfig(SignatureBookServiceConfig $config): SignatureBookGroupServiceInterface
     {
         return $this;
     }
 
+    /**
+     * @param GroupInterface $group
+     * @return bool|array
+     */
     public function getGroupPrivileges(GroupInterface $group): bool|array
     {
         if ($this->isPrivilegeRetrieveFailed) {
             $this->privilege = ['errors' => 'Error occurred while retrieving group information.'];
         }
-            return $this->privilege;
+        return $this->privilege;
     }
 
+    /**
+     * @param GroupInterface $group
+     * @param string $privilege
+     * @param bool $checked
+     * @return array|bool
+     */
     public function updatePrivilege(GroupInterface $group, string $privilege, bool $checked): array|bool
     {
         $this->groupUpdatePrivilegeCalled = true;

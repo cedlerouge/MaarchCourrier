@@ -26,6 +26,12 @@ use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 
 class PrivilegeChecker implements PrivilegeCheckerInterface
 {
+    /**
+     * @param UserInterface $user
+     * @param PrivilegeInterface $privilege
+     * @return bool
+     * @throws Exception
+     */
     public function hasPrivilege(UserInterface $user, PrivilegeInterface $privilege): bool
     {
         return PrivilegeController::hasPrivilege([
@@ -36,13 +42,16 @@ class PrivilegeChecker implements PrivilegeCheckerInterface
 
 
     /**
+     * @param GroupInterface $group
+     * @param PrivilegeInterface $privilege
+     * @return bool
      * @throws Exception
      */
     public function hasGroupPrivilege(GroupInterface $group, PrivilegeInterface $privilege): bool
     {
         return PrivilegeModel::groupHasPrivilege([
             'privilegeId' => $privilege->getName(),
-            'groupId' => $group->getGroupId()
+            'groupId'     => $group->getGroupId()
         ]);
     }
 }

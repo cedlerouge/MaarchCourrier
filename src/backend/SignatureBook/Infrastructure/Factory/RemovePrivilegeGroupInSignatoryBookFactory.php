@@ -21,6 +21,9 @@ use MaarchCourrier\SignatureBook\Application\Group\RemovePrivilegeGroupInSignato
 
 class RemovePrivilegeGroupInSignatoryBookFactory
 {
+    /**
+     * @return RemovePrivilegeGroupInSignatoryBook
+     */
     public function create(): RemovePrivilegeGroupInSignatoryBook
     {
         $signatureBookGroup = new MaarchParapheurGroupService();

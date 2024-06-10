@@ -20,6 +20,9 @@ use MaarchCourrier\SignatureBook\Infrastructure\SignatureServiceJsonConfigLoader
 
 class AddPrivilegeGroupInSignatoryGroupFactory
 {
+    /**
+     * @return AddPrivilegeGroupInSignatoryBook
+     */
     public function create(): AddPrivilegeGroupInSignatoryBook
     {
         $signatureBookGroup = new MaarchParapheurGroupService();

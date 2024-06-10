@@ -18,6 +18,9 @@ use MaarchCourrier\Core\Domain\Authorization\Port\PrivilegeInterface;
 
 class VisaDocumentPrivilege implements PrivilegeInterface
 {
+    /**
+     * @return string
+     */
     public function getName(): string
     {
         return 'visa_documents';
