@@ -17,7 +17,6 @@ namespace ExternalSignatoryBook\controllers;
 use Attachment\models\AttachmentModel;
 use Attachment\models\AttachmentTypeModel;
 use Convert\controllers\ConvertPdfController;
-use Convert\models\AdrModel;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Exception;
