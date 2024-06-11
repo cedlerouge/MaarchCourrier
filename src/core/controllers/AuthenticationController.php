@@ -851,6 +851,7 @@ class AuthenticationController
             || empty($keycloakConfig['clientId'])
             || empty($keycloakConfig['clientSecret'])
             || empty($keycloakConfig['redirectUri'])
+            || empty($keycloakConfig['version'])
         ) {
             return ['errors' => 'Keycloak not configured'];
         }
