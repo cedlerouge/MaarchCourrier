@@ -46,6 +46,102 @@
             {{'lang.goToNextDocument' | translate}}
         </mat-slide-toggle>
     </div>
+    <ng-container *ngIf="!loading && signatureBookService.config.isNewInternalParaph && actionsChosen.length > 0">
+        <mat-divider></mat-divider>
+        <div class="title" [title]="'lang.internalParaphActions' | translate">
+            <span>{{'lang.internalParaphActions' | translate}}</span>
+        </div>
+        <div class="row actions-list">
+            <!-- ZONE 1 -->
+            <div class="formType ratio-2 col-sm-12" style="margin: 15px !important">
+                <div class="formType-title valid" [title]="'lang.validationActionsDesc' | translate">
+                    <span>{{'lang.bloc1' | translate}}</span>
+                    <mat-icon class="fa fa-thumbs-up" aria-hidden="true"></mat-icon>
+                </div>
+                <div class="available-data">
+                    <div class="icons-list">
+                        <button mat-icon-button
+                            class="toggle-all-data"
+                            [title]="'lang.moveAllActions' | translate"
+                            [disabled]="availableValidationsActions.length === 0"
+                            (click)="moveAllActions('availableValidationsActions', 'availableRefusalActions', 'reject')">
+                            <mat-icon
+                                class="fas fa-arrow-right"
+                                color="primary"
+                                aria-hidden="true">
+                            </mat-icon>
+                        </button>
+                    </div>
+                    <div id="validationActionsDiv" class="cdk-list"
+                        #validationActions="cdkDropList"
+                        cdkDropList
+                        [cdkDropListData]="availableValidationsActions"
+                        [cdkDropListConnectedTo]="[refusalActions]"
+                        (cdkDropListDropped)="drop($event, 'valid')">
+                        <div *ngFor="let action of availableValidationsActions"
+                            class="columns"
+                            cdkDrag
+                            [title]="action.actionLabel"
+                            [attr.aria-label]="action.actionLabel">
+                                {{action.actionLabel}}
+                                <button mat-icon-button
+                                    [title]="'lang.moveAction' | translate"
+                                    (click)="moveAction(action, 'availableValidationsActions', 'availableRefusalActions', 'reject')">
+                                    <mat-icon class="a fa-plus" color="primary"></mat-icon>
+                                </button>
+                            </div>
+                        <div *ngIf="availableValidationsActions.length === 0" class="empty-data">{{'lang.noDataAvailable' | translate}}</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div style="display: flex;align-items: center; flex-direction: column; align-items: center; justify-content: center;">
+                <i class="fas fa-arrow-right"></i>
+                <i class="fas fa-arrow-left"></i>
+            </div>
+
+            <!--  ZONE 2 -->
+            <div class="formType ratio-2 col-sm-12" style="margin: 15px !important">
+                <div class="formType-title reject" [title]="'lang.refusalActionsDesc' | translate">
+                    <span>{{'lang.bloc2' | translate}}</span>
+                    <mat-icon class="fa fa-thumbs-down" aria-hidden="true"></mat-icon>
+                </div>
+                <div class="available-data">
+                    <div class="icons-list">
+                        <button mat-icon-button
+                            class="toggle-all-data"
+                            [title]="'lang.moveAllActions' | translate"
+                            [disabled]="availableRefusalActions.length === 0"
+                            (click)="moveAllActions('availableRefusalActions', 'availableValidationsActions', 'valid')">
+                            <mat-icon
+                                class="fas fa-arrow-left"
+                                color="primary"
+                                aria-hidden="true">
+                            </mat-icon>
+                        </button>
+                    </div>
+                    <div id="refusalActionsDiv" cdkDropList #refusalActions="cdkDropList"
+                        [cdkDropListData]="availableRefusalActions" [cdkDropListConnectedTo]="[validationActions]"
+                        class="cdk-list" (cdkDropListDropped)="drop($event, 'reject')">
+                        <div *ngFor="let action of availableRefusalActions"
+                            cdkDrag
+                            class="columns"
+                            [title]="action.actionLabel"
+                            [attr.aria-label]="action.actionLabel">
+                            {{action.actionLabel}}
+                            <button mat-icon-button
+                                [title]="'lang.moveAction' | translate"
+                                (click)="moveAction(action, 'availableRefusalActions', 'availableValidationsActions', 'valid')">
+                                <mat-icon class="a fa-plus" color="primary"></mat-icon>
+                            </button>
+                            </div>
+                        <div *ngIf="availableRefusalActions.length === 0" class="empty-data">{{'lang.noDataAvailable' | translate}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
 </div>
 <hr />
 <mat-toolbar class="editorTool">

@@ -464,11 +464,12 @@ class BasketController
                 'canUpdateData'  => !empty($body['list_event_data']['canUpdateData']),
                 'canUpdateModel' => !empty($body['list_event_data']['canUpdateModel']),
                 'canGoToNextRes' => !empty($body['list_event_data']['canGoToNextRes']),
-                'defaultTab'     => $body['list_event_data']['defaultTab'] ?? 'dashboard'
+                'defaultTab'     => $body['list_event_data']['defaultTab'] ?? 'dashboard',
             ];
         } elseif ($body['list_event'] == 'signatureBookAction') {
             $listEventData = [
-                'canUpdateDocuments' => !empty($body['list_event_data']['canUpdateDocuments']),
+                'canUpdateDocuments'    => !empty($body['list_event_data']['canUpdateDocuments']),
+                'actions'               => $body['list_event_data']['actions'] ?? []
             ];
         }
 
@@ -674,7 +675,8 @@ class BasketController
         } elseif (($data['list_event'] ?? null) == 'signatureBookAction') {
             $listEventData = [
                 'canUpdateDocuments' => !empty($data['list_event_data']['canUpdateDocuments']),
-                'goToNextDocument'   => !empty($data['list_event_data']['goToNextDocument'])
+                'goToNextDocument'   => !empty($data['list_event_data']['goToNextDocument']),
+                'actions'            => $data['list_event_data']['actions']
             ];
         }
 

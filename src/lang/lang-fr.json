@@ -2866,5 +2866,12 @@
     "downloadProof": "Télécharger le faisceau de preuve",
     "selectedRes": "courrier(s) sélectionné(s)",
     "externalIdNotFoundProblemProof": "Le faisceau de preuve est indisponible pour ce document",
-    "emptyDocsToSign": "Aucun document à signer"
+    "emptyDocsToSign": "Aucun document à signer",
+    "internalParaphActions": "Actions du parapheur électronique",
+    "moveAction": "Déplacer l'action",
+    "moveAllActions": "Déplacer toutes les actions disponibles",
+    "bloc1": "Zone 1",
+    "bloc2": "Zone 2",
+    "validationActionsDesc": "Actions liées au bouton de validation dans le parapheur interne",
+    "refusalActionsDesc": "Actions liées au bouton de refus dans le parapheur interne"
 }

@@ -13,6 +13,8 @@ import { AppService } from '@service/app.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { catchError, exhaustMap, filter, map, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { ListAdministrationComponent } from './list/list-administration.component';
+import { SignatureBookService } from '@appRoot/signatureBook/signature-book.service';
 
 declare let $: any;
 
@@ -26,11 +28,11 @@ export class BasketAdministrationComponent implements OnInit {
     @ViewChild('adminMenuTemplate', { static: true }) adminMenuTemplate: TemplateRef<any>;
     @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
     @ViewChild(MatSort, { static: false }) sort: MatSort;
+    @ViewChild('listAdmin', { static: false }) listAdmin: ListAdministrationComponent;
 
     dialogRef: MatDialogRef<any>;
 
     selectedIndex: number = 0;
-
 
     loading: boolean = false;
 
@@ -56,12 +58,13 @@ export class BasketAdministrationComponent implements OnInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
+        public appService: AppService,
+        public dialog: MatDialog,
+        public signatureBookService: SignatureBookService,
         private route: ActivatedRoute,
         private router: Router,
         private notify: NotificationService,
-        public dialog: MatDialog,
         private headerService: HeaderService,
-        public appService: AppService,
         private viewContainerRef: ViewContainerRef
     ) { }
 
@@ -283,6 +286,11 @@ export class BasketAdministrationComponent implements OnInit {
         this.http.put('../rest/baskets/' + this.id + '/groups/' + group.group_id + '/actions', { 'groupActions': group.groupActions })
             .subscribe(() => {
                 this.notify.success(this.translate.instant('lang.actionsGroupBasketUpdated'));
+                if (this.signatureBookService.config.isNewInternalParaph && (group.list_event === 'signatureBookAction' || this.listAdmin.selectedListEvent === 'signatureBookAction')) {
+                    setTimeout(() => {
+                        this.listAdmin.refreshData('actionAdded', null);
+                    }, 10);
+                }
             }, (err) => {
                 this.notify.error(err.error.errors);
             });
@@ -320,6 +328,11 @@ export class BasketAdministrationComponent implements OnInit {
             exhaustMap(() => this.http.put('../rest/baskets/' + this.id + '/groups/' + group.group_id + '/actions', { 'groupActions': group.groupActions })),
             tap(() => {
                 this.notify.success(this.translate.instant('lang.actionsGroupBasketUpdated'));
+                if (this.signatureBookService.config.isNewInternalParaph && (group.list_event === 'signatureBookAction' || this.listAdmin.selectedListEvent === 'signatureBookAction')) {
+                    setTimeout(() => {
+                        this.listAdmin.refreshData('actionUnlinked', action);
+                    }, 0);
+                }
             }),
             catchError((err: any) => {
                 this.notify.handleSoftErrors(err);

@@ -7,6 +7,8 @@ import { startWith, map, tap, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { DndDropEvent } from 'ngx-drag-drop';
+import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { SignatureBookService } from '@appRoot/signatureBook/signature-book.service';
 
 declare let $: any;
 
@@ -16,7 +18,7 @@ declare let $: any;
     styleUrls: ['list-administration.component.scss'],
 })
 export class ListAdministrationComponent implements OnInit {
-    @Input() private currentBasketGroup: any;
+    @Input() currentBasketGroup: any;
     @Output() refreshBasketGroup = new EventEmitter<any>();
 
     loading: boolean = false;
@@ -272,7 +274,24 @@ export class ListAdministrationComponent implements OnInit {
     };
     selectedProcessToolClone: string = null;
 
-    constructor(public translate: TranslateService, public http: HttpClient, private notify: NotificationService, private functions: FunctionsService) { }
+    actionsChosen: any[]= [];
+
+    availableValidationsActions: any[] = [];
+    availableValidationsActionsClone: any[] = [];
+
+    availableRefusalActions: any[] = [];
+    availableRefusalActionsClone: any[] = [];
+
+    refusalActionsId: string [] = ['interrupt_visa', 'rejection_visa_redactor', 'rejection_visa_previous', 'redirect_visa_entity'];
+
+
+    constructor(
+        public translate: TranslateService,
+        public http: HttpClient,
+        public signatureBookService: SignatureBookService,
+        private notify: NotificationService,
+        private functions: FunctionsService
+    ) { }
 
     async ngOnInit(): Promise<void> {
         await this.initCustomFields();
@@ -310,6 +329,10 @@ export class ListAdministrationComponent implements OnInit {
 
         this.selectedProcessToolClone = JSON.parse(JSON.stringify(this.selectedProcessTool));
         this.displayedSecondaryDataClone = JSON.parse(JSON.stringify(this.displayedSecondaryData));
+
+        if (this.signatureBookService.config.isNewInternalParaph && this.selectedListEvent === 'signatureBookAction') {
+            await this.setActionsChosen();
+        }
     }
 
     initCustomFields() {
@@ -410,11 +433,27 @@ export class ListAdministrationComponent implements OnInit {
         data.splice(index, 1);
     }
 
-    saveTemplate() {
+    saveTemplate(withNotif: boolean = true): void {
         const objToSend = {
             templateColumns: this.selectedTemplateDisplayedSecondaryData,
             subInfos: this.displayedSecondaryData
         };
+        if ((this.selectedListEvent === 'signatureBookAction' || this.currentBasketGroup.list_event === 'signatureBookAction') && this.signatureBookService.config.isNewInternalParaph) {
+            if (this.functions.empty(this.selectedListEvent)) {
+                this.selectedListEvent = this.currentBasketGroup.list_event;
+            }
+
+            const allSelectedActions: BasketGroupListActionInterface[] = this.availableValidationsActions.concat(this.availableRefusalActions);
+            this.selectedProcessTool = {
+                ... this.selectedProcessTool,
+                actions: allSelectedActions.map((action: BasketGroupListActionInterface) => ({
+                    id: action.id,
+                    type: action.type
+                }))
+            }
+        } else {
+            delete this.selectedProcessTool.actions;
+        }
 
         this.http.put('../rest/baskets/' + this.currentBasketGroup.basket_id + '/groups/' + this.currentBasketGroup.group_id, { 'list_display': objToSend, 'list_event': this.selectedListEvent, 'list_event_data': this.selectedProcessTool }).pipe(
             tap(() => {
@@ -425,8 +464,11 @@ export class ListAdministrationComponent implements OnInit {
                 this.selectedListEventClone = this.selectedListEvent;
                 this.selectedProcessToolClone = JSON.parse(JSON.stringify(this.selectedProcessTool));
                 this.selectedTemplateDisplayedSecondaryDataClone = JSON.parse(JSON.stringify(this.selectedTemplateDisplayedSecondaryData));
-
-                this.notify.success(this.translate.instant('lang.modificationsProcessed'));
+                this.availableValidationsActionsClone = JSON.parse(JSON.stringify(this.availableValidationsActions));
+                this.availableRefusalActionsClone = JSON.parse(JSON.stringify(this.availableRefusalActions));
+                if (withNotif) {
+                    this.notify.success(this.translate.instant('lang.modificationsProcessed'));
+                }
                 this.refreshBasketGroup.emit(this.currentBasketGroup);
             }),
             catchError((err: any) => {
@@ -437,7 +479,14 @@ export class ListAdministrationComponent implements OnInit {
     }
 
     checkModif() {
-        if (JSON.stringify(this.displayedSecondaryData) === JSON.stringify(this.displayedSecondaryDataClone) && this.selectedListEvent === this.selectedListEventClone && JSON.stringify(this.selectedProcessTool) === JSON.stringify(this.selectedProcessToolClone) && JSON.stringify(this.selectedTemplateDisplayedSecondaryData) === JSON.stringify(this.selectedTemplateDisplayedSecondaryDataClone)) {
+        if (
+            JSON.stringify(this.displayedSecondaryData) === JSON.stringify(this.displayedSecondaryDataClone) &&
+            this.selectedListEvent === this.selectedListEventClone &&
+            JSON.stringify(this.selectedProcessTool) === JSON.stringify(this.selectedProcessToolClone) &&
+            JSON.stringify(this.selectedTemplateDisplayedSecondaryData) === JSON.stringify(this.selectedTemplateDisplayedSecondaryDataClone) &&
+            JSON.stringify(this.availableValidationsActions) === JSON.stringify(this.availableValidationsActionsClone) &&
+            JSON.stringify(this.availableRefusalActions) === JSON.stringify(this.availableRefusalActionsClone)
+        ) {
             return true;
         } else {
             return false;
@@ -451,6 +500,8 @@ export class ListAdministrationComponent implements OnInit {
         this.availableData = JSON.parse(JSON.stringify(this.availableDataClone));
         this.selectedTemplateDisplayedSecondaryData = JSON.parse(JSON.stringify(this.selectedTemplateDisplayedSecondaryDataClone));
         this.dataControl.setValue('');
+        this.availableRefusalActions = JSON.parse(JSON.stringify(this.availableRefusalActionsClone));
+        this.availableValidationsActions = JSON.parse(JSON.stringify(this.availableValidationsActionsClone))
     }
 
     hasFolder() {
@@ -461,13 +512,16 @@ export class ListAdministrationComponent implements OnInit {
         }
     }
 
-    changeEventList(ev: any) {
+    async changeEventList(ev: any) {
         if (ev.value === 'processDocument') {
             this.selectedProcessTool = {
                 defaultTab: 'dashboard'
             };
         } else {
             this.selectedProcessTool = {};
+            if (ev.value === 'signatureBookAction' && this.signatureBookService.config.isNewInternalParaph) {
+                await this.setActionsChosen();
+            }
         }
     }
 
@@ -475,6 +529,110 @@ export class ListAdministrationComponent implements OnInit {
         if (!state) {
             this.selectedProcessTool.canUpdateModel = state;
         }
+    }
+
+    moveAllActions(source: string, target: string, type: string, ): void {
+        this[source].forEach((action: any) => {
+            action['type'] = type;
+            this[target].push(action);
+        })
+        this[source] = [];
+    }
+
+    drop(event: CdkDragDrop<string[]>, type: string = 'reject' || 'valid'): void {
+        if (event.previousContainer === event.container) {
+            moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+        } else {
+            transferArrayItem(
+                event.previousContainer.data,
+                event.container.data,
+                event.previousIndex,
+                event.currentIndex
+            );
+            event.container.data[event.currentIndex]['type'] = type;
+        }
+    }
+
+    moveAction(action: any, arraySource: string, arrayTarget: string, type: string): void {
+        action.type = type;
+        this[arrayTarget].push(action);
+        const index: number = this[arraySource].indexOf(action);
+        this[arraySource].splice(index, 1);
+    }
+
+    setActionsChosen(action: BasketGroupListActionInterface = null): Promise<boolean> {
+        return new Promise((resolve) => {
+            this.actionsChosen = [];
+            this.availableValidationsActions = [];
+            this.availableRefusalActions = [];
+            this.availableValidationsActionsClone = [];
+            this.availableRefusalActionsClone = [];
+            this.loading = true;
+
+            this.actionsChosen = this.currentBasketGroup?.groupActions.filter((action: any) => action.checked);
+            this.actionsChosen = this.formatActions(this.actionsChosen);
+
+            // Check if the 'actions' list in 'list_event_data' is empty, and if so, initialize it as an empty array
+            if (this.functions.empty(this.currentBasketGroup?.list_event_data?.actions)) {
+                this.currentBasketGroup = {
+                    ... this.currentBasketGroup,
+                    list_event_data: {
+                        actions: []
+                    }
+                }
+            }
+
+            // For each action in 'actionsChosen', set the 'type' to 'reject' if the actionPage is found in 'refusalActionsId', otherwise set it to 'valid'
+            this.actionsChosen.forEach((action) => {
+                action['type'] = this.refusalActionsId.indexOf(action.actionPage) > -1 ? 'reject' : 'valid';
+            });
+
+            // Concatenate 'actionsChosen' with the existing actions in 'currentBasketGroup.list_event_data.actions'
+            this.actionsChosen = this.currentBasketGroup.list_event_data.actions.concat(this.actionsChosen);
+
+            this.actionsChosen = this.actionsChosen.map((action: BasketGroupListActionInterface) => ({
+                ...action,
+                actionLabel: this.currentBasketGroup?.groupActions.find((item: BasketGroupListActionInterface) => item.id === action.id).label_action
+            }));
+
+            // Filter 'actionsChosen' to remove duplicates based on the 'id' property
+            this.actionsChosen = this.actionsChosen.filter((action: BasketGroupListActionInterface, index: number, self: BasketGroupListActionInterface[]) =>
+                index === self.findIndex((t) => t.id === action.id)
+            );
+
+            if (action !== null) {
+                this.actionsChosen = this.actionsChosen.filter((item: BasketGroupListActionInterface) => action.id !== item.id);
+            }
+
+            // Filter 'actionsChosen' to get all actions of type 'valid' and assign them to 'availableValidationsActions'
+            this.availableValidationsActions = this.actionsChosen.filter((action: BasketGroupListActionInterface) => action.type === 'valid');
+
+            // Filter 'actionsChosen' to get all actions of type 'reject' and assign them to 'availableRefusalActions'
+            this.availableRefusalActions = this.actionsChosen.filter((action: BasketGroupListActionInterface) => action.type === 'reject');
+
+            // Create deep clones of 'availableValidationsActions' and 'availableRefusalActions'
+            this.availableValidationsActionsClone = JSON.parse(JSON.stringify(this.availableValidationsActions));
+            this.availableRefusalActionsClone = JSON.parse(JSON.stringify(this.availableRefusalActions));
+
+            this.loading = false;
+
+            resolve(true);
+        });
+    }
+
+    async refreshData(event: string, data: any): Promise<void> {
+        await this.setActionsChosen(event === 'actionAdded' ? null : data).then(() => {
+            this.saveTemplate(false);
+        });
+    }
+
+    formatActions(actions: any[]): BasketGroupListActionInterface[] {
+        return actions.map((action) => ({
+            id: action.id,
+            type: action.type ?? '',
+            actionPage: action.action_page,
+            defaultActionList: action.default_action_list === 'Y' ? true : false
+        }));
     }
 
     private _filterData(value: any): string[] {
@@ -487,4 +645,11 @@ export class ListAdministrationComponent implements OnInit {
         }
         return this.availableData.filter((option: any) => option.label.toLowerCase().includes(filterValue));
     }
+}
+
+export interface BasketGroupListActionInterface {
+    id: number;
+    type: string;
+    actionPage: string;
+    defaultActionList: boolean;
 }
