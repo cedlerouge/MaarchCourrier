@@ -169,7 +169,7 @@ export class AttachmentsListComponent implements OnInit {
                         ... attachment,
                         signable: this.attachmentTypes.find((type: any) => type.typeId === attachment.type).signable
                     }));
-                    this.attachments.forEach((element: any) => {                        
+                    this.attachments.forEach((element: any) => {
                         if (this.filterAttachTypes.filter(attachType => attachType.id === element.type).length === 0) {
                             this.filterAttachTypes.push({
                                 id: element.type,
@@ -328,7 +328,7 @@ export class AttachmentsListComponent implements OnInit {
 
     setTaget(target: string): void {
         this.filterAttachTypes = [];
-        this.attachmentsClone.forEach((element: any) => {                        
+        this.attachmentsClone.forEach((element: any) => {
             if (this.filterAttachTypes.filter(attachType => attachType.id === element.type).length === 0) {
                 this.filterAttachTypes.push({
                     id: element.type,
@@ -340,7 +340,7 @@ export class AttachmentsListComponent implements OnInit {
         const attachmentsWithValidStatus: any[] = this.attachmentsClone.filter((attachment: any) => attachment.status === 'A_TRA');
         const filterAttachTypesClone: any[] = JSON.parse(JSON.stringify(this.filterAttachTypes));
         this.currentIntegrationTarget = target;
-        this.currentFilter = '';        
+        this.currentFilter = '';
         if (target === 'all') {
             this.attachments = this.attachmentsClone;
         } else if (target === 'sign') {
@@ -354,8 +354,8 @@ export class AttachmentsListComponent implements OnInit {
         this.filterAttachTypes = filterAttachTypesClone.filter((element: any) => attachTypes.indexOf(element.id) > -1);
     }
 
-    async downloadProof(resId: number): Promise<void> {
+    async downloadProof(data: { resId: number, chrono: string }): Promise<void> {
         this.downloadingProof = true;
-        await this.signatureBookService.downloadProof(resId, true).then(() => this.downloadingProof = false);
+        await this.signatureBookService.downloadProof(data, true).then(() => this.downloadingProof = false);
     }
 }

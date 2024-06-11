@@ -349,7 +349,9 @@
         <div class="document-container" [class.fullContainer]="appService.getViewMode()">
             <div class="content">
                 <app-document-viewer #appDocumentViewer *ngIf="!loading" style="height:100%;width:100%;"
-                    [editMode]="canEditData" [resId]="currentResourceInformations.resId"
+                    [editMode]="canEditData"
+                    [resId]="currentResourceInformations.resId"
+                    [chrono]="currentResourceInformations.chrono"
                     [title]="currentResourceInformations.chrono + ' - ' + currentResourceInformations.subject">
                 </app-document-viewer>
             </div>

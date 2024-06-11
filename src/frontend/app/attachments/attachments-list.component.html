@@ -84,7 +84,7 @@
                         mat-menu-item
                         [title]="'lang.downloadProof' | translate"
                         [disabled]="downloadingProof"
-                        (click)="$event.stopPropagation(); downloadProof(attachment.resId)">
+                        (click)="$event.stopPropagation(); downloadProof(attachment)">
                         <mat-icon color="primary" class="fas fa-award" style="font-size: 17px;"></mat-icon>
                         <span style="white-space: pre-wrap;">{{'lang.downloadProof' | translate}}</span>
                     </button>
