@@ -331,7 +331,7 @@ export class ListAdministrationComponent implements OnInit {
         this.displayedSecondaryDataClone = JSON.parse(JSON.stringify(this.displayedSecondaryData));
 
         if (this.signatureBookService.config.isNewInternalParaph && this.selectedListEvent === 'signatureBookAction') {
-            this.setActionsChosen();
+            await this.setActionsChosen();
         }
     }
 
@@ -433,12 +433,16 @@ export class ListAdministrationComponent implements OnInit {
         data.splice(index, 1);
     }
 
-    saveTemplate(withNotif: boolean = true) {
+    saveTemplate(withNotif: boolean = true): void {
         const objToSend = {
             templateColumns: this.selectedTemplateDisplayedSecondaryData,
             subInfos: this.displayedSecondaryData
         };
-        if (this.selectedListEvent === 'signatureBookAction') {
+        if ((this.selectedListEvent === 'signatureBookAction' || this.currentBasketGroup.list_event === 'signatureBookAction') && this.signatureBookService.config.isNewInternalParaph) {
+            if (this.functions.empty(this.selectedListEvent)) {
+                this.selectedListEvent = this.currentBasketGroup.list_event;
+            }
+
             const allSelectedActions: BasketGroupListActionInterface[] = this.availableValidationsActions.concat(this.availableRefusalActions);
             this.selectedProcessTool = {
                 ... this.selectedProcessTool,
@@ -508,7 +512,7 @@ export class ListAdministrationComponent implements OnInit {
         }
     }
 
-    changeEventList(ev: any) {
+    async changeEventList(ev: any) {
         if (ev.value === 'processDocument') {
             this.selectedProcessTool = {
                 defaultTab: 'dashboard'
@@ -516,7 +520,7 @@ export class ListAdministrationComponent implements OnInit {
         } else {
             this.selectedProcessTool = {};
             if (ev.value === 'signatureBookAction' && this.signatureBookService.config.isNewInternalParaph) {
-                this.setActionsChosen();
+                await this.setActionsChosen();
             }
         }
     }
@@ -556,56 +560,70 @@ export class ListAdministrationComponent implements OnInit {
         this[arraySource].splice(index, 1);
     }
 
-    setActionsChosen(action: BasketGroupListActionInterface = null): void {
-        this.actionsChosen = this.currentBasketGroup?.groupActions.filter((action: any) => action.checked);
-        this.actionsChosen = this.formatActions(this.actionsChosen);
+    setActionsChosen(action: BasketGroupListActionInterface = null): Promise<boolean> {
+        return new Promise((resolve) => {
+            this.actionsChosen = [];
+            this.availableValidationsActions = [];
+            this.availableRefusalActions = [];
+            this.availableValidationsActionsClone = [];
+            this.availableRefusalActionsClone = [];
+            this.loading = true;
 
-        // Check if the 'actions' list in 'list_event_data' is empty, and if so, initialize it as an empty array
-        if (this.functions.empty(this.currentBasketGroup?.list_event_data?.actions)) {
-            this.currentBasketGroup = {
-                ... this.currentBasketGroup,
-                list_event_data: {
-                    actions: []
+            this.actionsChosen = this.currentBasketGroup?.groupActions.filter((action: any) => action.checked);
+            this.actionsChosen = this.formatActions(this.actionsChosen);
+
+            // Check if the 'actions' list in 'list_event_data' is empty, and if so, initialize it as an empty array
+            if (this.functions.empty(this.currentBasketGroup?.list_event_data?.actions)) {
+                this.currentBasketGroup = {
+                    ... this.currentBasketGroup,
+                    list_event_data: {
+                        actions: []
+                    }
                 }
             }
-        }
 
-        // For each action in 'actionsChosen', set the 'type' to 'reject' if the actionPage is found in 'refusalActionsId', otherwise set it to 'valid'
-        this.actionsChosen.forEach((action) => {
-            action['type'] = this.refusalActionsId.indexOf(action.actionPage) > -1 ? 'reject' : 'valid';
+            // For each action in 'actionsChosen', set the 'type' to 'reject' if the actionPage is found in 'refusalActionsId', otherwise set it to 'valid'
+            this.actionsChosen.forEach((action) => {
+                action['type'] = this.refusalActionsId.indexOf(action.actionPage) > -1 ? 'reject' : 'valid';
+            });
+
+            // Concatenate 'actionsChosen' with the existing actions in 'currentBasketGroup.list_event_data.actions'
+            this.actionsChosen = this.currentBasketGroup.list_event_data.actions.concat(this.actionsChosen);
+
+            this.actionsChosen = this.actionsChosen.map((action: BasketGroupListActionInterface) => ({
+                ...action,
+                actionLabel: this.currentBasketGroup?.groupActions.find((item: BasketGroupListActionInterface) => item.id === action.id).label_action
+            }));
+
+            // Filter 'actionsChosen' to remove duplicates based on the 'id' property
+            this.actionsChosen = this.actionsChosen.filter((action: BasketGroupListActionInterface, index: number, self: BasketGroupListActionInterface[]) =>
+                index === self.findIndex((t) => t.id === action.id)
+            );
+
+            if (action !== null) {
+                this.actionsChosen = this.actionsChosen.filter((item: BasketGroupListActionInterface) => action.id !== item.id);
+            }
+
+            // Filter 'actionsChosen' to get all actions of type 'valid' and assign them to 'availableValidationsActions'
+            this.availableValidationsActions = this.actionsChosen.filter((action: BasketGroupListActionInterface) => action.type === 'valid');
+
+            // Filter 'actionsChosen' to get all actions of type 'reject' and assign them to 'availableRefusalActions'
+            this.availableRefusalActions = this.actionsChosen.filter((action: BasketGroupListActionInterface) => action.type === 'reject');
+
+            // Create deep clones of 'availableValidationsActions' and 'availableRefusalActions'
+            this.availableValidationsActionsClone = JSON.parse(JSON.stringify(this.availableValidationsActions));
+            this.availableRefusalActionsClone = JSON.parse(JSON.stringify(this.availableRefusalActions));
+
+            this.loading = false;
+
+            resolve(true);
         });
-
-        // Concatenate 'actionsChosen' with the existing actions in 'currentBasketGroup.list_event_data.actions'
-        this.actionsChosen = this.currentBasketGroup.list_event_data.actions.concat(this.actionsChosen);
-
-        this.actionsChosen = this.actionsChosen.map((action: BasketGroupListActionInterface) => ({
-            ...action,
-            actionLabel: this.currentBasketGroup?.groupActions.find((item: BasketGroupListActionInterface) => item.id === action.id).label_action
-        }));
-
-        // Filter 'actionsChosen' to remove duplicates based on the 'id' property
-        this.actionsChosen = this.actionsChosen.filter((action: BasketGroupListActionInterface, index: number, self: BasketGroupListActionInterface[]) =>
-            index === self.findIndex((t) => t.id === action.id)
-        );
-
-        if (action !== null) {
-            this.actionsChosen = this.actionsChosen.filter((item: BasketGroupListActionInterface) => action.id !== item.id);
-        }
-
-        // Filter 'actionsChosen' to get all actions of type 'valid' and assign them to 'availableValidationsActions'
-        this.availableValidationsActions = this.actionsChosen.filter((action: BasketGroupListActionInterface) => action.type === 'valid');
-
-        // Filter 'actionsChosen' to get all actions of type 'reject' and assign them to 'availableRefusalActions'
-        this.availableRefusalActions = this.actionsChosen.filter((action: BasketGroupListActionInterface) => action.type === 'reject');
-
-        // Create deep clones of 'availableValidationsActions' and 'availableRefusalActions'
-        this.availableValidationsActionsClone = JSON.parse(JSON.stringify(this.availableValidationsActions));
-        this.availableRefusalActionsClone = JSON.parse(JSON.stringify(this.availableRefusalActions));
     }
 
-    refreshData(event: string, data: any): void {
-        this.setActionsChosen(event === 'actionAdded' ? null : data);
-        this.saveTemplate(false);
+    async refreshData(event: string, data: any): Promise<void> {
+        await this.setActionsChosen(event === 'actionAdded' ? null : data).then(() => {
+            this.saveTemplate(false);
+        });
     }
 
     formatActions(actions: any[]): BasketGroupListActionInterface[] {
@@ -613,6 +631,7 @@ export class ListAdministrationComponent implements OnInit {
             id: action.id,
             type: action.type ?? '',
             actionPage: action.action_page,
+            defaultActionList: action.default_action_list === 'Y' ? true : false
         }));
     }
 
@@ -632,4 +651,5 @@ export interface BasketGroupListActionInterface {
     id: number;
     type: string;
     actionPage: string;
+    defaultActionList: boolean;
 }

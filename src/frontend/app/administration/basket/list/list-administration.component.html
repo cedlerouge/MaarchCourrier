@@ -46,7 +46,7 @@
             {{'lang.goToNextDocument' | translate}}
         </mat-slide-toggle>
     </div>
-    <ng-container *ngIf="signatureBookService.config.isNewInternalParaph && actionsChosen.length > 0">
+    <ng-container *ngIf="!loading && signatureBookService.config.isNewInternalParaph && actionsChosen.length > 0">
         <mat-divider></mat-divider>
         <div class="title" [title]="'lang.internalParaphActions' | translate">
             <span>{{'lang.internalParaphActions' | translate}}</span>

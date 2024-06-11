@@ -34,7 +34,6 @@ export class BasketAdministrationComponent implements OnInit {
 
     selectedIndex: number = 0;
 
-
     loading: boolean = false;
 
     config: any = {};
@@ -55,8 +54,6 @@ export class BasketAdministrationComponent implements OnInit {
     langOrderName = [this.translate.instant('lang.ascending'), this.translate.instant('lang.descending')];
     orderColumnsSelected: any[] = [{ 'column': 'res_id', 'order': 'asc' }];
     dataSource: any;
-
-    loadingList: boolean = false;
 
     constructor(
         public translate: TranslateService,
@@ -286,18 +283,15 @@ export class BasketAdministrationComponent implements OnInit {
     }
 
     addAction(group: any) {
-        this.loadingList = true;
         this.http.put('../rest/baskets/' + this.id + '/groups/' + group.group_id + '/actions', { 'groupActions': group.groupActions })
             .subscribe(() => {
                 this.notify.success(this.translate.instant('lang.actionsGroupBasketUpdated'));
-                this.loadingList = false;
-                if (this.signatureBookService.config.isNewInternalParaph && group.list_event === 'signatureBookAction') {
+                if (this.signatureBookService.config.isNewInternalParaph && (group.list_event === 'signatureBookAction' || this.listAdmin.selectedListEvent === 'signatureBookAction')) {
                     setTimeout(() => {
                         this.listAdmin.refreshData('actionAdded', null);
                     }, 10);
                 }
             }, (err) => {
-                this.loadingList = false;
                 this.notify.error(err.error.errors);
             });
     }
@@ -327,7 +321,6 @@ export class BasketAdministrationComponent implements OnInit {
     }
 
     unlinkAction(group: any, action: any) {
-        this.loadingList = true;
         const dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: this.translate.instant('lang.unlinkAction') + ' ?', msg: this.translate.instant('lang.confirmAction') } });
         dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
@@ -335,8 +328,7 @@ export class BasketAdministrationComponent implements OnInit {
             exhaustMap(() => this.http.put('../rest/baskets/' + this.id + '/groups/' + group.group_id + '/actions', { 'groupActions': group.groupActions })),
             tap(() => {
                 this.notify.success(this.translate.instant('lang.actionsGroupBasketUpdated'));
-                this.loadingList = false;
-                if (this.signatureBookService.config.isNewInternalParaph && group.list_event === 'signatureBookAction') {
+                if (this.signatureBookService.config.isNewInternalParaph && (group.list_event === 'signatureBookAction' || this.listAdmin.selectedListEvent === 'signatureBookAction')) {
                     setTimeout(() => {
                         this.listAdmin.refreshData('actionUnlinked', action);
                     }, 0);
@@ -344,7 +336,6 @@ export class BasketAdministrationComponent implements OnInit {
             }),
             catchError((err: any) => {
                 this.notify.handleSoftErrors(err);
-                this.loadingList = false;
                 return of(false);
             })
         ).subscribe();
