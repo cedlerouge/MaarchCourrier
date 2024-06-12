@@ -9,8 +9,8 @@ import { catchError, map, of, tap } from "rxjs";
 import { mapAttachment } from "./signature-book.utils";
 import { SignatureBookConfig, SignatureBookConfigInterface } from "@models/signature-book.model";
 import { SelectedAttachment } from "@models/signature-book.model";
-import { DatePipe } from "@angular/common";
 import { TranslateService } from "@ngx-translate/core";
+import { FunctionsService } from "@service/functions.service";
 
 @Injectable({
     providedIn: 'root'
@@ -36,8 +36,8 @@ export class SignatureBookService {
         private notifications: NotificationService,
         private filtersListService: FiltersListService,
         private headerService: HeaderService,
-        private datePipe: DatePipe,
-        private translate: TranslateService
+        private translate: TranslateService,
+        private functions: FunctionsService
     ) {}
 
     getInternalSignatureBookConfig(): Promise<SignatureBookConfigInterface | null> {
@@ -150,16 +150,19 @@ export class SignatureBookService {
         ).subscribe();
     }
 
-    downloadProof(resId: number, isAttachment: boolean): Promise<boolean> {
+    downloadProof(data: {resId: number, chrono: string}, isAttachment: boolean): Promise<boolean> {
         const type: string = isAttachment ? 'attachments' : 'resources';
         return new Promise((resolve) => {
-            this.http.get(`../rest/${type}/${resId}/proofSignature`, { responseType: 'blob' as 'json' })
+            this.http.get(`../rest/${type}/${data.resId}/proofSignature`, { responseType: 'blob' as 'json' })
                 .pipe(
-                    tap((data: any) => {
-                        const today = new Date();
-                        const filename = 'proof_' + resId + '_' + this.datePipe.transform(today, 'dd-MM-y') + '.' + data.type.replace('application/', '');
+                    tap((result: any) => {
+                        let chronoOrResId: string = data.resId.toString();
+                        if (!this.functions.empty(data.chrono)) {
+                            chronoOrResId = data.chrono.replace(/\//g, '_');
+                        }
+                        const filename = 'proof_' + chronoOrResId + '.' + result.type.replace('application/', '');
                         const downloadLink = document.createElement('a');
-                        downloadLink.href = window.URL.createObjectURL(data);
+                        downloadLink.href = window.URL.createObjectURL(result);
                         downloadLink.setAttribute('download', filename);
                         document.body.appendChild(downloadLink);
                         downloadLink.click();

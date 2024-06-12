@@ -102,6 +102,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     @Input() zoom: number = 1;
 
+    @Input() chrono: string = '';
+
     /**
       * Event emitter
       */
@@ -1547,8 +1549,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         }
     }
 
-    async downloadProof(resId: number): Promise<void> {
+    async downloadProof(data: { resId: number, chrono: string }): Promise<void> {
         this.downloadingProof = true;
-        await this.signatureBookService.downloadProof(resId, false).then(() => this.downloadingProof = false);
+        await this.signatureBookService.downloadProof(data, false).then(() => this.downloadingProof = false);
     }
 }
