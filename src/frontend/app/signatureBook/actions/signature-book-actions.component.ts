@@ -103,7 +103,7 @@ export class SignatureBookActionsComponent implements OnInit {
                     catchError((err: any) => {
                         this.notify.handleSoftErrors(err.error.errors);
                         resolve([]);
-                        return of();
+                        return of(false);
                     })
                 )
                 .subscribe();
