@@ -16,6 +16,8 @@ import { FiltersListService } from '@service/filtersList.service';
 import { PrivilegeService } from '@service/privileges.service';
 import { AdministrationService } from '@appRoot/administration/administration.service';
 import { SignatureBookService } from '@appRoot/signatureBook/signature-book.service';
+import { Action } from '@models/actions.model';
+import { BasketGroupListActionInterface } from '@appRoot/administration/basket/list/list-administration.component';
 
 class FakeLoader implements TranslateLoader {
     getTranslation(): Observable<any> {
@@ -83,39 +85,28 @@ describe('SignatureBookActionsComponent', () => {
             const req = httpTestingController.expectOne(
                 '../rest/resourcesList/users/1/groups/1/baskets/1/actions?resId=100'
             );
+
+            const mockActions: Action[] = [
+                {
+                    id: 100,
+                    label: 'test',
+                    categories: [],
+                    component: 'testComponent',
+                },
+                {
+                    id: 101,
+                    label: 'test2',
+                    categories: [],
+                    component: 'test2Component',
+                },
+            ];
+
             component.userStamp = null;
             req.flush({
-                actions: [
-                    {
-                        id: 100,
-                        label: 'test',
-                        categories: [],
-                        component: 'testComponent',
-                    },
-                    {
-                        id: 101,
-                        label: 'test2',
-                        categories: [],
-                        component: 'test2Component',
-                    },
-                ],
+                actions: mockActions,
             });
 
-            spyOn(component, 'loadActions').and.returnValue(Promise.resolve({
-                actions: [
-                    {
-                        id: 100,
-                        label: 'test',
-                        categories: [],
-                        component: 'testComponent',
-                    },
-                    {
-                        id: 101,
-                        label: 'test2',
-                        categories: [],
-                        component: 'test2Component',
-                    },
-                ], }));
+            spyOn(component, 'loadActions').and.returnValue(Promise.resolve(mockActions));
 
             fixture.detectChanges();
             tick(300);
@@ -128,79 +119,68 @@ describe('SignatureBookActionsComponent', () => {
 
     describe('More actions selection', () => {
         it ('the action must appear in the initial button when I choose it from the menu', fakeAsync(() => {
+            TestBed.inject(SignatureBookService).basketGroupActions = [
+                {
+                    id: 100,
+                    type: 'valid'
+                },
+                {
+                    id: 101,
+                    type: 'valid'
+                },
+                {
+                    id: 102,
+                    type: 'valid'
+                },
+                {
+                    id: 103,
+                    type: 'valid'
+                },
+                {
+                    id: 104,
+                    type: 'reject'
+                }
+            ] as BasketGroupListActionInterface[];
+
             const req = httpTestingController.expectOne(
-                '../rest/resourcesList/users/1/groups/1/baskets/1/actions?resId=100'
+                `../rest/resourcesList/users/${component.userId}/groups/${component.groupId}/baskets/${component.groupId}/actions?resId=100`
             );
             component.userStamp = null;
-            req.flush({
-                actions: [
-                    {
-                        id: 100,
-                        label: 'test',
-                        categories: [],
-                        component: 'testComponent',
-                    },
-                    {
-                        id: 101,
-                        label: 'test2',
-                        categories: [],
-                        component: 'test2Component',
-                    },
-                    {
-                        id: 102,
-                        label: 'test3',
-                        categories: [],
-                        component: 'test3Component',
-                    },
-                    {
-                        id: 103,
-                        label: 'test4',
-                        categories: [],
-                        component: 'test4Component',
-                    },
-                    {
-                        id: 104,
-                        label: 'test5',
-                        categories: [],
-                        component: 'test5Component',
-                    },
-                ],
-            });
+            const mockActions: Action[] = [
+                {
+                    id: 100,
+                    label: 'test',
+                    categories: [],
+                    component: 'testComponent',
+                },
+                {
+                    id: 101,
+                    label: 'test2',
+                    categories: [],
+                    component: 'test2Component',
+                },
+                {
+                    id: 102,
+                    label: 'test3',
+                    categories: [],
+                    component: 'test3Component',
+                },
+                {
+                    id: 103,
+                    label: 'test4',
+                    categories: [],
+                    component: 'test4Component',
+                },
+                {
+                    id: 104,
+                    label: 'test5',
+                    categories: [],
+                    component: 'test5Component',
+                },
+            ];
+            req.flush({ actions: mockActions });
 
-            spyOn(component, 'loadActions').and.returnValue(Promise.resolve({
-                actions: [
-                    {
-                        id: 100,
-                        label: 'test',
-                        categories: [],
-                        component: 'testComponent',
-                    },
-                    {
-                        id: 101,
-                        label: 'test2',
-                        categories: [],
-                        component: 'test2Component',
-                    },
-                    {
-                        id: 102,
-                        label: 'test3',
-                        categories: [],
-                        component: 'test3Component',
-                    },
-                    {
-                        id: 103,
-                        label: 'test4',
-                        categories: [],
-                        component: 'test4Component',
-                    },
-                    {
-                        id: 104,
-                        label: 'test5',
-                        categories: [],
-                        component: 'test5Component',
-                    },
-                ],
-            }));
+            spyOn(component, 'loadActions').and.returnValue(Promise.resolve(mockActions));
 
             fixture.detectChanges();
             tick(300);
@@ -230,7 +210,7 @@ describe('SignatureBookActionsComponent', () => {
             expect(document.querySelectorAll('.more-actions-valid-item').length).toEqual(3);
 
             const firstItem = document.querySelectorAll('.more-actions-valid-item')[0] as HTMLElement;
-            expect(firstItem.title).toBe('test3');
+            expect(firstItem.title).toBe('test2');
 
             firstItem.click();
 
@@ -239,7 +219,7 @@ describe('SignatureBookActionsComponent', () => {
             tick(500);
 
             // After click, the main button should be 'test3'
-            expect(fixture.nativeElement.querySelector('.action-button-valid').title).toBe('test3');
+            expect(fixture.nativeElement.querySelector('.action-button-valid').title).toBe('test2');
         }));
     });
 });
