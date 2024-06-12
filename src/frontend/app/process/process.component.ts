@@ -223,7 +223,7 @@ export class ProcessComponent implements OnInit, OnDestroy {
 
 
         // Event after process action
-        this.subscription = this.actionService.catchAction().subscribe(message => {
+        this.subscription = this.actionService.catchAction().subscribe(() => {
             this.actionEnded = true;
             this.router.navigate([`/basketList/users/${this.currentUserId}/groups/${this.currentGroupId}/baskets/${this.currentBasketId}`]);
         });
@@ -296,7 +296,7 @@ export class ProcessComponent implements OnInit, OnDestroy {
         return new Promise((resolve) => {
             this.http.get(`../rest/resourcesList/users/${this.currentUserId}/groups/${this.currentGroupId}/baskets/${this.currentBasketId}/actions?resId=${this.currentResourceInformations.resId}`).pipe(
                 map((data: any) => {
-                    data.actions = data.actions.map((action: any, index: number) => ({
+                    data.actions = data.actions.map((action: any) => ({
                         id: action.id,
                         label: action.label,
                         component: action.component,

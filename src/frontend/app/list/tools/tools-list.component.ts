@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, Input, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { MatLegacyAutocompleteTrigger as MatAutocompleteTrigger } from '@angular/material/legacy-autocomplete';
@@ -19,7 +19,7 @@ export interface StateGroup {
     templateUrl: 'tools-list.component.html',
     styleUrls: ['tools-list.component.scss'],
 })
-export class ToolsListComponent implements OnInit {
+export class ToolsListComponent {
 
     @ViewChild(MatAutocompleteTrigger, { static: true }) autocomplete: MatAutocompleteTrigger;
 
@@ -73,8 +73,6 @@ export class ToolsListComponent implements OnInit {
         public http: HttpClient,
         public dialog: MatDialog
     ) { }
-
-    ngOnInit(): void { }
 
     openExport(): void {
         const elementsNotAllowed = this.notAllowedResources.some((id: number) => this.selectedRes.includes(id));

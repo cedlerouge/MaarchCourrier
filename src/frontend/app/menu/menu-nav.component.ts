@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -8,7 +8,7 @@ import { TranslateService } from '@ngx-translate/core';
     selector: 'app-menu-nav',
     templateUrl: 'menuNav.component.html',
 })
-export class MenuNavComponent implements OnInit {
+export class MenuNavComponent {
 
 
     router: any;
@@ -23,8 +23,6 @@ export class MenuNavComponent implements OnInit {
     ) {
         this.router = _router;
     }
-
-    ngOnInit(): void { }
 
     backClicked() {
         // this.router.navigate(['../'],{ relativeTo: this.activatedRoute });
