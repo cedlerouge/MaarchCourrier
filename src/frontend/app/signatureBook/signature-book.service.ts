@@ -11,6 +11,7 @@ import { SignatureBookConfig, SignatureBookConfigInterface } from "@models/signa
 import { SelectedAttachment } from "@models/signature-book.model";
 import { DatePipe } from "@angular/common";
 import { TranslateService } from "@ngx-translate/core";
+import { BasketGroupListActionInterface } from "@appRoot/administration/basket/list/list-administration.component";
 
 @Injectable({
     providedIn: 'root'
@@ -30,6 +31,8 @@ export class SignatureBookService {
     selectedResources: Attachment[] = [];
 
     selectedResourceCount: number = 0;
+
+    basketGroupActions: BasketGroupListActionInterface[] = []
 
     constructor(
         private http: HttpClient,
@@ -86,10 +89,15 @@ export class SignatureBookService {
             const filters: string = this.filtersListService.getUrlFilters();
 
             this.http.get(`../rest/resourcesList/users/${userId}/groups/${groupId}/baskets/${basketId}?limit=${limit}&offset=${offset}${filters}`).pipe(
-                map((data: any) => {
-                    this.resourcesListIds = data.allResources;
-                    this.basketLabel = data.basketLabel;
-                    const resourcesList: ResourcesList[] = data.resources.map((resource: any) => new ResourcesList({
+                map((result: any) => {
+                    this.resourcesListIds = result.allResources;
+                    this.basketLabel = result.basketLabel;
+
+                    if (result.defaultAction.data?.actions?.length > 0) {
+                        this.basketGroupActions = JSON.parse(JSON.stringify(result.defaultAction.data.actions));
+                    }
+
+                    const resourcesList: ResourcesList[] = result.resources.map((resource: any) => new ResourcesList({
                         resId: resource.resId,
                         subject: resource.subject,
                         chrono: resource.chrono,
