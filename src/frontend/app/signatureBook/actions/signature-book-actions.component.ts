@@ -2,13 +2,14 @@ import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionsService } from '@appRoot/actions/actions.service';
-import { Action } from '@models/actions.model';
 import { FunctionsService } from '@service/functions.service';
 import { NotificationService } from '@service/notification/notification.service';
 import { Subscription, catchError, of, tap } from 'rxjs';
 import { SignatureBookService } from '../signature-book.service';
 import { UserStampInterface } from '@models/user-stamp.model';
 import { Attachment } from "@models/attachment.model";
+import { BasketGroupListActionInterface } from '@appRoot/administration/basket/list/list-administration.component';
+import { Action } from '@models/actions.model';
 
 @Component({
     selector: 'app-maarch-sb-actions',
@@ -29,11 +30,13 @@ export class SignatureBookActionsComponent implements OnInit {
 
     loading: boolean = true;
 
-    leftActions: Action[] = [];
-    rightActions: Action[] = [];
+    basketGroupActions: Action[] = [];
 
-    selectedRightAction: Action;
-    selectedLeftAction: Action;
+    refusalActions: Action[] = [];
+    validationActions: Action[] = [];
+
+    selectedValidationAction: Action;
+    selectedRefusalAction: Action;
 
     constructor(
         public http: HttpClient,
@@ -58,30 +61,48 @@ export class SignatureBookActionsComponent implements OnInit {
     }
 
     async ngOnInit(): Promise<void> {
-        await this.loadActions();
-        this.loading = false;
+        await this.loadActions()
+            .then(() => {
+                const validationActionsIds: number[] = this.signatureBookService.basketGroupActions
+                    .filter((action: BasketGroupListActionInterface) => action.type === 'valid')
+                    .map((action: BasketGroupListActionInterface) => action.id);
+
+                const refusalActionsIds: number[] = this.signatureBookService.basketGroupActions
+                    .filter((action: BasketGroupListActionInterface) => action.type === 'reject')
+                    .map((action: BasketGroupListActionInterface) => action.id);
+
+                validationActionsIds.forEach((actionId: number) => {
+                    this.validationActions.push(this.basketGroupActions.find((action: Action) => action.id === actionId));
+                });
+
+                refusalActionsIds.forEach((actionId: number) => {
+                    this.refusalActions.push(this.basketGroupActions.find((action: Action) => action.id === actionId));
+                });
+
+                this.selectedValidationAction = this.validationActions[0];
+                this.selectedRefusalAction = this.refusalActions[0];
+
+                this.loading = false;
+            })
+            .catch((err: any) => {
+                this.notify.handleSoftErrors(err);
+                this.loading = false;
+            });
+
     }
 
-    openSignaturesList() {
-        this.openPanelSignatures.emit(true);
-    }
-
-    loadActions() {
+    loadActions(): Promise<Action[]> {
         return new Promise((resolve) => {
             this.actionsService
                 .getActions(this.userId, this.groupId, this.basketId, this.resId)
                 .pipe(
                     tap((actions: Action[]) => {
-                        this.leftActions = [actions[1]];
-                        this.rightActions = actions.filter((action: Action, key: number) => key !== 1);
-
-                        this.selectedRightAction = this.rightActions[0];
-                        this.selectedLeftAction = this.leftActions[0];
-
-                        resolve(true);
+                        this.basketGroupActions = actions;
+                        resolve(this.basketGroupActions);
                     }),
                     catchError((err: any) => {
                         this.notify.handleSoftErrors(err.error.errors);
+                        resolve([]);
                         return of(false);
                     })
                 )
@@ -89,7 +110,11 @@ export class SignatureBookActionsComponent implements OnInit {
         });
     }
 
-    async processAction(action: any) {
+    openSignaturesList(): void {
+        this.openPanelSignatures.emit(true);
+    }
+
+    async processAction(action: any): Promise<void> {
         let resIds: number[] = [this.resId];
         resIds = resIds.concat(this.signatureBookService.selectedResources.map((resource: Attachment) => resource.resIdMaster));
         // Get docs to sign attached to the current resource by default if the selection is empty
@@ -116,23 +141,19 @@ export class SignatureBookActionsComponent implements OnInit {
             .subscribe();
     }
 
-    processAfterAction() {
+    processAfterAction(): void {
         this.backToBasket();
     }
 
-    backToBasket() {
+    backToBasket(): void {
         const path = '/basketList/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId;
         this.router.navigate([path]);
     }
 
-    signWithStamp(userStamp: UserStampInterface) {
+    signWithStamp(userStamp: UserStampInterface): void {
         this.actionsService.emitActionWithData({
             id: 'selectedStamp',
             data: userStamp,
         });
-    }
-
-    getActions(actionTarget: Action, actions: 'leftActions' | 'rightActions'): Action[] {
-        return this[actions].filter((action: Action) => action.id !== actionTarget.id);
     }
 }
