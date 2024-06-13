@@ -126,7 +126,7 @@ export class NoteEditorComponent implements OnInit {
             resId: this.resIds[0],
             entities: this.entitiesRestriction
         })
-            .subscribe((data: any) => {
+            .subscribe(() => {
                 this.refreshNotes.emit(this.resIds[0]);
                 this.loading = false;
             });
@@ -139,7 +139,7 @@ export class NoteEditorComponent implements OnInit {
             resId: this.resIds[0],
             entities: this.entitiesRestriction
         })
-            .subscribe((data: any) => {
+            .subscribe(() => {
                 this.refreshNotes.emit(this.resIds[0]);
                 this.loading = false;
             });

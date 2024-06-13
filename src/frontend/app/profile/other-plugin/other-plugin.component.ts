@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { HeaderService } from '@service/header.service';
 import { AddinOutlookConfigurationModalComponent } from './configuration/addin-outlook-configuration-modal.component';
@@ -11,7 +11,7 @@ import { AuthService } from '@service/auth.service';
     styleUrls: ['./other-plugin.component.scss'],
 })
 
-export class ProfileOtherPluginComponent implements OnInit {
+export class ProfileOtherPluginComponent {
 
 
     constructor(
@@ -20,8 +20,6 @@ export class ProfileOtherPluginComponent implements OnInit {
         public dialog: MatDialog,
         private authService: AuthService
     ) {}
-
-    ngOnInit(): void { }
 
     openAddinOutlookConfiguration() {
         this.dialog.open(AddinOutlookConfigurationModalComponent, {

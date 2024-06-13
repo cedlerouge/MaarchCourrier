@@ -126,7 +126,7 @@
                     <button mat-menu-item *ngIf="!loading && resId !== null && file?.subinfos?.signedDocVersions && signatureBookService.config.isNewInternalParaph"
                         [title]="'lang.downloadProof' | translate"
                         [disabled]="downloadingProof"
-                        (click)="$event.stopPropagation(); downloadProof(resId)">
+                        (click)="$event.stopPropagation(); downloadProof({resId: resId, chrono: chrono})">
                         <mat-icon color="primary" class="fas fa-award" style="font-size: 17px;"></mat-icon>
                         <span style="white-space: pre-wrap;">{{'lang.downloadProof' | translate}}</span>
                     </button>

@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
@@ -12,7 +12,7 @@ import { HeaderService } from '@service/header.service';
     styleUrls: ['menu-shortcut.component.scss'],
     templateUrl: 'menu-shortcut.component.html',
 })
-export class MenuShortcutComponent implements OnInit {
+export class MenuShortcutComponent {
 
     router: any;
     dialogRef: MatDialogRef<any>;
@@ -33,10 +33,7 @@ export class MenuShortcutComponent implements OnInit {
         this.router = _router;
     }
 
-    ngOnInit(): void { }
-
-
-    onSpeedDialFabClicked(group: any, shortcut: any) {
+    onSpeedDialFabClicked(group: any) {
         this.router.navigate(['/indexing/' + group.id]);
     }
 

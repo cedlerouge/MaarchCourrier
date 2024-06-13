@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { HttpClient } from '@angular/common/http';
@@ -10,7 +10,7 @@ import { catchError, tap } from 'rxjs/operators';
     templateUrl: 'addin-outlook-configuration-modal.component.html',
     styleUrls: ['addin-outlook-configuration-modal.component.scss'],
 })
-export class AddinOutlookConfigurationModalComponent implements OnInit {
+export class AddinOutlookConfigurationModalComponent {
 
     hidePassword: boolean = true;
 
@@ -20,8 +20,6 @@ export class AddinOutlookConfigurationModalComponent implements OnInit {
         public translate: TranslateService,
         public dialogRef: MatDialogRef<AddinOutlookConfigurationModalComponent>
     ) { }
-
-    ngOnInit(): void { }
 
     getManifest() {
         this.http.get('../rest/plugins/outlook/manifest', { responseType: 'blob' }).pipe(
