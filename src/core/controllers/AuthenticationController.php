@@ -851,6 +851,7 @@ class AuthenticationController
             || empty($keycloakConfig['clientId'])
             || empty($keycloakConfig['clientSecret'])
             || empty($keycloakConfig['redirectUri'])
+            || empty($keycloakConfig['version'])
         ) {
             return ['errors' => 'Keycloak not configured'];
         }
@@ -866,7 +867,7 @@ class AuthenticationController
         try {
             $user = $provider->getResourceOwner($token);
 
-            $login = $user->getId();
+            $login = $user->getUsername();
             $keycloakAccessToken = $token->getToken();
 
             $userMaarch = UserModel::getByLogin(['login' => $login, 'select' => ['id', 'external_id']]);
@@ -882,7 +883,7 @@ class AuthenticationController
             UserModel::updateExternalId(['id' => $userMaarch['id'], 'externalId' => $userMaarch['external_id']]);
 
             return ['login' => $login];
-        } catch (Exception $e) {
+        } catch (Exception) {
             return ['errors' => 'Authentication Failed'];
         }
     }
