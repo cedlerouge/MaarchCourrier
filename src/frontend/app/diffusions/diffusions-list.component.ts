@@ -341,9 +341,9 @@ export class DiffusionsListComponent implements OnInit {
         this.listinstanceClone = JSON.parse(JSON.stringify(this.getCurrentListinstance()));
     }
 
-    saveListinstance() {
-        if (!this.hasEmptyDest()) {
-            return new Promise((resolve) => {
+    saveListinstance(): Promise<boolean> {
+        return new Promise((resolve) => {
+            if (!this.hasEmptyDest()) {
                 const listInstance: any[] = [
                     {
                         resId: this.resId,
@@ -354,6 +354,7 @@ export class DiffusionsListComponent implements OnInit {
                     tap((data: any) => {
                         if (data && data.errors != null) {
                             this.notify.error(data.errors);
+                            resolve(false);
                         } else {
                             this.listinstanceClone = JSON.parse(JSON.stringify(this.getCurrentListinstance()));
                             this.notify.success(this.translate.instant('lang.diffusionListUpdated'));
@@ -362,13 +363,15 @@ export class DiffusionsListComponent implements OnInit {
                     }),
                     catchError((err: any) => {
                         this.notify.handleErrors(err);
+                        resolve(false);
                         return of(false);
                     })
                 ).subscribe();
-            });
-        } else {
-            this.notify.error(this.translate.instant('lang.noDest'));
-        }
+            } else {
+                this.notify.error(this.translate.instant('lang.noDest'));
+                resolve(false);
+            }
+        });
     }
 
     initRoles() {

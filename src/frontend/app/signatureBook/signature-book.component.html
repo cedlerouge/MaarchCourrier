@@ -28,7 +28,7 @@
         </mat-drawer>
         <mat-drawer-content style="display: flex; flex: 1">
             <div class="signatorybook-contents">
-                <div class="signatorybook-content">
+                <div class="signatorybook-content" [class.signatorybook-small-content]="signatureBookService.toolBarActive">
                     <ng-scrollbar class="book-mark" autoHeightDisabled="false">
                         <app-maarch-sb-tabs *ngIf="!loadingAttachments" position="left" [documents]="attachments"></app-maarch-sb-tabs>
                     </ng-scrollbar>
@@ -37,6 +37,8 @@
                                 *ngIf="signatureBookService.toolBarActive"
                                 [resId]="resId"
                                 [groupId]="groupId"
+                                [basketId]="basketId"
+                                [userId]="userId"
                         ></app-resource-toolbar>
                         <app-maarch-sb-content *ngIf="!signatureBookService.toolBarActive"
                             position="left"

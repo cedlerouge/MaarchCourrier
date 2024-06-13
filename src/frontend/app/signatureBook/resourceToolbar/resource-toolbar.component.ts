@@ -5,18 +5,26 @@ import { catchError, tap } from "rxjs/operators";
 import { of } from "rxjs";
 import { HttpClient } from "@angular/common/http";
 import { NotificationService } from "@service/notification/notification.service";
-import { VisaWorkflowComponent } from '@appRoot/visa/visa-workflow.component';
+import { DiffusionsListComponent } from "@appRoot/diffusions/diffusions-list.component";
+import { VisaWorkflowComponent } from "@appRoot/visa/visa-workflow.component";
+import { AvisWorkflowComponent } from "@appRoot/avis/avis-workflow.component";
+import { NotesListComponent } from "@appRoot/notes/notes-list.component";
 
 @Component({
     selector: 'app-resource-toolbar',
     templateUrl: 'resource-toolbar.component.html',
     styleUrls: ['resource-toolbar.component.scss'],
 })
-export class ResourceToolbarComponent implements OnInit{
+export class ResourceToolbarComponent implements OnInit {
+    @ViewChild('appDiffusionsList', { static: false }) appDiffusionsList: DiffusionsListComponent;
     @ViewChild('appVisaWorkflow', { static: false }) appVisaWorkflow: VisaWorkflowComponent;
+    @ViewChild('appAvisWorkflow', { static: false }) appAvisWorkflow: AvisWorkflowComponent;
+    @ViewChild('appNotesList', { static: false }) appNotesList: NotesListComponent;
 
     @Input() resId: number;
+    @Input() userId: number;
     @Input() groupId: number;
+    @Input() basketId: number;
 
     currentTool: string = 'visaCircuit';
     modelId: number;
@@ -26,14 +34,14 @@ export class ResourceToolbarComponent implements OnInit{
             id: 'dashboard',
             icon: 'fas fa-columns',
             label: this.translate.instant('lang.newsFeed'),
-            disabled: true,
+            disabled: false,
             count: 0
         },
         {
             id: 'history',
             icon: 'fas fa-history',
             label: this.translate.instant('lang.history'),
-            disabled: true,
+            disabled: false,
             count: 0
         },
         {
@@ -47,28 +55,28 @@ export class ResourceToolbarComponent implements OnInit{
             id: 'attachments',
             icon: 'fas fa-paperclip',
             label: this.translate.instant('lang.attachments'),
-            disabled: true,
+            disabled: false,
             count: 0
         },
         {
             id: 'linkedResources',
             icon: 'fas fa-link',
             label: this.translate.instant('lang.links'),
-            disabled: true,
+            disabled: false,
             count: 0
         },
         {
             id: 'emails',
             icon: 'fas fa-envelope',
             label: this.translate.instant('lang.mailsSentAlt'),
-            disabled: true,
+            disabled: false,
             count: 0
         },
         {
             id: 'diffusionList',
             icon: 'fas fa-share-alt',
             label: this.translate.instant('lang.diffusionList'),
-            disabled: true,
+            disabled: false,
             editMode: false,
             count: 0
         },
@@ -83,7 +91,7 @@ export class ResourceToolbarComponent implements OnInit{
             id: 'opinionCircuit',
             icon: 'fas fa-comment-alt',
             label: this.translate.instant('lang.avis'),
-            disabled: true,
+            disabled: false,
             count: 0
         },
         {
@@ -145,8 +153,18 @@ export class ResourceToolbarComponent implements OnInit{
         ).subscribe();
     }
 
+    refreshBadge(countItems: any, id: string) {
+        this.processTool.filter(tool => tool.id === id)[0].count = countItems;
+    }
+
     isToolModified(): boolean {
-        if (this.currentTool === 'visaCircuit' && this.appVisaWorkflow?.isModified()) {
+        if (this.currentTool === 'diffusionList' && this.appDiffusionsList?.isModified()) {
+            return true;
+        } else if (this.currentTool === 'visaCircuit' && this.appVisaWorkflow?.isModified()) {
+            return true;
+        } else if (this.currentTool === 'opinionCircuit' && this.appAvisWorkflow?.isModified()) {
+            return true;
+        } else if (this.currentTool === 'notes' && this.appNotesList?.isModified()) {
             return true;
         } else {
             return false;
@@ -154,8 +172,17 @@ export class ResourceToolbarComponent implements OnInit{
     }
 
     async saveTool(): Promise<void> {
-        if (this.currentTool === 'visaCircuit') {
+        if (this.currentTool === 'diffusionList') {
+            await this.appDiffusionsList?.saveListinstance();
+            this.loadBadges();
+        } else if (this.currentTool === 'visaCircuit') {
             await this.appVisaWorkflow?.saveVisaWorkflow();
+            this.loadBadges();
+        } else if (this.currentTool === 'opinionCircuit') {
+            await this.appAvisWorkflow?.saveAvisWorkflow();
+            this.loadBadges();
+        } else if (this.currentTool === 'notes') {
+            await this.appNotesList?.addNote();
             this.loadBadges();
         }
     }

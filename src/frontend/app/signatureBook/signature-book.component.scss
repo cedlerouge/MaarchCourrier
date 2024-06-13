@@ -18,6 +18,11 @@
     gap: 10px;
 }
 
+.signatorybook-small-content {
+    width: 700px;
+    flex: none;
+}
+
 .book-content {
     flex: 1;
     display: flex;
@@ -38,7 +43,7 @@
     height: 95%;
     width: 20px;
     position: absolute;
-    right: 0px;
+    right: 0;
     background: white;
 }
 

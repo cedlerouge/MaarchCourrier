@@ -7,7 +7,7 @@
     ::ng-deep.mat-optgroup-label {
         color: var(--maarch-color-primary);
         position: sticky;
-        top: 0px;
+        top: 0;
         background: white !important;
         z-index: 1;
     }
@@ -88,8 +88,8 @@
 }
 
 .workflow {
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
     height: auto !important;
     margin-bottom: 10px;
     background: rgba(216, 216, 216, 0.1);
@@ -110,6 +110,8 @@
     &Label {
         text-overflow: ellipsis;
         overflow: hidden;
+        display: flex;
+        align-items: flex-end;
     }
 
     &SubLabel {
