@@ -217,10 +217,11 @@ class GroupController
             $createGroupFactory = new CreateAndUpdateGroupInSignatoryBookFactory();
             $createGroup = $createGroupFactory->create();
             $createGroup->createAndUpdateGroup($groupToUpdate);
+            $externalId = $groupToUpdate->getExternalId();
         }
 
         GroupModel::update([
-            'set'   => ['group_desc' => $data['description']],
+            'set'   => ['group_desc' => $data['description'], 'external_id' => json_encode($externalId)],
             'where' => ['id = ?'],
             'data'  => [$aArgs['id']]
         ]);

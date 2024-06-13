@@ -152,7 +152,7 @@ class MaarchParapheurGroupService implements SignatureBookGroupServiceInterface
         } else {
             $result = $response['response']['group']['privileges'];
 
-            $result = array_filter($result, fn($item) => !empty($result['checked']));
+            $result = array_filter($result, fn($item) => !empty($item['checked']));
 
             return array_column($result, 'id');
         }
