@@ -24,7 +24,7 @@ class MaarchParapheurGroupServiceMock implements SignatureBookGroupServiceInterf
     public array|int $groupCreated = 5;
     public bool $groupUpdateCalled = false;
     public array|bool $groupUpdated = false;
-    public array|bool $privilege;
+    public array $privilege;
     public bool $groupUpdatePrivilegeCalled = false;
     public bool $privilegeIsChecked = false;
     public bool $groupIsDeletedCalled = false;
@@ -74,11 +74,7 @@ class MaarchParapheurGroupServiceMock implements SignatureBookGroupServiceInterf
         return $this;
     }
 
-    /**
-     * @param GroupInterface $group
-     * @return bool|array
-     */
-    public function getGroupPrivileges(GroupInterface $group): bool|array
+    public function getGroupPrivileges(GroupInterface $group): array
     {
         if ($this->isPrivilegeRetrieveFailed) {
             $this->privilege = ['errors' => 'Error occurred while retrieving group information.'];

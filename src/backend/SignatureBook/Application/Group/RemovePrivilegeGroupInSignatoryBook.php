@@ -56,23 +56,21 @@ class RemovePrivilegeGroupInSignatoryBook
             if (!empty($groupPrivileges['errors'])) {
                 throw new GetSignatureBookGroupPrivilegesFailedProblem($groupPrivileges);
             }
-            if (!$groupPrivileges) {
+            if (in_array('indexation', $groupPrivileges) || in_array('manage_documents', $groupPrivileges)) {
                 $hasPrivilege = false;
                 $privileges = [];
-                if ($privilege instanceof (SignDocumentPrivilege::class)) {
+                if ($privilege instanceof SignDocumentPrivilege) {
                     $privileges = [
                         'indexation',
                         'manage_documents',
                     ];
-                    $hasPrivilege =
-                        $this->privilegeChecker->hasGroupPrivilege($group, new VisaDocumentPrivilege());
-                } elseif ($privilege instanceof (VisaDocumentPrivilege::class)) {
+                    $hasPrivilege = $this->privilegeChecker->hasGroupPrivilege($group, new VisaDocumentPrivilege());
+                } elseif ($privilege instanceof VisaDocumentPrivilege) {
                     $privileges = [
                         'indexation',
                         'manage_documents',
                     ];
-                    $hasPrivilege =
-                        $this->privilegeChecker->hasGroupPrivilege($group, new SignDocumentPrivilege());
+                    $hasPrivilege = $this->privilegeChecker->hasGroupPrivilege($group, new SignDocumentPrivilege());
                 }
                 if (!$hasPrivilege) {
                     foreach ($privileges as $privilege) {

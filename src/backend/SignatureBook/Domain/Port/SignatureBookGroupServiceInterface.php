@@ -43,11 +43,7 @@ interface SignatureBookGroupServiceInterface
      */
     public function setConfig(SignatureBookServiceConfig $config): SignatureBookGroupServiceInterface;
 
-    /**
-     * @param GroupInterface $group
-     * @return bool|array
-     */
-    public function getGroupPrivileges(GroupInterface $group): bool|array;
+    public function getGroupPrivileges(GroupInterface $group): array;
 
     /**
      * @param GroupInterface $group

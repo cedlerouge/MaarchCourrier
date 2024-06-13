@@ -65,7 +65,7 @@ class RemovePrivilegeGroupInSignatoryBookTest extends TestCase
         $this->maarchParapheurGroupServiceMock->privilegeIsChecked = false;
         $this->maarchParapheurGroupServiceMock->checked = true;
         $this->privilegeCheckerMock->hasGroupPrivilege = true;
-        $this->maarchParapheurGroupServiceMock->privilege = false;
+        $this->maarchParapheurGroupServiceMock->privilege = ['indexation', 'manage_documents'];
         $this->removePrivilegeGroupInSignatoryBook->removePrivilege($group, new SignDocumentPrivilege());
         $this->assertFalse($this->maarchParapheurGroupServiceMock->groupUpdatePrivilegeCalled);
         $this->assertTrue($this->privilegeCheckerMock->hasGroupPrivilegeCalled);
@@ -86,7 +86,7 @@ class RemovePrivilegeGroupInSignatoryBookTest extends TestCase
 
         $this->maarchParapheurGroupServiceMock->isPrivilegeRetrieveFailed = false;
         $this->maarchParapheurGroupServiceMock->privilegeIsChecked = false;
-        $this->maarchParapheurGroupServiceMock->privilege = false;
+        $this->maarchParapheurGroupServiceMock->privilege = ['indexation', 'manage_documents'];
         $this->maarchParapheurGroupServiceMock->checked = true;
         $this->privilegeCheckerMock->hasGroupPrivilege = false;
 
@@ -110,7 +110,7 @@ class RemovePrivilegeGroupInSignatoryBookTest extends TestCase
 
         $this->maarchParapheurGroupServiceMock->isPrivilegeRetrieveFailed = false;
         $this->maarchParapheurGroupServiceMock->privilegeIsChecked = false;
-        $this->maarchParapheurGroupServiceMock->privilege = false;
+        $this->maarchParapheurGroupServiceMock->privilege = ['indexation', 'manage_documents'];
         $this->maarchParapheurGroupServiceMock->checked = true;
         $this->privilegeCheckerMock->hasGroupPrivilege = false;
         $this->maarchParapheurGroupServiceMock->privilegesGroupUpdated = [
@@ -134,7 +134,7 @@ class RemovePrivilegeGroupInSignatoryBookTest extends TestCase
             ->setExternalId($externalId);
 
         $this->maarchParapheurGroupServiceMock->isPrivilegeRetrieveFailed = true;
-        $this->maarchParapheurGroupServiceMock->privilege = false;
+        $this->maarchParapheurGroupServiceMock->privilege = ['indexation', 'manage_documents'];
 
         $this->expectException(GetSignatureBookGroupPrivilegesFailedProblem::class);
         $this->removePrivilegeGroupInSignatoryBook->removePrivilege($group, new SignDocumentPrivilege());

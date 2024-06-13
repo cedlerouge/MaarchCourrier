@@ -55,7 +55,7 @@ class AddPrivilegeGroupInSignatoryBookTest extends TestCase
             ->setExternalId($externalId);
 
         $this->maarchParapheurGroupServiceMock->isPrivilegeRetrieveFailed = false;
-        $this->maarchParapheurGroupServiceMock->privilege = true;
+        $this->maarchParapheurGroupServiceMock->privilege = ['indexation'];
         $updatePrivilege = $this->addPrivilegeGroupInSignatoryBook->addPrivilege($group, new SignDocumentPrivilege());
         $this->assertInstanceOf(GroupInterface::class, $updatePrivilege);
         $this->assertTrue($this->maarchParapheurGroupServiceMock->groupUpdatePrivilegeCalled);
@@ -75,7 +75,7 @@ class AddPrivilegeGroupInSignatoryBookTest extends TestCase
             ->setExternalId($externalId);
 
         $this->maarchParapheurGroupServiceMock->isPrivilegeRetrieveFailed = false;
-        $this->maarchParapheurGroupServiceMock->privilege = true;
+        $this->maarchParapheurGroupServiceMock->privilege = ['indexation'];
         $this->maarchParapheurGroupServiceMock->privilegesGroupUpdated = [
             'errors' => 'Error occurred during the update of the group privilege in Maarch Parapheur.'
         ];

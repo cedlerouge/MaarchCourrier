@@ -59,12 +59,9 @@ class AddPrivilegeGroupInSignatoryBook
             if (!empty($groupPrivileges['errors'])) {
                 throw new GetSignatureBookGroupPrivilegesFailedProblem($groupPrivileges);
             }
-            if ($groupPrivileges) {
+            if (!in_array('indexation', $groupPrivileges) || !in_array('manage_documents', $groupPrivileges)) {
                 $privileges = [];
-                if (
-                    $privilege instanceof (SignDocumentPrivilege::class) ||
-                    $privilege instanceof (VisaDocumentPrivilege::class)
-                ) {
+                if ($privilege instanceof SignDocumentPrivilege || $privilege instanceof VisaDocumentPrivilege) {
                     $privileges = [
                         'indexation',
                         'manage_documents',
@@ -72,8 +69,11 @@ class AddPrivilegeGroupInSignatoryBook
                 }
 
                 foreach ($privileges as $privilege) {
-                    $isPrivilegeUpdated =
-                        $this->signatureBookGroupService->updatePrivilege($group, $privilege, true);
+                    $isPrivilegeUpdated = $this->signatureBookGroupService->updatePrivilege(
+                        $group,
+                        $privilege,
+                        true
+                    );
                     if (!empty($isPrivilegeUpdated['errors'])) {
                         throw new GroupUpdatePrivilegeInSignatureBookFailedProblem($isPrivilegeUpdated);
                     }
