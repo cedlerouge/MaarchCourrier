@@ -42,7 +42,7 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
 
     /**
      * @param UserInterface $user
-     * @return array|int
+     * @return array|bool
      */
     public function updateUser(UserInterface $user): array|bool
     {
@@ -75,7 +75,6 @@ class MaarchParapheurUserServiceMock implements SignatureBookUserServiceInterfac
 
     /**
      * @param SignatureBookServiceConfig $config
-     *
      * @return SignatureBookUserServiceInterface
      */
     public function setConfig(SignatureBookServiceConfig $config): SignatureBookUserServiceInterface

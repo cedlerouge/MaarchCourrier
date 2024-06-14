@@ -16,8 +16,8 @@ namespace Unit\SignatureBook\Application\User;
 
 use MaarchCourrier\SignatureBook\Application\User\CreateAndUpdateUserInSignatoryBook;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\UserCreateInMaarchParapheurFailedProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\UserUpdateInMaarchParapheurFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\UserCreateInSignatureBookFailedProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\UserUpdateInSignatureBookFailedProblem;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\SignatureServiceJsonConfigLoaderMock;
 use MaarchCourrier\User\Domain\User;
 use PHPUnit\Framework\TestCase;
@@ -42,10 +42,10 @@ class CreateAndUpdateUserInSignatoryBookTest extends TestCase
     /**
      * @return void
      * @throws SignatureBookNoConfigFoundProblem
-     * @throws UserCreateInMaarchParapheurFailedProblem
-     * @throws UserUpdateInMaarchParapheurFailedProblem
+     * @throws UserCreateInSignatureBookFailedProblem
+     * @throws UserUpdateInSignatureBookFailedProblem
      */
-    public function testTheUserHasNoExternalIdSoAnAccountIsCreatedInMaarchParapheur(): void
+    public function testTheUserHasNoExternalIdSoAnAccountIsCreated(): void
     {
         $dataExpected['internalParapheur'] = 12;
         $ExpectedUser = (new User())
@@ -72,10 +72,10 @@ class CreateAndUpdateUserInSignatoryBookTest extends TestCase
     /**
      * @return void
      * @throws SignatureBookNoConfigFoundProblem
-     * @throws UserCreateInMaarchParapheurFailedProblem
-     * @throws UserUpdateInMaarchParapheurFailedProblem
+     * @throws UserCreateInSignatureBookFailedProblem
+     * @throws UserUpdateInSignatureBookFailedProblem
      */
-    public function testTheUserHasNoExternalIdSoAnAccountIsCreatedInMaarchParapheurButAnErrorOccurred(): void
+    public function testCreatesAccountWhenNoExternalIdAndThrowsProblemOnFailure(): void
     {
         $user = (new User())
             ->setFirstname('firstname')
@@ -83,19 +83,19 @@ class CreateAndUpdateUserInSignatoryBookTest extends TestCase
             ->setMail('mail')
             ->setLogin('userId')
             ->setExternalId([]);
-        $this->signatureBookUserServiceMock->userCreated = ['errors' => 'Error occurred during the creation of the Maarch Parapheur user.'];
-        $this->expectException(UserCreateInMaarchParapheurFailedProblem::class);
+        $this->signatureBookUserServiceMock->userCreated =
+            ['errors' => 'Error occurred during the creation of the Maarch Parapheur user.'];
+        $this->expectException(UserCreateInSignatureBookFailedProblem::class);
         $this->createAndUpdateUserInSignatoryBook->createAndUpdateUser($user);
     }
 
     /**
      * @return void
      * @throws SignatureBookNoConfigFoundProblem
-     * @throws UserCreateInMaarchParapheurFailedProblem
-     * @throws UserUpdateInMaarchParapheurFailedProblem
+     * @throws UserCreateInSignatureBookFailedProblem
+     * @throws UserUpdateInSignatureBookFailedProblem
      */
-    public function testTheUserAlreadyHasAnExternalIdAndItAlreadyExistsInMaarchParapheurThenTrueIsReturnedAndUserIsUpdate(
-    ): void
+    public function testUpdatesUserWhenExternalIdExistsInSignatoryBook(): void
     {
         $dataExpected['maarchParapheur'] = 10;
         $dataExpected['internalParapheur'] = 12;
@@ -126,11 +126,10 @@ class CreateAndUpdateUserInSignatoryBookTest extends TestCase
     /**
      * @return void
      * @throws SignatureBookNoConfigFoundProblem
-     * @throws UserCreateInMaarchParapheurFailedProblem
-     * @throws UserUpdateInMaarchParapheurFailedProblem
+     * @throws UserCreateInSignatureBookFailedProblem
+     * @throws UserUpdateInSignatureBookFailedProblem
      */
-    public function testTheUserAlreadyHasAnExternalIdAndItAlreadyExistsInMaarchParapheurThenTrueIsReturnedAndUserIsUpdateButAndErrorOccurred(
-    ): void
+    public function testUpdatesUserWhenExternalIdExistsInSignatoryBookAndThrowsProblemOnFailure(): void
     {
         $actualData['maarchParapheur'] = 10;
         $actualData['internalParapheur'] = 12;
@@ -142,18 +141,19 @@ class CreateAndUpdateUserInSignatoryBookTest extends TestCase
             ->setLogin('userId')
             ->setExternalId($actualData);
         $this->signatureBookUserServiceMock->userExists = true;
-        $this->signatureBookUserServiceMock->userUpdated = ['errors' => 'Failed to update the user in Maarch Parapheur.'];
-        $this->expectException(UserUpdateInMaarchParapheurFailedProblem::class);
+        $this->signatureBookUserServiceMock->userUpdated =
+            ['errors' => 'Failed to update the user in Maarch Parapheur.'];
+        $this->expectException(UserUpdateInSignatureBookFailedProblem::class);
         $this->createAndUpdateUserInSignatoryBook->createAndUpdateUser($user);
     }
 
     /**
      * @return void
      * @throws SignatureBookNoConfigFoundProblem
-     * @throws UserCreateInMaarchParapheurFailedProblem
-     * @throws UserUpdateInMaarchParapheurFailedProblem
+     * @throws UserCreateInSignatureBookFailedProblem
+     * @throws UserUpdateInSignatureBookFailedProblem
      */
-    public function testTheUserAlreadyHasAnExternalIdButItDoesNotExistInMaarchParapheurThenAnAccountIsCreated(): void
+    public function testCreatesAccountWhenExternalIdNotFoundInSignatoryBook(): void
     {
         $dataExpected['maarchParapheur'] = 10;
         $dataExpected['internalParapheur'] = 12;
@@ -182,11 +182,10 @@ class CreateAndUpdateUserInSignatoryBookTest extends TestCase
     /**
      * @return void
      * @throws SignatureBookNoConfigFoundProblem
-     * @throws UserCreateInMaarchParapheurFailedProblem
-     * @throws UserUpdateInMaarchParapheurFailedProblem
+     * @throws UserCreateInSignatureBookFailedProblem
+     * @throws UserUpdateInSignatureBookFailedProblem
      */
-    public function testTheUserAlreadyHasAnExternalIdButItDoesNotExistInMaarchParapheurThenAnAccountIsCreatedButAnErrorOccurred(
-    ): void
+    public function testCreatesAccountWhenExternalIdNotFoundAndThrowsProblemOnFailure(): void
     {
         $actualData['maarchParapheur'] = 10;
 
@@ -197,8 +196,9 @@ class CreateAndUpdateUserInSignatoryBookTest extends TestCase
             ->setLogin('userId')
             ->setExternalId($actualData);
         $this->signatureBookUserServiceMock->userExists = false;
-        $this->signatureBookUserServiceMock->userCreated = ['errors' => 'Error occurred during the creation of the Maarch Parapheur user.'];
-        $this->expectException(UserCreateInMaarchParapheurFailedProblem::class);
+        $this->signatureBookUserServiceMock->userCreated =
+            ['errors' => 'Error occurred during the creation of the Maarch Parapheur user.'];
+        $this->expectException(UserCreateInSignatureBookFailedProblem::class);
         $this->createAndUpdateUserInSignatoryBook->createAndUpdateUser($user);
     }
 }

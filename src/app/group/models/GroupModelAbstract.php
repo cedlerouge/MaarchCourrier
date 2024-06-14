@@ -96,8 +96,9 @@ abstract class GroupModelAbstract
         DatabaseModel::insert([
             'table'         => 'usergroups',
             'columnsValues' => [
-                'group_id'   => $aArgs['groupId'],
-                'group_desc' => $aArgs['description']
+                'group_id'    => $aArgs['groupId'],
+                'group_desc'  => $aArgs['description'],
+                'external_id' => $aArgs['external_id'] ?? '{}',
             ]
         ]);
 

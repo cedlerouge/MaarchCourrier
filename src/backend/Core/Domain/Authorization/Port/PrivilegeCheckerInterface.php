@@ -14,9 +14,22 @@
 
 namespace MaarchCourrier\Core\Domain\Authorization\Port;
 
+use MaarchCourrier\Core\Domain\Group\Port\GroupInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 
 interface PrivilegeCheckerInterface
 {
+    /**
+     * @param UserInterface $user
+     * @param PrivilegeInterface $privilege
+     * @return bool
+     */
     public function hasPrivilege(UserInterface $user, PrivilegeInterface $privilege): bool;
+
+    /**
+     * @param GroupInterface $group
+     * @param PrivilegeInterface $privilege
+     * @return bool
+     */
+    public function hasGroupPrivilege(GroupInterface $group, PrivilegeInterface $privilege): bool;
 }
