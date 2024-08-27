@@ -1,0 +1,21 @@
+:8888
+
+## GLPI
+route /* {
+    #uri strip_prefix /glpi
+    reverse_proxy maarchcourrier:80
+}
+
+# adminer
+redir /adminer /adminer/
+route /adminer* {
+    uri strip_prefix /adminer
+    reverse_proxy adminer:8080
+}
+
+# mailhog
+redir /mailhog /mailhog/
+route /mailhog* {
+    #uri strip_prefix /mailhog
+    reverse_proxy mailhog:8025
+}

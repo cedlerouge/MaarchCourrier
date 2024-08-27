@@ -1,0 +1,73 @@
+version: "3"
+
+services:
+
+  caddy:
+    image: caddy:latest
+    restart: unless-stopped
+    container_name: caddy
+    ports:
+      - '80:8888'
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - './data/caddy/Caddyfile:/etc/caddy/Caddyfile'
+      - './data/html:/src'
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+
+# Adminer - db web interface
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    #ports: 
+    #  - ${ADM_PORT}:8080
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+
+  postgres:
+    container_name: postgres
+    image: postgres:14-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - $PWD/data/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=passwd
+      - POSTGRES_USER=maarch
+      - POSTGRES_DB=courrier
+
+  maarchcourrier:
+    container_name: courrier
+    image: maarchcourrier:vdn
+    ports:
+      - 8080:80
+    volumes:
+      - $PWD/data/courrier:/opt/maarch/docservers:rw
+
+
+  mailhog:
+    image: mailhog/mailhog
+    restart: unless-stopped
+    container_name: mailhog
+    #ports: 
+    #  - 1025:1025 # smtp server
+    #  - 8025:8025 # web ui
+    environment:
+      MH_UI_WEB_PATH: mailhog
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+
+
